@@ -3,7 +3,7 @@ import {
   getDatabaseClient,
   initializeDatabase,
   shutdownDatabase,
-} from "./server/db.service";
+} from "./server/prisma.client";
 
 interface ApplicationContract {
   bootstrap(): Promise<void>;

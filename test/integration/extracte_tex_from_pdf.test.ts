@@ -15,8 +15,8 @@ import {
   getDatabaseClient,
   initializeDatabase,
   shutdownDatabase,
-} from "../../src/server/db.service";
-import { extractTextFromPdf } from "../../src/server/extract_text_from_pdf";
+} from "../../src/server/prisma.client";
+import { extractTextFromPdf } from "../../src/server/modules/extract_text_from_pdf";
 import { jobService } from "../../src/server/job.service";
 
 describe("PDF text extraction", () => {

@@ -5,7 +5,7 @@ import {
   getDatabaseClient,
   initializeDatabase,
   shutdownDatabase,
-} from "../../src/server/db.service";
+} from "../../src/server/prisma.client";
 
 describe("Database integration", () => {
   beforeAll(async () => {

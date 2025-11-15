@@ -1,7 +1,7 @@
 import type { Job, Prisma, PrismaClient } from "@prisma/client";
 import { StatusJob, TypeJob } from "@prisma/client";
 
-import { getDatabaseClient } from "./db.service";
+import { getDatabaseClient } from "./prisma.client";
 
 export interface JobFilters {
   status?: StatusJob;

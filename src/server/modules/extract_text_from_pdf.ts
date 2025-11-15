@@ -14,7 +14,7 @@ import type {
   TextMarkedContent,
 } from "pdfjs-dist/types/src/display/api";
 
-import { JobService, jobService } from "./job.service";
+import { JobService, jobService } from "../job.service";
 
 type PdfJsLib = typeof import("pdfjs-dist/legacy/build/pdf.mjs");
 
