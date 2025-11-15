@@ -7,7 +7,8 @@ import {
   ImageData as CanvasImageData,
   Path2D as CanvasPath2D,
 } from "@napi-rs/canvas";
-import { TypeJob } from "@prisma/client";
+import { StatusJob, TypeJob } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import type {
   PDFDocumentProxy,
   TextItem,
@@ -17,6 +18,20 @@ import type {
 import { JobService, jobService } from "../job.service";
 
 type PdfJsLib = typeof import("pdfjs-dist/legacy/build/pdf.mjs");
+export interface ExtractedTextEntry {
+  resource: string;
+  word_number: number;
+  letter_number: number;
+  text_extracted: string;
+}
+
+interface PdfTextExtractorDependencies {
+  jobService: JobService;
+}
+
+interface PendingJobPayload {
+  resourcePath: string;
+}
 
 type DomLikeGlobal = Record<string, unknown>;
 type ProcessWithBuiltin = typeof process & {
@@ -87,17 +102,6 @@ const loadPdfJsLib = (): Promise<PdfJsLib> => {
   return pdfjsLibPromise;
 };
 
-export interface ExtractedTextEntry {
-  resource: string;
-  word_number: number;
-  letter_number: number;
-  text_extracted: string;
-}
-
-interface PdfTextExtractorDependencies {
-  jobService: JobService;
-}
-
 const defaultDependencies: PdfTextExtractorDependencies = {
   jobService,
 };
@@ -113,7 +117,55 @@ export class PdfTextExtractor {
       { resourcePath }
     );
 
-    await this.dependencies.jobService.markJobProcessing(job.id);
+    return this.runExtraction(job.id, resourcePath);
+  }
+
+  async extractFromExistingJob(jobId: string): Promise<ExtractedTextEntry[]> {
+    const job = await this.dependencies.jobService.getJobById(jobId);
+
+    if (!job) {
+      throw new Error(`Job with id ${jobId} was not found`);
+    }
+
+    if (job.type !== TypeJob.EXTRACT_TEXT_FROM_PDF) {
+      throw new Error(
+        `Job ${jobId} cannot be processed by PdfTextExtractor (type ${job.type})`
+      );
+    }
+
+    if (job.status !== StatusJob.PENDING) {
+      throw new Error(
+        `Job ${jobId} must be in PENDING status before processing (current: ${job.status})`
+      );
+    }
+
+    const payload = this.resolveJobPayload(job.data, jobId);
+
+    return this.runExtraction(job.id, payload.resourcePath);
+  }
+
+  private resolveJobPayload(data: unknown, jobId: string): PendingJobPayload {
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error(`Job ${jobId} payload is malformed`);
+    }
+
+    const payload = data as Record<string, unknown>;
+    const resourcePath = payload.resourcePath;
+
+    if (typeof resourcePath !== "string" || resourcePath.trim().length === 0) {
+      throw new Error(
+        `Job ${jobId} payload is missing a valid resourcePath string`
+      );
+    }
+
+    return { resourcePath };
+  }
+
+  private async runExtraction(
+    jobId: string,
+    resourcePath: string
+  ): Promise<ExtractedTextEntry[]> {
+    await this.dependencies.jobService.markJobProcessing(jobId);
 
     let document: PDFDocumentProxy | undefined;
 
@@ -150,17 +202,22 @@ export class PdfTextExtractor {
         0
       );
 
-      await this.dependencies.jobService.markJobCompleted(job.id, {
+      const jsonEntries = entries.map((entry) => ({ ...entry }));
+
+      const jobResult: Prisma.InputJsonValue = {
         resource: resourceLabel,
         resourcePath: absolutePath,
         totalPages: entries.length,
         totalWords,
-      });
+        entries: jsonEntries,
+      };
+
+      await this.dependencies.jobService.markJobCompleted(jobId, jobResult);
 
       return entries;
     } catch (error) {
       await this.dependencies.jobService.markJobFailed(
-        job.id,
+        jobId,
         error instanceof Error
           ? error.message
           : "Unknown PDF extraction failure"
@@ -236,4 +293,10 @@ export const extractTextFromPdf = (
   resourcePath: string
 ): Promise<ExtractedTextEntry[]> => {
   return pdfTextExtractor.extract(resourcePath);
+};
+
+export const extractTextFromExistingJob = (
+  jobId: string
+): Promise<ExtractedTextEntry[]> => {
+  return pdfTextExtractor.extractFromExistingJob(jobId);
 };

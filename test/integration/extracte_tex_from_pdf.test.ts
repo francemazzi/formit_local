@@ -16,7 +16,10 @@ import {
   initializeDatabase,
   shutdownDatabase,
 } from "../../src/server/prisma.client";
-import { extractTextFromPdf } from "../../src/server/modules/extract_text_from_pdf";
+import {
+  extractTextFromExistingJob,
+  type ExtractedTextEntry,
+} from "../../src/server/modules/extract_text_from_pdf";
 import { jobService } from "../../src/server/job.service";
 
 describe("PDF text extraction", () => {
@@ -60,10 +63,16 @@ describe("PDF text extraction", () => {
     expect(storedJob?.status).toBe(StatusJob.PENDING);
   });
 
-  it("should extract page-level text from the selected PDF", async () => {
-    const entries = await extractTextFromPdf(samplePdf);
+  it("should process a pending job and store the extraction result", async () => {
+    const payload = { resourcePath: samplePdf };
+    const pendingJob = await jobService.createJob(
+      TypeJob.EXTRACT_TEXT_FROM_PDF,
+      payload
+    );
 
-    // console.log("PDF extraction result:", entries);
+    expect(pendingJob.status).toBe(StatusJob.PENDING);
+
+    const entries = await extractTextFromExistingJob(pendingJob.id);
 
     expect(entries.length).toBe(2);
 
@@ -82,19 +91,18 @@ describe("PDF text extraction", () => {
     expect(secondEntry?.text_extracted).toMatch(/Responsabile/iu);
 
     const client = getDatabaseClient();
-    const recentJob = await client.job.findFirst({
-      where: { type: TypeJob.EXTRACT_TEXT_FROM_PDF },
-      orderBy: { createdAt: "desc" },
+    const processedJob = await client.job.findUnique({
+      where: { id: pendingJob.id },
     });
 
-    expect(recentJob).toBeDefined();
-    expect(recentJob?.status).toBe(StatusJob.COMPLETED);
+    expect(processedJob).toBeDefined();
+    expect(processedJob?.status).toBe(StatusJob.COMPLETED);
 
     const jobData =
-      recentJob?.data &&
-      typeof recentJob.data === "object" &&
-      !Array.isArray(recentJob.data)
-        ? (recentJob.data as Record<string, unknown>)
+      processedJob?.data &&
+      typeof processedJob.data === "object" &&
+      !Array.isArray(processedJob.data)
+        ? (processedJob.data as Record<string, unknown>)
         : null;
 
     expect(jobData).not.toBeNull();
@@ -106,6 +114,11 @@ describe("PDF text extraction", () => {
       0
     );
     expect(jobData?.totalWords).toBe(totalWords);
+    expect(Array.isArray(jobData?.entries)).toBe(true);
+    expect((jobData?.entries as unknown[]).length).toBe(entries.length);
+    expect(
+      (jobData?.entries as ExtractedTextEntry[]).at(0)?.text_extracted
+    ).toBe(entries.at(0)?.text_extracted);
   });
 
   it("should mark the job as failed for missing resources", async () => {
@@ -114,14 +127,18 @@ describe("PDF text extraction", () => {
       "../../data/analisi_microbiologiche/missing.pdf"
     );
 
-    await expect(extractTextFromPdf(nonExistingPdf)).rejects.toThrow(
+    const pendingJob = await jobService.createJob(
+      TypeJob.EXTRACT_TEXT_FROM_PDF,
+      { resourcePath: nonExistingPdf }
+    );
+
+    await expect(extractTextFromExistingJob(pendingJob.id)).rejects.toThrow(
       /was not found/iu
     );
 
     const client = getDatabaseClient();
-    const failedJob = await client.job.findFirst({
-      where: { type: TypeJob.EXTRACT_TEXT_FROM_PDF },
-      orderBy: { createdAt: "desc" },
+    const failedJob = await client.job.findUnique({
+      where: { id: pendingJob.id },
     });
 
     expect(failedJob).toBeDefined();
