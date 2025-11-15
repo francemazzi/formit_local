@@ -32,9 +32,14 @@
     "vitest": "^4.0.9"
   },
   "dependencies": {
+    "@langchain/anthropic": "^1.0.1",
+    "@langchain/core": "^1.0.5",
+    "@langchain/openai": "^1.1.1",
     "@napi-rs/canvas": "^0.1.82",
     "@prisma/client": "^6.19.0",
     "dotenv": "^17.2.3",
-    "pdfjs-dist": "^5.4.394"
+    "langchain": "^1.0.4",
+    "pdfjs-dist": "^5.4.394",
+    "zod": "^4.1.12"
   }
 }
