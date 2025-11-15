@@ -1,0 +1,40 @@
+{
+  "name": "formit_local",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc --project tsconfig.json",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/francemazzi/formit_local.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/francemazzi/formit_local/issues"
+  },
+  "homepage": "https://github.com/francemazzi/formit_local#readme",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "prisma": "^6.19.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.9"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.82",
+    "@prisma/client": "^6.19.0",
+    "dotenv": "^17.2.3",
+    "pdfjs-dist": "^5.4.394"
+  }
+}

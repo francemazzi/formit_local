@@ -1,0 +1,3620 @@
+[
+  {
+    "id": "0100",
+    "name": "Alimenti in polvere per l’infanzia e alimenti dietetici in polvere a fini medici speciali",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "unsatisfactoryValue": "≥10 (ufc/g)"
+      },
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x10 (n=5, c=1) (ufc/g)",
+        "acceptableValue": "5x10≤ x <5x102 (n=5, c=1) (ufc/g)",
+        "unsatisfactoryValue": "≥5x102 (n=5, c=1) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Alimenti in polvere per lattanti e alimenti dietetici in polvere a fini medici speciali destinati ai bambini di età inferiore ai sei mesi"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)",
+        "notes": "Per prodotti contenenti carne"
+      },
+      {
+        "parameter": "Cronobacter spp. (Enterobacter sakazakii)",
+        "analysisMethod": "ISO/TS 22964",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Alimenti in polvere per lattanti e alimenti dietetici in polvere a fini medici speciali destinati ai bambini di età inferiore ai 6 mesi. Vanno effettuati esami in parallelo per enterobatteriacee e Cronobacter spp. (Enterobacter sakazakii), a meno che non sia stata stabilita a livello del singolo impianto una correlazione tra questi microrganismi."
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "Assenti in 10 g (n=10, c=0) (ufc/g)",
+        "unsatisfactoryValue": "Presenti in 10 g (n=10, c=0) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05",
+        "notes": "Alimenti in polvere per lattanti e alimenti dietetici in polvere a fini medici speciali destinati ai bambini di età inferiore ai sei mesi. Vanno effettuati esami in parallelo per enterobatteriacee e Cronobacter spp. (Enterobacter sakazakii), a meno che non sia stata stabilita a livello del singolo impianto una correlazione tra questi microrganismi. Se in una delle unità campionarie sono rilevate enterobatteriacee, la partita deve essere sottoposta a test per ricercare Cronobacter spp. (Enterobacter sakazakii). Spetta al fabbricante dimostrare, con soddisfazione dell’autorità competente, se esiste una correlazione tra enterobatteriacee e E sakazakii."
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "Assenti in 10 g (n=5, c=0) (ufc/g)",
+        "unsatisfactoryValue": "Presenti in 10 g (n=5, c=0) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05",
+        "notes": "Alimenti di proseguimento in polvere"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Alimenti pronti per lattanti e alimenti pronti a fini medici speciali. Prove regolari relative a questo criterio non sono richieste in circostanze normali per alimenti pronti che sono stati sottoposti a trattamento termico o ad altra trasformazione avente come effetto l'eliminazione di L.monocytogenes, quando non è possibile una ricontaminazione dopo tali trattamenti ."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012); O.M. 11/10/78"
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Alimenti in polvere per lattanti e alimenti dietetici in polvere a fini medici speciali destinati ai bambini di età inferiore ai sei mesi. Alimenti di proseguimento in polvere"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:40.800Z"
+  },
+  {
+    "id": "0200",
+    "name": "Cacao e sue preparazioni",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012); FCD (2009); ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "Assente (ufc/g)"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1 ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05. Prove regolari relative a questo criterio non sono richieste in circostanze normali per i seguenti alimenti pronti: (…) zucchero, miele e dolciumi, compresi i prodotti a base di cacao e cioccolato"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012); ASP E. Brignole (2010); FCD (2009); Gelosa (1998); Ottaviani (1996)"
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "ASP E.Brignole (2010); FCD (2009)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "ASP E.Brignole (2010); FCD (2009)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:40.876Z"
+  },
+  {
+    "id": "0300",
+    "name": "Miele",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "acceptableValue": ">10 (ufc/g)"
+      },
+      {
+        "parameter": "Spore di anaerobi solfito-riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "acceptableValue": ">10 (ufc/g)"
+      },
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "102≤ x <104 (ufc/g)",
+        "acceptableValue": "≥104 (ufc/g)",
+        "unsatisfactoryValue": "≥105 e/o C(+)"
+      },
+      {
+        "parameter": "Clostridi produttori di tossine botuliniche",
+        "analysisMethod": "Metodo Centro di Riferimento per il botulismo",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assenti (ufc/g)"
+      },
+      {
+        "parameter": "Tossine botuliniche",
+        "analysisMethod": "Metodo Centro di Riferimento per il botulismo",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assenti (ufc/g)"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "102≤ x <103 (ufc/g)",
+        "acceptableValue": "≥103 (ufc/g)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:40.954Z"
+  },
+  {
+    "id": "0400",
+    "name": "Cereali e prodotti della macinazione",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102 ≤ x < 104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "WQA Manufactured Food Standard (2011); FCD (2009)",
+        "notes": "Farina"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10 ≤ x < 102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000); Gelosa (1998)"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x105 (ufc/g)",
+        "acceptableValue": "5x105≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009; Gelosa (1998); Ottaviani (1996)",
+        "notes": "Farina"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "Gelosa (1998); Ottaviani (1996)",
+        "notes": "Cereali, riso, orzo, …"
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103 ≤ x ≤ 104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "WQA Manufactured Food Standard (2011); FCD (2009); Ottaviani (1996)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103 ≤ x ≤ 104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "WQA Manufactured Food Standard (2011); Ottaviani (1996)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.031Z"
+  },
+  {
+    "id": "0501",
+    "name": "Pasticceria fresca e preparati per pasticceria",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); ANZFA (2001)"
+      },
+      {
+        "parameter": "Coliformi totali",
+        "analysisMethod": "ISO 4832",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Decreto Netherlands n. 563/79; Tiecco (2000); Delibera n. 5310/94 Giunta Reg. Umbria; Racc. 022/93 Istituto Italiano Alimenti Surgelati",
+        "notes": "Pasticceria fresca e surgelata"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Per prodotti ready-to-eat"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Limite di accettabilità <102 ufc/g per i prodotti con frutta cruda"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1 ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "Zavanella M.(2008); AFSSA (2007); Decreto Netherlands n. 563/79; Tiecco (2000); Gelosa L. (1998); Delibera n. 5310/94 Giunta Reg. Umbria; Racc. 022/93 Istituto Italiano Alimenti Surgelati",
+        "notes": "Prodotti a base di uova e di latte. Anche pasticceria surgelata."
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x ≤104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x ≤104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Prodotti a base di uova, esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Decreto Netherlands n. 563/79; Tiecco (2000); Delibera n. 5310/94 Giunta Reg. Umbria; Racc. 022/93 Istituto Italiano Alimenti Surgelati"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.107Z"
+  },
+  {
+    "id": "0502",
+    "name": "Pane e prodotti di panetteria",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Coliformi totali",
+        "analysisMethod": "ISO 4832",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<3x102 (ufc/g)",
+        "acceptableValue": "3x102≤ x ≤x103 (ufc/g)",
+        "unsatisfactoryValue": ">3x103 (ufc/g)",
+        "bibliographicReferences": "Racc. 022/93 Istituto Italiano Alimenti Surgelati",
+        "notes": "Snacks salati e dolci, pizze, crepes, etc. surgelati"
+      },
+      {
+        "parameter": "Coliformi totali",
+        "analysisMethod": "ISO 4832",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Marshall J.P. (1986)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "Pane industriale, biscotti,pasticceria da forno"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x105 (ufc/g)",
+        "acceptableValue": "5x105≤ x ≤5x106 (ufc/g)",
+        "unsatisfactoryValue": ">5x106 (ufc/g)",
+        "bibliographicReferences": "Snacks salati e dolci, pizze, crepes, etc. surgelati"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "Marshall J.P. (1986)"
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x ≤104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x ≤104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Prodotti a base di uova, esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ANZFA (2001)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.178Z"
+  },
+  {
+    "id": "0503",
+    "name": "Pane grattugiato",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Marshall J.P. (1986)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Gelosa (1998)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.248Z"
+  },
+  {
+    "id": "0600",
+    "name": "Paste alimentari",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Nota Rapp. ISTISAN 89/9",
+        "notes": "Pasta all’uovo fresca artigianale non confezionata/Pasta farcita industriale confezionata/Pasta farcita precotta surgelata"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Per prodotti contenenti carne. L'intesa Stato-Regioni del 10/05/2007 lo considera superato. Pasta farcita industriale confezionata"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Per prodotti contenenti carne: Pasta farcita precotta surgelata"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "notes": "Pasta farcita artigianale non confezionata"
+      },
+      {
+        "parameter": "Coliformi",
+        "analysisMethod": "ISO 4832",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Prelievo a caso da più parti di 300 g di prodotto suddividendoli in 5 u.c. (L'intesa Stato-Regioni del 10/05/2007 lo considera superato). Pasta all’uovo fresca artigianale non confezionata"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "notes": "Pasta farcita industriale confezionata"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012); ANZFA (2001)",
+        "notes": "Pasta all’uovo fresca artigianale non confezionata/Pasta farcita industriale confezionata/Pasta farcita precotta surgelata/ Pasta all’uovo secca industriale"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)",
+        "notes": "Pasta farcita artigianale non confezionata"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "O.M. 7/12/1993",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<110 MPN/g",
+        "unsatisfactoryValue": ">110 MPN/g",
+        "notes": "Se il campione presenta la dicitura “da consumarsi previa cottura” o è destinato per sua natura ad essere consumato previa cottura, L.monocytogenes va numerata con metodo MPN su 5 u.c., come previsto dall’O.M. 7/12/93."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Carica batterica a 32°C (L'intesa Stato-Regioni del 10/05/2007 lo considera superato). Pasta all’uovo secca industriale"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Carica batterica a 32°C (L'intesa Stato-Regioni del 10/05/2007 lo considera superato). Pasta farcita industriale confezionata/ Pasta farcita artigianale non confezionata/ Pasta all’uovo fresca artigianale non confezionata"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x <3x105 (ufc/g)",
+        "unsatisfactoryValue": "≥3x105 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Carica batterica a 32°C (L'intesa Stato-Regioni del 10/05/2007 lo considera superato). Pasta farcita precotta surgelata"
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "notes": "Pasta farcita industriale confezionata"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)",
+        "notes": "Pasta all’uovo secca industriale/Pasta farcita industriale confezionata"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)",
+        "notes": "Pasta all’uovo fresca artigianale non confezionata/Pasta farcita artigianale non confezionata"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)",
+        "notes": "Pasta farcita industriale confezionata"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Prodotti a base di uova, esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Prelievo a caso da più parti di 300 g di prodotto suddividendoli in 5 u.c. Pasta all’uovo fresca artigianale non confezionata/Pasta farcita artigianale non confezionata"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <5x102 (ufc/g)",
+        "unsatisfactoryValue": "≥5x102 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Pasta farcita industriale confezionata"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Pasta all’uovo secca industriale"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Circ.min. n.32 del 03/08/1985",
+        "notes": "Pasta farcita precotta surgelata"
+      },
+      {
+        "parameter": "Enterotossine stafilococciche",
+        "analysisMethod": "Metodo europeo di screening del LCR per gli staf.coag.pos",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Non rilevabili (ufc/g)",
+        "notes": "Pasta all’uovo fresca artigianale non confezionata/Pasta farcita industriale confezionata/Pasta farcita precotta surgelata"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.331Z"
+  },
+  {
+    "id": "0701",
+    "name": "Frutta e ortaggi pretagliati pronti al consumo (IV gamma), Semi germogliati pronti al consumo\n\n\nreplicas relojes\n\n\n\n\nreplica watches",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Zavanella M. (2008); ANZFA (2001)",
+        "notes": "Semi germogliati pronti al consumo"
+      },
+      {
+        "parameter": "Batteri lattici mesofili",
+        "analysisMethod": "ISO 15214",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x105 (ufc/g)",
+        "acceptableValue": "5x105≤ x ≤5x106 (ufc/g)",
+        "unsatisfactoryValue": "≥5x106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Verdure grattugiate o tritate non condite"
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Verhoeff-Bakkenes (2011)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio ortaggi e frutta confezionati in MAP), dell'uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "102≤ x <103 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥103 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05; FCD (2009); Gelosa (1998)",
+        "notes": "Frutta e ortaggi ritagliati (pronti al consumo)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Semi germogliati pronti al consumo"
+      },
+      {
+        "parameter": "E. coli produttori di tossina Shiga (STEC) O157, O26, O111, O103, O145 e O104:H4",
+        "analysisMethod": "CEN/ISO TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Solo per i germogli, esclusi quelli che hanno ricevuto un trattamento efficace teso a eliminare Salmonella spp e STEC."
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Zavanella M.(2008); Racc. 66/2002/CE del 25/01/2002",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio i prodotti sottoposti a fertilizzazione naturale), dell'uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1; ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "bibliographicReferences": "Racc. 66/2002/CE del 25/01/2002",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x105 (ufc/g)",
+        "acceptableValue": "5x105≤ x ≤5x107 (ufc/g)",
+        "unsatisfactoryValue": "≥5x107 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Decr. Min. della Rep. francese del 22/03/1993 (valori guida)",
+        "notes": "Alimento da considerarsi “in stato di alterazione” se: Lieviti >106 ufc/g, Pseudomonas spp.>106 ufc/g; Batteri lattici (non innestati) mesofili >5x106 ufc/g"
+      },
+      {
+        "parameter": "Muffe e Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); IFST (1997)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Racc. 66/2002/CE del 25/01/2002",
+        "notes": "Tenere conto della natura dell'alimento (frutta e ortaggi pretagliati, semi germogliati), dell'uso abituale (pronti al consumo), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); ANZFA (2001)"
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.407Z"
+  },
+  {
+    "id": "0702",
+    "name": "Frutta e ortaggi freschi, non tagliati e non trasformati da consumarsi crudi",
+    "data": [
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Zavanella M.(2008); Racc. 66/2002/CE del 25/01/2002",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio i prodotti sottoposti a fertilizzazione naturale), dell'uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1; ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Prove regolari relative a questo criterio non sono richieste in circostanze normali. *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "ICMSF (1991)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio ortaggi e frutta), dell'uso abituale (da consumarsi crudi), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.476Z"
+  },
+  {
+    "id": "0703",
+    "name": "Succhi e nettari di frutta o di ortaggi non pastorizzati (pronti al consumo)",
+    "data": [
+      {
+        "parameter": "Batteri lattici mesofili",
+        "analysisMethod": "ISO 15214",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Se l’esame organolettico è conforme"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "102≤ x <103 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥103 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Succhi di frutta e di ortaggi non pastorizzati (pronti al consumo)"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Zavanella M. (2008); Racc. 66/2002/CE del 25/01/2002",
+        "notes": "Succhi di frutta e di ortaggi non pastorizzati (pronti al consumo). Tenere conto della natura dell'alimento (più a rischio la carne bovina) delle abitudini culinarie e del rischio di contaminazioni crociate. Tenere conto della natura dell'alimento (più a rischio i prodotti sottoposti a fertilizzazione naturale), dell'uso abituale (pronti al consumo), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1; ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i. Tenere conto della natura dell'alimento (più a rischio succhi di frutta e di ortaggi non pastorizzati), dell'uso abituale (pronti al consumo), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Se l’esame organolettico è conforme"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Se l’esame organolettico è conforme"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Racc. 66/2002/CE del 25/01/2002",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio succhi di frutta e di ortaggi non pastorizzati), dell'uso abituale (pronti al consumo), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.549Z"
+  },
+  {
+    "id": "0800",
+    "name": "Spezie ed erbe aromatiche",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Racc. 2004/24/CE; ESA (2004); HPA (2009); Zavanella M. (2008)"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Racc. 2004/24/CE; ESA (2004)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Racc. 2004/24/CE"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Racc. 2004/24/CE; ESA (2004)"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1 ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i. Tenere conto della natura dell'alimento (più a rischio i prodotti non sottoposti a radiazioni ionizzanti), dell'uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x105 (ufc/g)",
+        "acceptableValue": "5x105≤ x <5x106 (ufc/g)",
+        "unsatisfactoryValue": "≥5x106 (ufc/g)",
+        "bibliographicReferences": "Ottaviani (1996)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "IFST (1997)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Racc. 2004/24/CE; ESA (2004)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio i prodotti non sottoposti a radiazioni ionizzanti), dell'uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Canada"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.626Z"
+  },
+  {
+    "id": "0901",
+    "name": "Carne fresca e refrigerata",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Camera Commercio Torino (2008); Gelosa (1998); Dossier Emilia Romagna (1998)"
+      },
+      {
+        "parameter": "Batteri lattici mesofili",
+        "analysisMethod": "ISO 15214",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<107 (ufc/g)",
+        "acceptableValue": "105≤ x <108 (ufc/g)",
+        "unsatisfactoryValue": "≥108 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); FCD (2009)",
+        "notes": "Carcassa intera di volatile (prodotto sottovuoto o in atmosfera modificata)."
+      },
+      {
+        "parameter": "Batteri lattici mesofili",
+        "analysisMethod": "ISO 15214",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<106 (ufc/g)",
+        "acceptableValue": "106≤ x <107 (ufc/g)",
+        "unsatisfactoryValue": "≥107 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Taglio avicolo con pelle (prodotto sottovuoto o in atmosfera modificata). Carne cunicola"
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Circ. Emilia Romagna N°8/1992",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne avicola), dell’uso abituale (carne poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "WQA (2009)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Linee guida Lombardia",
+        "notes": "Carne SUINA in pezzi, sottovuoto, prodotti refrigerati da consumarsi previa cottura."
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); Circ E-R N°8/1992",
+        "notes": "Carcassa intera o tagli di carne di pollame"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "AFSSA (2007)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Camera Commercio Torino (2008); Gelosa (1998)",
+        "notes": "Carne avicola e cunicola."
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento [più a rischio la carne bovina), dell’uso abituale (carne destinata ad essere consumata cruda o con una minima cottura (Nota Regione Piemonte prot. 15742 del 3/06/2011)), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Criterio da applicare sui prodotti finiti o durante il monitoraggio delle materie prime (FCD(2009))."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "O.M. 7/12/1993",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<110 MPN/g",
+        "bibliographicReferences": "Se il campione presenta la dicitura “da consumarsi previa cottura” o è destinato per sua natura ad essere consumato previa cottura, L.monocytogenes va numerata con metodo MPN su 3 u.c., come previsto dall’O.M. 7/12/93. In caso di carne congelata o surgelata, il conteggio viene eseguito su 5 u.c."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<106 (ufc/g)",
+        "acceptableValue": "106< x <107 (ufc/g)",
+        "unsatisfactoryValue": "≥107 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Camera Commercio Torino (2008)",
+        "notes": "Rapporto microrganismi mesofili aerobi/ Batteri lattici mesofili <100. Esclusa carne avicola e cunicola."
+      },
+      {
+        "parameter": "Pseudomonas spp. presunto",
+        "analysisMethod": "ISO 13720",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x <107 (ufc/g)",
+        "unsatisfactoryValue": "≥107 (ufc/g)",
+        "bibliographicReferences": "Civera (2011); FCD (2009); IFST (1999)",
+        "notes": "Prodotto sottovuoto o in atmosfera modificata."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Tiecco (1997); ex DPR 227/1992; Circ. E-R 8/1992; Nota I.S.S. 7512/AL.22 del 09/07/85",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (carne consumata cruda o poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Tiecco (1997); ex DPR 227/1992; Circ. E-R 8/1992; Nota I.S.S. 7512/AL.22 del 09/07/85",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (carne consumata cruda o poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Salmonella Typhimurium e variante monofasica 1.4.[5],12:i:- Salmonella Enteritidis",
+        "analysisMethod": "ISO 6579 e schema White-Kaufmann-Le Minor",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Solo carne fresca di pollame. Questo criterio si applica alla carne fresca di esemplari da riproduzione di Gallus gallus, galline ovaiole, polli da carne e branchi di tacchini da riproduzione e da ingrasso"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi pos.",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102< x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Camera Commercio Torino (2008)",
+        "notes": "Carne avicola e cunicola."
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Circ. Emilia Romagna 1992",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne suina), dell’uso abituale (carne poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.707Z"
+  },
+  {
+    "id": "0902",
+    "name": "Carni macinate",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Gelosa (1998); ex DPR 227/1992"
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne avicola), dell’uso abituale (carne poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "HPA (2009)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x10 (ufc/g)",
+        "acceptableValue": "5x10≤ x <5x102 (ufc/g)",
+        "unsatisfactoryValue": "≥5x102 (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009)",
+        "notes": "Limite di non accettabilità >50 ufc/g per carni macinate da consumarsi crude"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne bovina), dell’uso abituale (carne destinata ad essere consumata cruda o con una minima cottura_Nota Regione Piemonte prot. 15742 del 3/06/2011), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Criterio da applicare sui prodotti finiti o durante il monitoraggio delle materie prime (FCD(2009)."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "O.M. 07/12/1993",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": ">110 MPN/g",
+        "notes": "Se il campione presenta la dicitura “da consumarsi previa cottura” o è destinato per sua natura ad essere consumato previa cottura, L.monocytogenes va numerata con metodo MPN su 5 u.c., come previsto dall’O.M. 7/12/93."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Carne macinata destinata ad essere consumata cruda. Non consentono la crescita di L.monocytogenes se hanno periodo di conservabilità <5 gg. *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x105 (ufc/g)",
+        "acceptableValue": "5x105≤ x <5x106 (ufc/g)",
+        "unsatisfactoryValue": "≥5x106 (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009)",
+        "notes": "Questo criterio non si applica alla carne macinata prodotta al dettaglio quando la conservabilità del prodotto è inferiore a 24 ore. Se si ottiene un valore insoddisfacente, procedere alla conta di lieviti, Pseudomonas spp. e batteri lattici mesofili. L'alimento viene considerato “in stato di alterazione” se: Lieviti >106 ufc/g, Pseudomonas spp. > 107 ufc/g; Batteri lattici (non innestati) mesofili >108 ufc/g [HPA (2009)]"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Carne macinata destinata ad essere consumata cruda"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "ex D.P.R. 309/1998",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (carne consumata cruda o poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "HPA (2009); Circ.Min. n.2 del 08/02/99 (Dir.94/65/CE); ex D.P.R. 309/1998",
+        "notes": "Limite di accettabilità <102 ufc/g per le carni macinate da consumarsi crude (RTE). La Circ.Min. n.2 del 08/02/99 indica Stafilococco aureo."
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne suina), dell’uso abituale (carne poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.782Z"
+  },
+  {
+    "id": "0903",
+    "name": "Preparazioni a base di carne",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "Camera Commercio Torino (2008); Racc. 022/93 Istituto Italiano Alimenti Surgelati; ex DPR 227/1992",
+        "notes": "Preparazioni di carne destinate ad essere consumate cotte, comprese le preparazioni di carne surgelate"
+      },
+      {
+        "parameter": "Batteri lattici mesofili",
+        "analysisMethod": "ISO 15214",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤106 (ufc/g)",
+        "acceptableValue": "106≤ x ≤107 (ufc/g)",
+        "unsatisfactoryValue": ">107 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Preparazioni a base di carne di pollame"
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne avicola), dell’uso abituale (carne poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "HPA (2009)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Limite di non accettabilità>103 ufc/g per carpaccio e altre preparazioni di carne da consumarsi crude"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi pos",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x102 (ufc/g)",
+        "acceptableValue": "5x102≤ x <5x103 (ufc/g)",
+        "unsatisfactoryValue": "≥5x103 (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009); ANZFA (2001)",
+        "notes": "Limite di accettabilità <5x102 ufc/g per carpaccio e altre preparazioni di carne da consumarsi crude"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne bovina), dell’uso abituale (preparazione destinata ad essere consumata cruda o con una minima cottura_Nota Regione Piemonte prot. 15742 del 3/06/2011), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "O.M. 07/12/1993",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<110 MPN/g",
+        "notes": "Se il campione presenta la dicitura “da consumarsi previa cottura” o è destinato per sua natura ad essere consumato previa cottura, L.monocytogenes va numerata con metodo MPN su 5 u.c., come previsto dall’O.M. 7/12/93."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Preparati a base di carne destinati ad essere consumati crudi *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤105 (ufc/g)",
+        "acceptableValue": "105≤ x ≤107 (ufc/g)",
+        "unsatisfactoryValue": ">107 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); FCD (2009)"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x ≤105 (ufc/g)",
+        "unsatisfactoryValue": ">105 (ufc/g)",
+        "bibliographicReferences": "HPA (2009)",
+        "notes": "Carpaccio e altre preparazioni di carne da consumarsi crude"
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "WQA (2011)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "WQA (2011)"
+      },
+      {
+        "parameter": "Pseudomonas spp. presunto",
+        "analysisMethod": "ISO 13720",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x ≤ 107 (ufc/g)",
+        "unsatisfactoryValue": ">107 (ufc/g)",
+        "bibliographicReferences": "Civera (2011); FCD (2009); IFST (1999)",
+        "notes": "Preparazioni a base di carne di avicoli con o senza pelle"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Preparati a base di carne destinati ad essere consumati crudi"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Preparazioni a base di carne di animali diversi dal pollame destinate ad essere consumate cotte."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (carne consumata cruda o poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi pos.",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gelosa L. (1998)"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi pos.",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x102 (ufc/g)",
+        "acceptableValue": "5x102≤ x <5x103 (ufc/g)",
+        "unsatisfactoryValue": "≥5x103 (ufc/g)",
+        "bibliographicReferences": "Circ.Min. n.2 del 08/02/99 (Dir.94/65/CE)",
+        "notes": "La Circ.Min. n.2 del 08/02/99 indica Stafilococco aureo."
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne suina), dell’uso abituale (preparazione poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.857Z"
+  },
+  {
+    "id": "0904",
+    "name": "Carni separate meccanicamente, frattaglie, gelatina e collagene",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤105 (ufc/g)",
+        "acceptableValue": "105≤ x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Frattaglie"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x10 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "5x10≤ x <5x102 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥5x102 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Carni separate meccanicamente."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "O.M. 07/12/1993",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<110 MPN/g",
+        "notes": "Se il campione presenta la dicitura “da consumarsi previa cottura” o è destinato per sua natura ad essere consumato previa cottura, L.monocytogenes va numerata con metodo MPN su 5 u.c., come previsto dall’O.M. 7/12/93."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x105 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "5x105≤ x <5x106 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥5x106 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Questi criteri si applicano alle carni separate meccanicamente (CSM) prodotte con le tecniche di cui all’allegato III, sezione V, capitolo III, paragrafo 3, del Reg.(CE) n. 853/2004 del Parlamento europeo e del Consiglio."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<107 (ufc/g)",
+        "acceptableValue": "105≤ x ≤108 (ufc/g)",
+        "unsatisfactoryValue": ">108 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Frattaglie: prelievo effettuato in profondità, oltre la superficie cauterizzata"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Carni separate meccanicamente."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Gelatina e collagene."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Tenere conto della natura dell'alimento, dell’uso abituale (carne da consumarsi cruda o poco cotta), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); ICMSF Circ E-R N°8/1992",
+        "notes": "Gelatina e collagene."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:41.929Z"
+  },
+  {
+    "id": "0905",
+    "name": "Prodotti a base di carne (prodotti di salumeria cotti o pastorizzati)",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "Gelosa L.(1998); Rondinini G. (1997)"
+      },
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "AFSSA (2007); ANZFA (2001)",
+        "notes": "Salumi cotti ricchi di amido (più del 5%), patè di carne"
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne avicola), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al trattamento termico del prodotto, non vi è rischio di Campylobacter spp."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "HPA (2009)",
+        "notes": "Criterio interessante per le tecnologie che possono esporre i prodotti a questo rischio (manipolazioni importanti, …)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); FCD (2009); AFSSA (2007); ANZFA (2001); Gilbert et al. (2000); Gelosa L. (1998); Rondinini G. (1997)"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne bovina), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al trattamento termico del prodotto, non vi è rischio di E.coli VTEC."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Se vengono venduti sfusi o riconfezionati senza successiva pastorizzazione consentono la crescita di L.monocytogenes. Se vengono sottoposti a pastorizzazione dopo il confezionamento NON consentono la crescita di L.monocytogenes. *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); HPA (2009); FCD (2009); AFSSA (2007); Gelosa L. (1998); Rondinini G. (1997)",
+        "notes": "Se si ottiene un valore insoddisfacente, procedere alla conta dei batteri lattici mesofili. L'alimento viene considerato “in stato di alterazione” se il rapporto Microrganismi mesofili aerobi/ batteri lattici mesofili >100 [FCD (2009); AFSSA (2007)]"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; AFSSA (2007)",
+        "notes": "Prodotti a base di carne di pollame destinati ad essere consumati cotti"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento, dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al trattamento termico del prodotto, non vi è rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); Camera Commercio Torino (2008); AFSSA (2007); ANZFA (2001)"
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne suina), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al trattamento termico del prodotto, non vi è rischio di Yersinia spp."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.005Z"
+  },
+  {
+    "id": "0906",
+    "name": "Prodotti a base di carne (prodotti di salumeria crudi stagionati)",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "Gelosa L. (1998); Rondinini G. (1997)"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "HPA (2009)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); AFSSA (2007); ANZFA (2001); Gilbert et al. (2000); Gelosa L. (1998); Rondinini G. (1997)",
+        "notes": "Soprattutto per i prodotti affettati [FCD (2009)]"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne bovina), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di E.coli VTEC."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Se affettati, consentono la crescita di L.monocytogenes. Se interi, non consentono la crescita di L.monocytogenes per le loro caratteristiche di Aw e pH. *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento, dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); AFSSA (2007); ANZFA (2001)",
+        "notes": "Criterio indicatore in particolar modo per i prodotti affettati e/o per i prodotti disossati prima della stagionatura[FCD (2009)]"
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne suina), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Yersinia spp."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.084Z"
+  },
+  {
+    "id": "0907",
+    "name": "Prodotti a base di carne destinati ad essere consumati cotti",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)"
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne avicola), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione, la composizione del prodotto o le modalità di consumo eliminano il rischio di Campylobacter spp."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "IS 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x102 (ufc/g)",
+        "acceptableValue": "5x102≤ x <5x104 (ufc/g)",
+        "unsatisfactoryValue": "≥5x103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007)"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne bovina), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione, la composizione del prodotto o le modalità di consumo eliminano il rischio di E.coli VTEC."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "O.M. 07/12/1993",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<110 MPN/g",
+        "notes": "Se il campione presenta la dicitura “da consumarsi previa cottura” o è destinato per sua natura ad essere consumato previa cottura, L.monocytogenes va numerata con metodo MPN su 3 u.c., come previsto dall’O.M. 7/12/93."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<106 (ufc/g)",
+        "acceptableValue": "106≤ x ≤107 (ufc/g)",
+        "unsatisfactoryValue": "> 107 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Rapporto microrganismi mesofili aerobi/ batteri lattici mesofili <100"
+      },
+      {
+        "parameter": "Pseudomonas spp. presunto",
+        "analysisMethod": "ISO 13720",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x ≤ 107 (ufc/g)",
+        "unsatisfactoryValue": ">107 (ufc/g)",
+        "bibliographicReferences": "Civera (2011); IFST (1999)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Prodotti a base di carne di pollame destinati ad essere consumati cotti."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento, dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione, la composizione del prodotto o le modalità di consumo eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); FDC (2009)"
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne suina), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione, la composizione del prodotto o le modalità di consumo eliminano il rischio di Yersinia spp."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.161Z"
+  },
+  {
+    "id": "1001",
+    "name": "Latte crudo destinato al consumo umano diretto (previa bollitura)",
+    "data": [
+      {
+        "parameter": "Campylobacter spp. termotolleranti",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente in 25 ml (n=5; c=0) (ufc/g)",
+        "unsatisfactoryValue": "Presente in 25 ml (n=5; c=0) (ufc/g)",
+        "bibliographicReferences": "Intesa Stato-Regioni REP. N. 5/CSR del 25/01/2007",
+        "notes": "Al momento dell’erogazione."
+      },
+      {
+        "parameter": "Campylobacter spp. termotolleranti",
+        "analysisMethod": "ISO 10272-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "≤10 ufc/g (n=5, c=0)",
+        "unsatisfactoryValue": ">10 ufc/g (n=5, c=0)",
+        "bibliographicReferences": "Piano Regione Piemonte latte crudo (2012)",
+        "notes": "Al momento dell’erogazione."
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri STEC)",
+        "analysisMethod": "AFNOR BIO 12/8 – 07/00; EU-RL (POMIZA01.002)",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente in 25 ml (n=5; c=0) (ufc/g)",
+        "unsatisfactoryValue": "Presente in 25 ml (n=5; c=0) (ufc/g)",
+        "bibliographicReferences": "Intesa Stato-Regioni REP. N. 5/CSR del 25/01/2007",
+        "notes": "Al momento dell’erogazione."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente in 25 ml (n=5; c=0) (ufc/g)",
+        "unsatisfactoryValue": "Presente in 25 ml (n=5; c=0) (ufc/g)",
+        "bibliographicReferences": "Intesa Stato-Regioni REP. N. 5/CSR del 25/01/2007",
+        "notes": "Al momento dell’erogazione."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "≤10 ufc/g (n=5, c=0)",
+        "unsatisfactoryValue": ">10 ufc/g (n=5, c=0)",
+        "bibliographicReferences": "Piano Regione Piemonte latte crudo (2012)",
+        "notes": "Al momento dell’erogazione."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente in 25 ml (n=5; c=0) (ufc/g)",
+        "unsatisfactoryValue": "Presente in 25 ml (n=5; c=0) (ufc/g)",
+        "bibliographicReferences": "Intesa Stato-Regioni REP. N. 5/CSR del 25/01/2007",
+        "notes": "Al momento dell’erogazione."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (n=5; c=2) (ufc/g)",
+        "acceptableValue": "102≤ x <5x102 (n=5; c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥5x102 (n=5; c=2) (ufc/g)",
+        "bibliographicReferences": "Circolare regionale n. 5531 del 17/02/2009",
+        "notes": "Al momento dell’erogazione. Ricerca di enterotossine stafilococciche sui ceppi isolati e dal latte qualora si superi il limite di 100.000 ufc/ml"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x102 (n=5; c=2) (ufc/g)",
+        "acceptableValue": "5x102≤ x <2x103 (n=5; c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥2x103 (n=5; c=2) (ufc/g)",
+        "bibliographicReferences": "Intesa Stato-Regioni REP. N. 5/CSR del 25/01/2007",
+        "notes": "Al momento dell’erogazione."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.232Z"
+  },
+  {
+    "id": "1002",
+    "name": "Latte trattato termicamente",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤10 (n=5; c=0) (ufc/g)",
+        "unsatisfactoryValue": ">10 (n=5; c=0) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Latte pastorizzato e altri prodotti lattiero-caseari liquidi pastorizzati. Il criterio non si applica ai prodotti destinati ad essere ulteriormente trasformati nell'industria alimentare."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Latte pastorizzato"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "notes": "Latte UHT. Conteggio flora aerobia a30°C e flora termofila a 55°C. Il conteggio viene effettuato qualora la prova di stabilità microbiologica risulti non conforme."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "ex D.P.R. n.54/97",
+        "notes": "Latte pastorizzato"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "notes": "Latte pastorizzato. Se si rilevano valori > 100.000 ufc/g, la partita deve essere sottoposta alle prove sulle enterotossine stafilococciche"
+      },
+      {
+        "parameter": "Stabilità microbiologica",
+        "analysisMethod": "/",
+        "microbiologicalCriterion": "igiene",
+        "bibliographicReferences": "Intesa Stato-Regioni del 10/05/2007; ex D.P.R. n.54 del 14/01/1997 (allegato C, cap.IIA, punto 4)",
+        "notes": "Latte UHT. Dopo conservazione per 15 gg a 30°C o per 7 gg a 55°C il prodotto deve mantenersi stabile e privo di alterazioni evidenti, ai sensi del Reg.CE n.2074/2005"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.311Z"
+  },
+  {
+    "id": "1003",
+    "name": "Latte in polvere e siero di latte in polvere",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤10 (n=5; c=0) (ufc/g)",
+        "unsatisfactoryValue": ">10 (n=5; c=0) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009)",
+        "notes": "Il criterio non si applica ai prodotti destinati ad essere ulteriormente trasformati nell'industria alimentare"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "10≤ x <102 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥102 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009)",
+        "notes": "Il criterio non si applica ai prodotti destinati ad essere ulteriormente trasformati nell'industria alimentare. Se si rilevano valori > 100.000 ufc/g, la partita deve essere sottoposta alle prove sulle enterotossine stafilococciche"
+      },
+      {
+        "parameter": "Enterotossine stafilococciche",
+        "analysisMethod": "Metodo europeo di screening del LCR per gli stafilococchi coagulasi-positivi",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assenti (ufc/g)",
+        "notes": "Ricerca da effettuare solo se si rilevano valori >100.000 ufc/g di Stafilococchi coagulasi positivi"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.383Z"
+  },
+  {
+    "id": "1004",
+    "name": "Gelati e dessert a base di latte congelati",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "10≤ x <102 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥102 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009)",
+        "notes": "Solo gelati contenenti ingredienti a base di latte"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x ≤5x105 (ufc/g)",
+        "unsatisfactoryValue": ">5x105 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ex D.P.R. n.54 del 14/01/1997",
+        "notes": "A meno che non sia a base di yogurt o di latte fermentato. Alimento “in stato di alterazione” se: Lieviti >106 ufc/g, Pseudomonas spp. > 106 ufc/g; Batteri lattici (non innestati) mesofili >108 ufc/g."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Solamente per i gelati a base di latte. Tenere conto della natura dell'alimento (più a rischio i prodotti a base di latte crudo), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione, la composizione del prodotto o le modalità di consumo eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Gelosa (1998)",
+        "notes": "Se si rilevano valori >100.000 ufc/g, la partita deve essere sottoposta alle prove sulle enterotossine stafilococciche. Limite di non accettabilità >100 ufc/g per S.aureus"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.455Z"
+  },
+  {
+    "id": "1005",
+    "name": "Yogurt e latti fermentati",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Germi specifici di fermentazione vivi (Streptococcus thermophilus e Lactobacillus bulgaricus)",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≥5x106 (ufc/g)",
+        "unsatisfactoryValue": "<5x106 (ufc/g)",
+        "bibliographicReferences": "Telegramma Min. San. prot. 700.3/24.66/707 del 1992",
+        "notes": "Somma di Lactobacillus bulgaricus e Streptococcus thermophilus ambedue presenti alla vendita non inferiore a 5×106 UFC/g alla produzione fra 108 e 109 UFC/g. Somma di Lactobacillus bulgaricus e Streptococcus thermophilus ambedue presenti alla vendita non inferiore a 5×106 UFC/g."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "IFST (1997)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.527Z"
+  },
+  {
+    "id": "1006",
+    "name": "Latte coagulato, creme di latte coagulato, prodotti a base di latte liquidi o gelificati, pastorizzati e non fermentati",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤10 (n=5, c=0) (ufc/g)",
+        "unsatisfactoryValue": ">10 (n=5, c=0) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Prodotti lattiero-caseari liquidi pastorizzati. Il criterio non si applica ai prodotti destinati ad essere ulteriormente trasformati nell'industria alimentare."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104 ≤ x ≤ 105 (ufc/g)",
+        "unsatisfactoryValue": ">105 (ufc/g)",
+        "bibliographicReferences": "ASP E. Brignole (2010); FCD (2009); ex D.P.R. n.54 del 14/01/1997",
+        "notes": "Alimento “in stato di alterazione” se: Lieviti >106 ufc/g, Pseudomonas spp. > 106 ufc/g; Batteri lattici (non innestati) mesofili >108 ufc/g."
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤ 103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤ 103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "IFST (1997)",
+        "notes": "Tenere conto della natura, dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il procedimento di lavorazione, la composizione del prodotto o le modalità di consumo eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)",
+        "notes": "Se si rilevano valori > 100.000 ufc/g, la partita deve essere sottoposta alle prove sulle enterotossine stafilococciche"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.600Z"
+  },
+  {
+    "id": "1007",
+    "name": "Formaggi a base di latte o siero di latte crudo o sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "notes": "Formaggi o a pasta dura stagionato grattugiato e/o a pezzi."
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Racc.2004/24/CE",
+        "notes": "Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al tempo di maturazione e all'Aw del prodotto, non vi è rischio di Campylobacter spp."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007); ex D.P.R. 54/97",
+        "notes": "Formaggi a base di latte crudo. Occorre stabilire se il limite di E.coli si applica rima o dopo la stagionatura."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "102≤ x <103 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥103 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009); AFSSA (2007)",
+        "notes": "Formaggi a base di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione. Per i formaggi che non costituiscono terreno favorevole alla crescita di E.coli, il conteggio di E.coli è abitualmente massimo all'inizio del periodo di maturazione, mentre per i formaggi che costituiscono terreno favorevole alla crescita di E.coli, ciò si verifica abitualmente alla fine del periodo di maturazione"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio formaggi a pasta molle (1) e/o semi-molle (2) ottenuti da latte crudo bovino con stagionatura <60 gg _Nota Regione Piemonte prot. 15742 del 3/06/2011), dell’uso abituale, del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al tempo di maturazione e all'Aw del prodotto, non vi è rischio di E.coli VTEC."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Gelosa (1998)",
+        "notes": "Formaggi a pasta dura grattugiati a base di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Formaggi ottenuti da ottenuti da latte crudo o da latte sottoposto a trattamento termico a temperatura più bassa della pastorizzazione. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al tempo di maturazione e all'Aw del prodotto, non vi è rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "104≤ x <105 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥105 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009); AFSSA (2007); ex D.P.R. 54/97",
+        "notes": "Formaggi a base di latte crudo. Prelievo nella fase di lavorazione in cui si prevede che il numero di stafilococchi sia più alto. Se si rilevano valori di stafilococchi coagulasi positivi >100.000 ufc/g, la partita di formaggio deve essere sottoposta alle prove sulle enterotossine stafilococciche"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "102≤ x <103 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥103 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i",
+        "notes": "Formaggi a base di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione. Se si rilevano valori > 100.000 ufc/g, la partita di formaggio deve essere sottoposta alle prove sulle enterotossine stafilococciche. Esclusi i formaggi per i quali il fabbricante può dimostrare, con soddisfazione delle autorità competenti, che il prodotto non presenta un rischio per quanto concerne l'enterotossina stafilococcica."
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al tempo di maturazione e all'Aw del prodotto, non vi è rischio di Yersinia spp."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.676Z"
+  },
+  {
+    "id": "1008",
+    "name": "Formaggi a base di latte o siero di latte sottoposto a pastorizzazione o a trattamento termico a temperatura più elevata",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "notes": "Formaggi a grattugiati."
+      },
+      {
+        "parameter": "Bacillus cereus presunto",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Coliformi totali",
+        "analysisMethod": "ISO 4832",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "ex D.P.R. 54/97",
+        "notes": "Formaggi a pasta molle"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "102≤ x <103 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥103 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009)",
+        "notes": "Per i formaggi che non costituiscono terreno favorevole alla crescita di E.coli, il conteggio di E. coli è abitualmente massimo all'inizio del periodo di maturazione, mentre per i formaggi che costituiscono terreno favorevole alla crescita di E.coli, ciò si verifica abitualmente alla fine del periodo di maturazione."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<106 (ufc/g)",
+        "acceptableValue": "106≤ x <107 (ufc/g)",
+        "unsatisfactoryValue": "≥107 (ufc/g)",
+        "bibliographicReferences": "Camera Commercio Torino (2008)",
+        "notes": "Formaggi non stagionati e formaggi a pasta filata. Alimento “in stato di alterazione” se: Lieviti >106 ufc/g, Pseudomonas spp. >106 ufc/g; Batteri lattici (non innestati) mesofili >108 ufc/g."
+      },
+      {
+        "parameter": "Lieviti e Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); FCD (2009)",
+        "notes": "Formaggi a pasta molle non stagionati (formaggi freschi) e ricotta. Criterio non applicabile ai formaggi erborinati."
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Gelosa (1998)",
+        "notes": "Formaggi a pasta dura grattugiati a base di latte pastorizzato."
+      },
+      {
+        "parameter": "Pseudomonas spp.",
+        "analysisMethod": "ISO/TS 11059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<106 (ufc/g)",
+        "acceptableValue": "106≤ x ≤108 (ufc/g)",
+        "unsatisfactoryValue": ">108 (ufc/g)",
+        "bibliographicReferences": "Civera (2011); Vasut et al.(2009); HPA (2009); Bevilacqua et al. (2008); Gennari et Dragotto (1992); Gill et Newton (1978); Ingram et Dainty (1971)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "IFST (1997)",
+        "notes": "Per il Reg.(CE) n.2073/2005 non è necessario se si dimostra che non vi è il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "102≤ x <103 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥103 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Formaggi stagionati. Esclusi i formaggi per i quali il fabbricante può dimostrare, con soddisfazione delle autorità competenti, che il prodotto non presenta un rischio per quanto concerne l'enterotossina stafilococcica. Prelievo nella fase di lavorazione in cui si prevede che il numero di stafilococchi sia più alto. Se si rilevano valori > 100.000 ufc/g, la partita di formaggio deve essere sottoposta alle prove sulle enterotossine stafilococciche"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (n=5, c=2) (ufc/g)",
+        "acceptableValue": "10≤ x <102 (n=5, c=2) (ufc/g)",
+        "unsatisfactoryValue": "≥102 (n=5, c=2) (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Formaggi a pasta molle non stagionati (formaggi freschi) e ricotta.Esclusi i formaggi per i quali il fabbricante può dimostrare, con soddisfazione delle autorità competenti, che il prodotto non presenta un rischio per quanto concerne l'enterotossina stafilococcica. Se si rilevano valori > 100.000 ufc/g, la partita di formaggio deve essere sottoposta alle prove sulle enterotossine stafilococciche"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.800Z"
+  },
+  {
+    "id": "1009",
+    "name": "Burro e panna",
+    "data": [
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Burro e panna a base di latte crudo o di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che non vi è rischio di Campylobacter spp."
+      },
+      {
+        "parameter": "Coliformi totali",
+        "analysisMethod": "ISO 4832",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10 ≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ex D.P.R. 54/97",
+        "notes": "Panna di latte crudo"
+      },
+      {
+        "parameter": "Coliformi totali",
+        "analysisMethod": "ISO 4832",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102 ≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Burro di latte crudo"
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009); ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Burro e panna a base di latte crudo o di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione."
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Burro e panna a base di latte crudo o di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che non vi è rischio di E.coli VTEC."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Lieviti",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Burro"
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "Allegato al titolo IV del Reg. Loc. Ig. BURL 15/05/1993."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Burro e panna a base di latte crudo o di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che non vi è rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ANZFA (2001)",
+        "notes": "Burro e panna di latte crudo. Se si rilevano valori > 100.000 ufc/g, la partita di formaggio deve essere sottoposta alle prove sulle enterotossine stafilococciche."
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Burro e panna a base di latte crudo o di latte sottoposto a trattamento termico a temperatura inferiore a quella della pastorizzazione. Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che non vi è rischio di Yersinia spp."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.875Z"
+  },
+  {
+    "id": "1101",
+    "name": "Uova in guscio fresche",
+    "data": [
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente sul guscio, Assente nel tuorlo (ufc/g)",
+        "unsatisfactoryValue": "Presente sul guscio, Presente nel tuorlo (ufc/g)",
+        "bibliographicReferences": "Circolare telegrafica Min. Sanità 55753 del 03/12/1991",
+        "notes": "La ricerca deve essere effettuata su n° 10 uova"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:42.947Z"
+  },
+  {
+    "id": "1102",
+    "name": "Ovoprodotti",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x ≤ 102 (ufc/g)",
+        "unsatisfactoryValue": ">102 (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; IFST (1997); ex. D.Lgs 4/2/93 n.65",
+        "notes": "Prodotti a base di uova."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); IFST (1997); ex D.Lgs 4/2/93 n.65",
+        "notes": "Uova sgusciate, pastorizzate e/o congelate; tuorlo pastorizzato e/o congelato. Se si ottiene un valore insoddisfacente, procedere alla conta di lieviti, Pseudomonas spp. e batteri lattici mesofili. L'alimento viene considerato “in stato di alterazione” se: Lieviti >106 ufc/g, Pseudomonas spp. > 106 ufc/g; Batteri lattici (non innestati) mesofili >108 ufc/g."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "unsatisfactoryValue": "Presente (ufc/g)",
+        "notes": "Esclusi i prodotti per i quali il fabbricante può dimostrare, con soddisfazione dell'autorità competente, che grazie al procedimento di lavorazione o alla composizione del prodotto viene eliminato il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "unsatisfactoryValue": "Presente (ufc/g)"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Camera Commercio Torino (2008), ANZFA (2001); IFST (1997)",
+        "notes": "Limite di accettabilità “assente in 1 g” per S.aureus (ex D.Lgs 4/2/93 n.65)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.016Z"
+  },
+  {
+    "id": "1201",
+    "name": "Pesce e preparazioni a base di pesce",
+    "data": [
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-3",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<1 MPN/g",
+        "acceptableValue": "1≤ x ≤10 MPN/g",
+        "unsatisfactoryValue": ">10 MPN/g",
+        "bibliographicReferences": "Canadian Food Insp. (2011)",
+        "notes": "Pesce e preparazioni di pesce da consumarsi crudi"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x ≤102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009), AFSSA (20007)",
+        "notes": "Pesce e preparazioni di pesce da consumarsi previa cottura."
+      },
+      {
+        "parameter": "Istamina",
+        "analysisMethod": "HPLC°",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Prodotti della pesca ottenuti da specie ittiche associate con un tenore elevato di istidina, in particolare le specie delle famiglie: Scombridae (tonno, sgombro, …), Clupeidae (sardina, aringa, …), Engraulidae, Coryfenidae (lampuga, …), Pomatomidae (pesce serra, …), Scombresosidae (costardella)."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Pesce e preparazioni di pesce da consumarsi crudi. *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "WQA (2011); AFSSA (2007)",
+        "notes": "Pesce e preparazioni di pesce da consumarsi crudi"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "WQA (2011); Canadian Food Inspection Agency (2011)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (consumato crudo o poco cotto), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Shigella spp.",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Ricerca in caso di episodi di tossinfezione"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007).",
+        "notes": "Pesce e preparazioni di pesce da consumarsi crudi"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011); WQA (2011); FCD (2009); AFSSA (2007).",
+        "notes": "Pesce e preparazioni di pesce da consumarsi previa cottura."
+      },
+      {
+        "parameter": "Vibrio cholerae",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011)",
+        "notes": "Il livello potenziale di pericolo di V.cholerae dipende dalla presenza nel ceppo del gene codificante per l’enterotossina termostabile (O1-ST)"
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH."
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "MPN-FDA method",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<102 MPN/g",
+        "acceptableValue": "102≤x<103MPN/g",
+        "unsatisfactoryValue": "≥103MPN/g",
+        "bibliographicReferences": "Canadian Food Insp. (2011); WQA (2011); NSW Food Auth. (2008); ANZFA (2001)"
+      },
+      {
+        "parameter": "Virus epatite A",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Ricerca in caso di episodi di tossinfezione."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.086Z"
+  },
+  {
+    "id": "1202",
+    "name": "Prodotti a base di pesce",
+    "data": [
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Clostridi produttori di tossine botuliniche",
+        "analysisMethod": "Metodo Centro di Riferimento per il botulismo",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assenti (ufc/g)",
+        "bibliographicReferences": "FDA e EPA Safety levels in regulation and guidance (2011)",
+        "notes": "La patogenicità dipende dalla presenza di spore vitali o cellule vegetative in alimenti che supportano la sua crescita oppure dalla presenza di tossine botuliniche nell’alimento"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); HPA (2001)",
+        "notes": "Polpo marinato, cocktail di frutti di mare da pH 4,4 a 5,2. Prodotti stagionati a bassa acidità con pH superiore a 5.2 e uova di pesce per alcune insalate di frutti mare. Crema d’acciughe. Surimi e prodotti a base di surimi."
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO TS 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "D.M. 18/02/2002; ANZFA (2001); IFST (2007)",
+        "notes": "Prodotti a base di pesce. Criterio interessante per surimi e prodotti a base di surimi non cotti nella loro confezione finale."
+      },
+      {
+        "parameter": "Istamina",
+        "analysisMethod": "HPLC°",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Prodotti della pesca ottenuti da specie ittiche associate con un tenore elevato di istidina (in particolare le specie delle famiglie: Scombridae, Clupeidae, Engraulidae, Coryfenidae, Pomatomidae, Scombresosidae)."
+      },
+      {
+        "parameter": "Istamina",
+        "analysisMethod": "HPLC°",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Prodotti della pesca che hanno subito un trattamento di maturazione enzimatica in salamoia, ottenuti da specie ittiche associate con un tenore elevato di istidina (in particolare le specie delle famiglie: Scombridae, Clupeidae, Engraulidae, Coryfenidae, Pomatomidae, Scombresosidae)."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Prima che gli alimenti non siano più sotto il controllo diretto dell’operatore del settore alimentare che li produce. *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤106 (ufc/g)",
+        "acceptableValue": "106< x ≤107 (ufc/g)",
+        "unsatisfactoryValue": ">107 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007); D.M. 18/02/2002",
+        "notes": "Salmone affumicato, eglefino e altro pesce affumicato, affettato sottovuoto. Prodotti stagionati a bassa acidità con pH superiore a 5.2 e uova di pesce per alcune insalate di frutti mare."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤105 (ufc/g)",
+        "acceptableValue": "105< x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); D.M. 18/02/2002",
+        "notes": "Acciughe sotto sale o sott’olio (12% min di sale). Prodotti marinati acidi, acciughe, … con acidità inferiore a 4.4. Surimi e prodotti a base di surimi."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤103 (ufc/g)",
+        "acceptableValue": "103< x ≤104 (ufc/g)",
+        "unsatisfactoryValue": ">104 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Polpo marinato, cocktail di frutti di mare da pH 4,4 a 5,2"
+      },
+      {
+        "parameter": "Lieviti",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Polpo marinato, cocktail di frutti di mare da pH 4,4 a 5,2. In particolare per i prodotti sott’olio"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Tenere conto della natura dell'alimento (es. surimi e prodotti a base di surimi non cotti nella loro confezione finale), dell'uso abituale (consumato crudo o poco cotto), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011); AFSSA (2007); ANZFA (2001)",
+        "notes": "Criterio interessante per surimi e prodotti a base di surimi non cotti nella loro confezione finale."
+      },
+      {
+        "parameter": "Vibrio choleare",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (consumato crudo o poco cotto), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Il livello potenziale di pericolo di V.cholerae dipende dalla presenza nel ceppo del gene codificante per l’enterotossina termostabile (O1-ST)"
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (consumato crudo o poco cotto), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH"
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "MPN-FDA method",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<102 MPN/g",
+        "acceptableValue": "102≤ x <103 MPN/g",
+        "unsatisfactoryValue": "≥103 MPN/g",
+        "bibliographicReferences": "WQA (2011); ANZFA (2001)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (consumato crudo o poco cotto), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH"
+      },
+      {
+        "parameter": "Virus epatite A",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "In caso di episodi di tossinfezione alimentare"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.164Z"
+  },
+  {
+    "id": "1203",
+    "name": "Molluschi e crostacei",
+    "data": [
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); HPA (2009)",
+        "notes": "Molluschi e crostacei cotti"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Per molluschi bivalvi vivi ed echinodermi, tunicati e gasteropodi vivi. Campione aggregato costituito da almeno 10 animali."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<1 MPN/g",
+        "acceptableValue": "1 MPN/g ≤ x < 10 MPN/g",
+        "unsatisfactoryValue": "≥10 MPN/g",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.",
+        "notes": "Prodotti sgusciati di molluschi cotti"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ANZFA (2001); IFST (1997)",
+        "notes": "Prodotti a base di molluschi o crostacei"
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "Prove regolari relative a questo criterio non sono richieste in circostanze normali per i molluschi bivalvi vivi da consumarsi tal quali. *limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 s.m.i."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "OM 7/12/1993",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<110 MPN/g",
+        "notes": "Se il campione presenta la dicitura “da consumarsi previa cottura” o è destinato per sua natura ad essere consumato previa cottura, L.monocytogenes va numerata con metodo MPN su 3 u.c., come previsto dall’O.M. 7/12/93."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<5x105 (ufc/g)",
+        "acceptableValue": "5x105≤ x ≤1.5x106 (ufc/g)",
+        "unsatisfactoryValue": ">1.5x106 (ufc/g)",
+        "bibliographicReferences": "FDA e EPA Safety levels in reg. & guid.(2011)",
+        "notes": "Molluschi bivalvi vivi."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007)",
+        "notes": "Molluschi e crostacei interi cotti o precotti. Crostacei crudi interi freschi o surgelati."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x ≤106 (ufc/g)",
+        "unsatisfactoryValue": ">106 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007)",
+        "notes": "Molluschi e crostacei sgusciati cotti o precotti. Crostacei crudi sgusciati o code fresche o surgelate."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Molluschi bivalvi vivi ed echinodermi, tunicati e gasteropodi vivi. Prodotti sgusciati di crostacei e molluschi cotti. Tenere conto della natura dell'alimento, dell'uso abituale (consumato crudo o poco cotto), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102 ≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "Reg.CE 2073/05 e s.m.i.; FCD (2009); Racc.2003/10/CE; IFST(1997)"
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH."
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "MPN-FDA method",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<30 MPN/g",
+        "unsatisfactoryValue": "≥30 MPN/g",
+        "bibliographicReferences": "FDA e EPA Safety levels in regulation and guidance (2011)",
+        "notes": "Molluschi bivalvi processati dopo la raccolta, cozze, ostriche, cappesante, freschi o congelati, riportanti in etichetta la dicitura “processati in modo da ridurre Vibrio parahaemolyticus a livelli non rilevabili”."
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "MPN-FDA method",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<10 MPN/g",
+        "acceptableValue": "10≤ x ≤102 MPN/g",
+        "unsatisfactoryValue": ">102 MPN/g",
+        "bibliographicReferences": "Racc.2003/10/CE",
+        "notes": "Molluschi cotti: il criterio raccomandato è un indicatore dell’igiene nella fase di produzione e di manipolazione. Tale criterio ha unicamente funzione orientativa."
+      },
+      {
+        "parameter": "Vibrio choleare",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011)",
+        "notes": "Tenere conto della natura dell'alimento, dell'uso abituale (da consumarsi crudo, poco cotto oppure già cotto o ready-to-eat), del rischio di contaminazioni crociate, della popolazione esposta e delle informazioni messe a disposizione del consumatore. Il livello potenziale di pericolo di V.cholerae dipende dalla presenza nel ceppo del gene codificante per l’enterotossina termostabile (O1-ST)."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.240Z"
+  },
+  {
+    "id": "1301",
+    "name": "Preparazioni alimentari/gastronomiche multi-ingredienti cotte pronte per il consumo",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x ≤102 (ufc/g)",
+        "unsatisfactoryValue": ">102 (ufc/g)",
+        "bibliographicReferences": "Camera Commercio Torino (2008)",
+        "notes": "Per preparazioni contenenti prodotti carnei e della pesca."
+      },
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007); Tiecco (2000); Mossel (1995); Decreto Netherlands n. 563/79",
+        "notes": "Criterio da utilizzare unicamente per i prodotti ricchi in amido o a base di amidacei (semola, riso, pasta, patate, …) e verdure cotte."
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio le preparazioni alimentari a base di carne avicola), dell'uso abituale, del rischio di contaminazioni crociate (manipolazione dopo cottura), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); HPA (2009); Camera Commercio Torino (2008); AFSSA (2007)",
+        "notes": "Per preparazioni contenenti prodotti carnei e della pesca."
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Preparazioni alimentari pronte per il consumo non manipolate dopo cottura"
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi pos.",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007); ANZFA (2001); Circ.Reg. 4946/48/766/92",
+        "notes": "Preparazioni alimentari pronte per il consumo non manipolate dopo cottura"
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL(POMIZA01.002)",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio le preparazioni alimentari a base di carne bovina), dell'uso abituale, del rischio di contaminazioni crociate (manipolazione dopo cottura), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di E.coli VTEC."
+      },
+      {
+        "parameter": "Istamina",
+        "analysisMethod": "HPLC°",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Preparazioni contenenti prodotti della pesca ottenuti da specie ittiche associate con un tenore elevato di istidina (in particolare le specie delle famiglie: Scombridae, Clupeidae, Engraulidae, Coryfenidae, Pomatomidae, Scombresosidae)."
+      },
+      {
+        "parameter": "Istamina",
+        "analysisMethod": "HPLC°",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Preparazioni contenenti prodotti della pesca che hanno subito un trattamento di maturazione enzimatica in salamoia, ottenuti da specie ittiche associate con un tenore elevato di istidina (in particolare le specie delle famiglie: Scombridae, Clupeidae, Engraulidae, Coryfenidae, Pomatomidae, Scombresosidae)."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<105 (ufc/g)",
+        "acceptableValue": "105≤ x <106 (ufc/g)",
+        "unsatisfactoryValue": "≥106 (ufc/g)",
+        "bibliographicReferences": "ASP E. Brignole (2010); AFSSA (2007); Tiecco (2000); Mossel D.A.A. (1995); Deliberazione n. 5310/94 Giunta Reg. Umbria; Decreto Netherlands n. 563/79"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Circ.Reg. 4946/48/766/92."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007), ANZFA (2001); Tiecco (2000); Mossel (1995); Deliberazione n. 5310/94 Giunta Reg. Umbria; Decreto Netherlands n. 563/79",
+        "notes": "Limite di non accettabilità >100 ufc/g per S.aureus"
+      },
+      {
+        "parameter": "Vibrio choleare",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio le preparazioni alimentari a base di prodotti della pesca), dell'uso abituale, del rischio di contaminazioni crociate (manipolazione dopo cottura), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Vibrio spp. Il livello potenziale di pericolo di V.cholerae dipende dalla presenza nel ceppo del gene codificante per l’enterotossina termostabile (O1-ST)."
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011); WQA (2011); NSW Food Authority (2008); ANZFA (2001)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio le preparazioni alimentari a base di prodotti della pesca), dell'uso abituale, del rischio di contaminazioni crociate (manipolazione dopo cottura), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Vibrio spp. Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH."
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "MPN-FDA method",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<102 MPN/g",
+        "acceptableValue": "102≤ x <104 MPN/g",
+        "unsatisfactoryValue": "≥104 MPN/g",
+        "bibliographicReferences": "WQA (2011); ANZFA (2001)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio le preparazioni alimentari a base di prodotti della pesca), dell'uso abituale, del rischio di contaminazioni crociate (manipolazione dopo cottura), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Vibrio spp. Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH."
+      },
+      {
+        "parameter": "Virus epatite A",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "In caso di episodi di infezione alimentare. Per preparazioni a base di prodotti della pesca."
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio le preparazioni alimentari a base di carne suina), dell'uso abituale, del rischio di contaminazioni crociate (manipolazione dopo cottura), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Yersinia spp."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.314Z"
+  },
+  {
+    "id": "1302",
+    "name": "Preparazioni alimentari/gastronomiche multi-ingredienti  pronte per  il  consumo NON cotte o con alcuni ingredienti crudi",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "notes": "Per preparazioni contenenti prodotti carnei , della pesca e semiconserve."
+      },
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x ≤103 (ufc/g)",
+        "unsatisfactoryValue": ">103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); AFSSA (2007); Mossel D.A.A. (1995)",
+        "notes": "Criterio da utilizzare unicamente per i prodotti ricchi in amido o a base di amidacei (semola, riso, pasta, patate, …) e di verdure cotte."
+      },
+      {
+        "parameter": "Campylobacter spp. termofili",
+        "analysisMethod": "ISO 10272-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne avicola), dell'uso abituale, del rischio di contaminazioni crociate (manipolazioni successive), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione, conservazione o la composizione del prodotto eliminano il rischio di Campylobacter spp."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); HPA (2001)",
+        "notes": "Per preparazioni contenenti prodotti carnei e della pesca."
+      },
+      {
+        "parameter": "Enterobacteriaceae",
+        "analysisMethod": "ISO 21528-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Escluse preparazioni contenenti vegetali crudi o formaggio (es. panini farciti)."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x10 (ufc/g)",
+        "acceptableValue": "5x10≤ x <5x102 (ufc/g)",
+        "unsatisfactoryValue": "≥5x102 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); ANZFA (2001); Gilbert et al. (2000)",
+        "notes": "Preparazioni alimentari contenenti carne macinata."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<5x102 (ufc/g)",
+        "acceptableValue": "5x102≤ x ≤5x103 (ufc/g)",
+        "unsatisfactoryValue": ">5x103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Preparazioni alimentari contenenti preparazioni a base di carne."
+      },
+      {
+        "parameter": "E.coli β-glucuronidasi positivi",
+        "analysisMethod": "ISO 16649-2",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "FCD (2009)",
+        "notes": "Preparazioni alimentari contenenti formaggio prodotto con latte crudo."
+      },
+      {
+        "parameter": "Escherichia coli O157 (e altri E.coli VTEC)",
+        "analysisMethod": "AFNOR BIO 12/08-07/00; ISO 16654; EU-RL (POMIZA01.002); ISO/TS 13136",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne bovina), dell'uso abituale, del rischio di contaminazioni crociate (manipolazioni successive), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione, conservazione o la composizione del prodotto eliminano il rischio di E.coli VTEC."
+      },
+      {
+        "parameter": "Istamina",
+        "analysisMethod": "HPLC°",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Preparazioni alimentari contenenti prodotti della pesca ottenuti da specie ittiche associate con un tenore elevato di istidina (in particolare le specie delle famiglie: Scombridae, Clupeidae, Engraulidae, Coryfenidae, Pomatomidae, Scombresosidae)."
+      },
+      {
+        "parameter": "Istamina",
+        "analysisMethod": "HPLC°",
+        "microbiologicalCriterion": "sicurezza",
+        "notes": "Preparazioni alimentari contenenti prodotti della pesca che hanno subito un trattamento di maturazione enzimatica in salamoia, ottenuti da specie ittiche associate con un tenore elevato di istidina (in particolare le specie delle famiglie: Scombridae, Clupeidae, Engraulidae, Coryfenidae, Pomatomidae, Scombresosidae)."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i."
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<106 (ufc/g)",
+        "acceptableValue": "106≤ x <107 (ufc/g)",
+        "unsatisfactoryValue": "≥107 (ufc/g)",
+        "bibliographicReferences": "ASP E. Brignole (2010); FCD (2009); Zavanella M. (2008); AFSSA (2007); Mossel D.A.A. (1995)",
+        "notes": "Rapporto microrganismi mesofili aerobi/ batteri lattici mesofili <100"
+      },
+      {
+        "parameter": "Microrganismi mesofili aerobi",
+        "analysisMethod": "ISO 4833",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "≤107 (ufc/g)",
+        "acceptableValue": "107≤ x <108 (ufc/g)",
+        "unsatisfactoryValue": "≥108 (ufc/g)",
+        "bibliographicReferences": "PRISA Piemonte(2012)",
+        "notes": "Panini farciti. Rapporto microrganismi mesofili aerobi/ batteri lattici mesofili <100."
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Preparazioni alimentari contenenti carne macinata e preparazioni a base di carne destinate ad essere consumate crude e alimenti pronti contenenti uova crude. Esclusi i prodotti per i quali il procedimento di lavorazione o la composizione del prodotto eliminano il rischio di Salmonella spp."
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <103 (ufc/g)",
+        "unsatisfactoryValue": "≥103 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Mossel D.A.A. (1995)"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi positivi",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<104 (ufc/g)",
+        "acceptableValue": "104≤ x <105 (ufc/g)",
+        "unsatisfactoryValue": "≥105 (ufc/g)",
+        "bibliographicReferences": "FCD (2009); Mossel D.A.A. (1995)",
+        "notes": "Preparazioni alimentari contenenti formaggio prodotto con latte crudo."
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011); WQA (2011); NSW Food Authority (2008)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio preparazioni contenenti prodotti della pesca), dell'uso abituale, del rischio di contaminazioni crociate (manipolazioni successive), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione, conservazione o la composizione del prodotto eliminano il rischio di Vibrio spp. Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH."
+      },
+      {
+        "parameter": "Vibrio parahaemolyticus",
+        "analysisMethod": "MPN-FDA method",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "<102 MPN/g",
+        "acceptableValue": "102≤ x <104 MPN/g",
+        "unsatisfactoryValue": "≥104 MPN/g",
+        "bibliographicReferences": "WQA (2011); ANZFA (2001)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio preparazioni contenenti prodotti della pesca), dell'uso abituale, del rischio di contaminazioni crociate (manipolazioni successive), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione, conservazione o la composizione del prodotto eliminano il rischio di Vibrio spp. Il livello potenziale di pericolo di V.parahaemolyticus dipende dalla presenza nel ceppo del gene codificante per i fattori di patogenicità TDH e TRH."
+      },
+      {
+        "parameter": "Vibrio choleare",
+        "analysisMethod": "ISO TS 21872-1",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "bibliographicReferences": "Canadian Food Inspection Agency (2011)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio preparazioni contenenti prodotti della pesca), dell'uso abituale, del rischio di contaminazioni crociate (manipolazioni successive), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione, conservazione o la composizione del prodotto eliminano il rischio di Vibrio spp. Il livello potenziale di pericolo di V.cholerae dipende dalla presenza nel ceppo del gene codificante per l’enterotossina termostabile (O1-ST)."
+      },
+      {
+        "parameter": "Virus epatite A",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "In caso di episodi di infezione alimentare. Per preparazioni contenenti prodotti della pesca."
+      },
+      {
+        "parameter": "Yersinia enterocolitica presunta patogena",
+        "analysisMethod": "ISO 10273",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)",
+        "notes": "Tenere conto della natura dell'alimento (più a rischio la carne suina), dell'uso abituale, del rischio di contaminazioni crociate (manipolazioni successive), della popolazione esposta e delle informazioni messe a disposizione del consumatore. Sono esclusi i prodotti per i quali il procedimento di lavorazione, conservazione o la composizione del prodotto eliminano il rischio di Yersinia spp."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.388Z"
+  },
+  {
+    "id": "1401",
+    "name": "Conserve",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "unsatisfactoryValue": "≥10 (ufc/g)"
+      },
+      {
+        "parameter": "Clostridi produttori di tossine botuliniche",
+        "analysisMethod": "Metodo Centro di Riferimento per il botulismo",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assenti (ufc/g)",
+        "notes": "La ricerca viene eseguita solo in presenza di anaerobi solfito riduttori e di valori di pH e Aw compatibili con la crescita di clostridi produttori di tossine botuliniche e relativa produzione di tossine."
+      },
+      {
+        "parameter": "Tossine botuliniche",
+        "analysisMethod": "Metodo Centro di Riferimento per il botulismo",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Non rilevabili (ufc/g)",
+        "notes": "La ricerca viene eseguita solo in presenza di anaerobi solfito riduttori e di valori di pH e Aw compatibili con la crescita di clostridi produttori di tossine botuliniche e relativa produzione di tossine."
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "X",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "notes": "La ricerca viene eseguita solo in presenza di anaerobi solfito riduttori e in prodotti contenti carne o prodotti della pesca."
+      },
+      {
+        "parameter": "Prova di stabilità a 37°C per 10 gg",
+        "analysisMethod": "/",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "Negativa (ufc/g)",
+        "unsatisfactoryValue": "Positiva (ufc/g)",
+        "bibliographicReferences": "Istituto Superiore di Sanità",
+        "notes": "L'esito è negativo se la CBT dopo incubazione risulta 100 volte superiore alla CBT iniziale (Istituto Superiore di Sanità)"
+      },
+      {
+        "parameter": "Prova di stabilità a 37°C per 3 gg",
+        "analysisMethod": "/",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "Negativa (ufc/g)",
+        "unsatisfactoryValue": "Positiva (ufc/g)",
+        "bibliographicReferences": "Istituto Superiore di Sanità",
+        "notes": "L'esito è negativo se la CBT dopo incubazione risulta 100 volte superiore alla CBT iniziale (Istituto Superiore di Sanità)"
+      },
+      {
+        "parameter": "Prova di stabilità a 55°C per 2 gg",
+        "analysisMethod": "/",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "Negativa (ufc/g)",
+        "unsatisfactoryValue": "Positiva (ufc/g)",
+        "bibliographicReferences": "Istituto Superiore di Sanità",
+        "notes": "L'esito è negativo se la CBT dopo incubazione risulta 100 volte superiore alla CBT iniziale (Istituto Superiore di Sanità)"
+      },
+      {
+        "parameter": "Prova di stabilità a 55°C per 7 gg",
+        "analysisMethod": "/",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "Negativa (ufc/g)",
+        "unsatisfactoryValue": "Positiva (ufc/g)",
+        "bibliographicReferences": "Istituto Superiore di Sanità",
+        "notes": "L'esito è negativo se la CBT dopo incubazione risulta 100 volte superiore alla CBT iniziale (Istituto Superiore di Sanità)"
+      },
+      {
+        "parameter": "pH",
+        "analysisMethod": "MFHPB - 03",
+        "satisfactoryValue": "<4.5 (ufc/g)",
+        "notes": "Limite al di sotto del quale la germinazione delle spore di Cl.botulinum viene inibita* La determinazione è relativa alla valutazione del rischio di crescita di clostridi produttori di tossine botuliniche."
+      },
+      {
+        "parameter": "Aw",
+        "analysisMethod": "ISO 21807",
+        "satisfactoryValue": "<0.93 (ufc/g)",
+        "notes": "Limite al di sotto del quale la germinazione delle spore di Cl.botulinum viene inibita* La determinazione è relativa alla valutazione del rischio di crescita di clostridi produttori di tossine botuliniche."
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.466Z"
+  },
+  {
+    "id": "1402",
+    "name": "Semiconserve – R.E.P.F.E.D.",
+    "data": [
+      {
+        "parameter": "Anaerobi solfito riduttori",
+        "analysisMethod": "ISO 15213",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "unsatisfactoryValue": "≥10 (ufc/g)"
+      },
+      {
+        "parameter": "Bacillus cereus presunto",
+        "analysisMethod": "ISO 7932",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "ANZFA (2001)"
+      },
+      {
+        "parameter": "Clostridi produttori di tossine botuliniche",
+        "analysisMethod": "Metodo Centro di Riferimento per il botulismo",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assenti (ufc/g)",
+        "notes": "Nei REPFED di routine. Nelle semiconserve solo in presenza di anaerobi solfito riduttori e di valori di pH e Aw compatibili con la crescita di Cl.botulinum e relativa produzione di tossine"
+      },
+      {
+        "parameter": "Tossine botuliniche",
+        "analysisMethod": "Metodo Centro di Riferimento per il botulismo",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Non rilevabili (ufc/g)",
+        "notes": "Nei REPFED di routine. Nelle semiconserve solo in presenza di anaerobi solfito riduttori e di valori di pH e Aw compatibili con la crescita di Cl.botulinum e relativa produzione di tossine"
+      },
+      {
+        "parameter": "Clostridium perfringens",
+        "analysisMethod": "ISO 7937",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<10 (ufc/g)",
+        "acceptableValue": "10≤ x <102 (ufc/g)",
+        "unsatisfactoryValue": "≥102 (ufc/g)",
+        "notes": "La ricerca viene eseguita solo in presenza di anaerobi solfito riduttori e in prodotti contenti carne o prodotti della pesca."
+      },
+      {
+        "parameter": "Listeria monocytogenes",
+        "analysisMethod": "ISO 11290-1, ISO 11290-2",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente e/o ≤100 ufc/g",
+        "notes": "*limite di riferimento da stabilire secondo quanto disposto dal Reg.CE 2073/05 e s.m.i. Prodotti pronti al consumo (prove regolari relative a questo criterio non sono richieste dal Reg.2073/05 e s.m.i. in circostanze normali)."
+      },
+      {
+        "parameter": "Muffe",
+        "analysisMethod": "NFV08-059",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<103 (ufc/g)",
+        "acceptableValue": "103≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)",
+        "bibliographicReferences": "Gelosa (1998)"
+      },
+      {
+        "parameter": "Salmonella spp.",
+        "analysisMethod": "ISO 6579",
+        "microbiologicalCriterion": "sicurezza",
+        "satisfactoryValue": "Assente (ufc/g)"
+      },
+      {
+        "parameter": "Stafilococchi coagulasi pos.",
+        "analysisMethod": "ISO 6888-1",
+        "microbiologicalCriterion": "igiene",
+        "satisfactoryValue": "<102 (ufc/g)",
+        "acceptableValue": "102≤ x <104 (ufc/g)",
+        "unsatisfactoryValue": "≥104 (ufc/g)"
+      }
+    ],
+    "timestamp": "2025-03-19T12:19:43.546Z"
+  }
+]
