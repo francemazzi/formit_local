@@ -26,3 +26,8 @@
 - `prisma/schema.prisma`: definizione del modello dati e del datasource SQLite.
 - `prisma.config.ts`: configurazione Prisma con caricamento variabili d'ambiente via `dotenv`.
 - `src/index.ts`: bootstrap OOP che inizializza `PrismaClient` e testa la connessione SQLite.
+
+## test
+
+Per lanciare i vari test di integrazione utilizzare :
+`npx vitest run test/integration`

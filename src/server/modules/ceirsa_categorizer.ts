@@ -1,17 +1,17 @@
 import { readFile } from "fs/promises";
 import path from "path";
 
-interface CeirsaCategory {
+export interface CeirsaCategory {
   id: string;
   name: string;
   data: any[];
 }
 
-async function resolveLatestCeirsaFile(): Promise<string> {
-  const dir = path.join(process.cwd(), "data", "ceirsa_backup");
+const resolveLatestCeirsaFile = async (): Promise<string> => {
+  const dir = path.join(process.cwd(), "dataset", "ceirsa_backup");
   const fixedFilename = "ceirsa_data_2025-03-19T12-19-43-548Z.json";
   return path.join(dir, fixedFilename);
-}
+};
 
 export async function getCategories(): Promise<string[]> {
   try {
