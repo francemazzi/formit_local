@@ -65,18 +65,37 @@ class TavilyLawSearchProvider implements LawSearchProvider {
 
       const result = (await response.json()) as {
         answer?: string;
-        results?: { content?: string }[];
+        results?: {
+          content?: string;
+          url?: string;
+          title?: string;
+        }[];
       };
 
-      const snippets = (result.results ?? [])
-        .map((item) => item.content)
-        .filter((content): content is string => Boolean(content))
-        .join("\n\n");
+      const formattedResults = (result.results ?? [])
+        .map((item, index) => {
+          const content = item.content?.trim();
+          if (!content) return null;
 
-      return [result.answer ?? "", snippets]
-        .filter(Boolean)
-        .join("\n\n")
-        .trim();
+          const url = item.url || null;
+          const title = item.title || `Fonte ${index + 1}`;
+
+          return `[FONTE ${index + 1}]
+Titolo: ${title}
+URL: ${url || "N/A"}
+Contenuto: ${content}`;
+        })
+        .filter((item): item is string => Boolean(item));
+
+      const answer = result.answer
+        ? `RISPOSTA TAVILY:\n${result.answer}\n\n`
+        : "";
+      const sources =
+        formattedResults.length > 0
+          ? `FONTI TROVATE:\n${formattedResults.join("\n\n")}`
+          : "";
+
+      return [answer, sources].filter(Boolean).join("\n\n").trim();
     } catch (error) {
       console.warn("Tavily search failed:", error);
       return "";
@@ -145,7 +164,7 @@ class BeverageCheckService {
     this.complianceModel = complianceModel;
   }
 
-  async check(input: BeverageCheckInput): Promise<BeverageComplianceResult> {
+  async check(input: BeverageCheckInput): Promise<ComplianceResult[]> {
     const lawContext =
       input.lawContext ?? (await this.searchProvider.searchLawContext(input));
 
@@ -153,10 +172,10 @@ class BeverageCheckService {
     const ragResults = await this.complianceModel.evaluate(prompt);
     const normalizedResults = Array.isArray(ragResults) ? ragResults : [];
 
-    return {
-      ragResults: normalizedResults,
-      combinedAssessment: normalizedResults,
-    };
+    return normalizedResults.map((result) => ({
+      ...result,
+      sources: Array.isArray(result.sources) ? result.sources : [],
+    }));
   }
 }
 
@@ -189,7 +208,15 @@ FORMATO RISPOSTA (JSON):
   "name": "Nome del criterio normativo trovato",
   "value": "Limite specifico dal documento",
   "isCheck": true/false,
-  "description": "Spiegazione dettagliata basata sui documenti normativi. Cita sempre il documento e la sezione di riferimento. Se applichi la regola LOQ, esplicitalo chiaramente."
+  "description": "Spiegazione dettagliata basata sui documenti normativi. Cita sempre il documento e la sezione di riferimento. Se applichi la regola LOQ, esplicitalo chiaramente.",
+  "sources": [
+    {{
+      "id": "Identificativo univoco della fonte",
+      "title": "Titolo del documento o della sezione",
+      "url": "URL della fonte se disponibile, altrimenti null",
+      "excerpt": "Estratto rilevante del documento che supporta il check"
+    }}
+  ]
 }}
 
 IMPORTANTE:
@@ -198,6 +225,9 @@ IMPORTANTE:
 - Includi sempre il riferimento al documento e alla sezione specifica
 - NON inventare limiti non presenti nei documenti
 - Applica la regola LOQ quando pertinente
+- Per ogni check, includi sempre almeno una source con id, title, url (se disponibile) ed excerpt che motiva il risultato
+- Se nel contesto normativo sono presenti URL (formato "URL: ..."), includili nella source. Se non sono disponibili, usa null per l'URL
+- L'id della source può essere un numero progressivo o un identificativo univoco basato sulla fonte
 
 {formatInstructions}
 `.trim()
@@ -224,7 +254,7 @@ const defaultService = new BeverageCheckService(
 
 const beverageCheck = async (
   input: BeverageCheckInput
-): Promise<BeverageComplianceResult> => {
+): Promise<ComplianceResult[]> => {
   return defaultService.check(input);
 };
 

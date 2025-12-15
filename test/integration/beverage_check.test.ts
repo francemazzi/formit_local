@@ -30,14 +30,34 @@ describe("Beverage check (real tools)", () => {
 
     const result = await beverageCheck(input);
 
-    expect(Array.isArray(result.ragResults)).toBe(true);
-    expect(result.ragResults.length).toBeGreaterThan(0); // deve trovare almeno un riferimento normativo
-    expect(result.combinedAssessment).toEqual(result.ragResults);
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0); // deve trovare almeno un riferimento normativo
 
-    const item: ComplianceResult = result.ragResults[0];
+    const item: ComplianceResult = result[0];
     expect(typeof item.name).toBe("string");
     expect(typeof item.value).toBe("string");
     expect(typeof item.isCheck).toBe("boolean");
     expect(typeof item.description).toBe("string");
+    expect(Array.isArray(item.sources)).toBe(true);
+
+    // Stampa i risultati per verifica
+    console.log("\n=== RISULTATI BEVERAGE CHECK ===");
+    console.log(`Trovati ${result.length} check di conformità:\n`);
+    result.forEach((check, index) => {
+      console.log(`Check ${index + 1}:`);
+      console.log(`  Nome: ${check.name}`);
+      console.log(`  Valore: ${check.value}`);
+      console.log(`  Conforme: ${check.isCheck ? "SÌ" : "NO"}`);
+      console.log(`  Descrizione: ${check.description}`);
+      console.log(`  Fonti (${check.sources.length}):`);
+      check.sources.forEach((source, sIndex) => {
+        console.log(`    Fonte ${sIndex + 1}:`);
+        console.log(`      ID: ${source.id}`);
+        console.log(`      Titolo: ${source.title}`);
+        console.log(`      URL: ${source.url || "N/A"}`);
+        console.log(`      Estratto: ${source.excerpt.substring(0, 100)}...`);
+      });
+      console.log("");
+    });
   });
 });
