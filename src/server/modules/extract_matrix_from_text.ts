@@ -17,6 +17,21 @@ const fallbackPromptTemplate = PromptTemplate.fromTemplate(
   fallbackMatrixPrompt.prompt
 );
 
+/**
+ * Type of sample being analyzed.
+ * - environmental_swab: Surface/equipment swab (measured in UFC/cm²)
+ * - food_product: Food product sample (measured in UFC/g)
+ * - personnel_swab: Personnel hygiene swab
+ * - water: Water sample
+ * - other: Other sample types
+ */
+export type SampleType =
+  | "environmental_swab"
+  | "food_product"
+  | "personnel_swab"
+  | "water"
+  | "other";
+
 export interface MatrixExtractionResult {
   matrix: string;
   description: string | null;
@@ -24,12 +39,18 @@ export interface MatrixExtractionResult {
   category: "food" | "beverage" | "other";
   ceirsa_category: string | null;
   specialFeatures: string[];
+  /**
+   * Type of sample: environmental_swab for surfaces, food_product for actual food, etc.
+   * CRITICAL: environmental_swab samples use UFC/cm² and cannot be compared to CEIRSA food limits (UFC/g).
+   */
+  sampleType: SampleType;
 }
 
 type RawMatrixExtractionResult = Partial<
-  Omit<MatrixExtractionResult, "specialFeatures">
+  Omit<MatrixExtractionResult, "specialFeatures" | "sampleType">
 > & {
   specialFeatures?: string[] | string | null;
+  sampleType?: string | null;
 };
 
 interface CategoryRepository {
@@ -54,6 +75,7 @@ const DEFAULT_MATRIX_RESULT: MatrixExtractionResult = {
   category: "other",
   ceirsa_category: null,
   specialFeatures: [],
+  sampleType: "environmental_swab",
 };
 
 const buildDefaultMatrixResult = (): MatrixExtractionResult => ({
@@ -63,6 +85,7 @@ const buildDefaultMatrixResult = (): MatrixExtractionResult => ({
   category: DEFAULT_MATRIX_RESULT.category,
   ceirsa_category: DEFAULT_MATRIX_RESULT.ceirsa_category,
   specialFeatures: [],
+  sampleType: DEFAULT_MATRIX_RESULT.sampleType,
 });
 
 const matrixParser = new JsonOutputParser<RawMatrixExtractionResult>();
@@ -80,7 +103,7 @@ const createCeirsaCategoryRepository = (): CategoryRepository => {
     }
   };
 
-  const getCategories = async (): Promise<string[]> => {
+  const fetchCachedCategories = async (): Promise<string[]> => {
     if (cachedCategories) {
       return cachedCategories;
     }
@@ -89,7 +112,7 @@ const createCeirsaCategoryRepository = (): CategoryRepository => {
     return cachedCategories;
   };
 
-  return { getCategories };
+  return { getCategories: fetchCachedCategories };
 };
 
 const createMatrixPromptBuilder = (template: PromptTemplate): PromptBuilder => {
@@ -172,6 +195,35 @@ const normalizeSpecialFeatures = (
   return singleValue ? [singleValue] : [];
 };
 
+const VALID_SAMPLE_TYPES: SampleType[] = [
+  "environmental_swab",
+  "food_product",
+  "personnel_swab",
+  "water",
+  "other",
+];
+
+/**
+ * Validates and normalizes the sample type from LLM extraction.
+ * The classification is performed entirely by the LLM prompt - no hardcoded inference.
+ * If the LLM returns an invalid value, defaults to the safe default (environmental_swab).
+ */
+const normalizeSampleType = (value: unknown): SampleType => {
+  if (
+    typeof value === "string" &&
+    VALID_SAMPLE_TYPES.includes(value as SampleType)
+  ) {
+    return value as SampleType;
+  }
+
+  // If LLM didn't provide a valid sampleType, use safe default
+  // (environmental_swab is safer - prevents incorrect food limit application)
+  console.warn(
+    `[normalizeSampleType] Invalid sampleType from LLM: "${value}". Defaulting to environmental_swab for safety.`
+  );
+  return DEFAULT_MATRIX_RESULT.sampleType;
+};
+
 const cleanJsonResponse = (payload: string): string => {
   let cleaned = payload.trim();
 
@@ -202,6 +254,8 @@ const normalizeResponse = (
     categories
   );
   const specialFeatures = normalizeSpecialFeatures(response.specialFeatures);
+  // sampleType is classified entirely by the LLM prompt - no hardcoded inference
+  const sampleType = normalizeSampleType(response.sampleType);
 
   return {
     matrix,
@@ -210,6 +264,7 @@ const normalizeResponse = (
     category,
     ceirsa_category: ceirsaCategory,
     specialFeatures,
+    sampleType,
   };
 };
 

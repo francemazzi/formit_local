@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  formit-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: formit-mcp
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    # Carica tutte le variabili dal file .env
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - MCP_HTTP_PORT=3007
+      # Sovrascrive DATABASE_URL per usare path interno al container
+      - DATABASE_URL=file:/app/data/formit.db
+    volumes:
+      # Database persistente
+      - formit-data:/app/data
+      # PDF da analizzare (opzionale, monta cartella locale)
+      - ./uploads:/app/uploads:ro
+      # Cartella analisi microbiologiche
+      - ./data/analisi_microbiologiche:/app/analisi:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  formit-data:
+    driver: local

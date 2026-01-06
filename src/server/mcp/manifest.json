@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "name": "Formit Microbiological Analysis",
+  "description": "Analyze PDF documents containing microbiological analysis results. Automatically checks compliance against CEIRSA food safety regulations and beverage standards.",
+  "logo_url": "https://your-domain.com/logo.png",
+  "contact_email": "support@formit.example.com",
+  "legal_info_url": "https://your-domain.com/terms",
+  "privacy_policy_url": "https://your-domain.com/privacy",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "mcp",
+    "url": "https://your-domain.com/sse"
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "bulk_pdf_check",
+        "description": "Analyze multiple PDF documents for microbiological compliance",
+        "use_cases": [
+          "Food safety compliance verification",
+          "Laboratory report analysis",
+          "CEIRSA regulation checking",
+          "Beverage quality control"
+        ]
+      },
+      {
+        "name": "single_pdf_check", 
+        "description": "Analyze a single PDF document for compliance"
+      }
+    ]
+  },
+  "categories": [
+    "productivity",
+    "business"
+  ],
+  "supported_languages": ["en", "it"]
+}
+

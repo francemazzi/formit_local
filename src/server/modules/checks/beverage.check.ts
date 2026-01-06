@@ -2,11 +2,11 @@ import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { ChatOpenAI } from "@langchain/openai";
 
-import { ComplianceResult } from ".";
+import { RawComplianceResult } from ".";
 
-export interface BeverageComplianceResult {
-  ragResults: ComplianceResult[];
-  combinedAssessment: ComplianceResult[];
+export interface BeverageRawComplianceResult {
+  ragResults: RawComplianceResult[];
+  combinedAssessment: RawComplianceResult[];
 }
 
 export interface BeverageCheckInput {
@@ -23,7 +23,7 @@ export interface LawSearchProvider {
 }
 
 export interface ComplianceModel {
-  evaluate(prompt: string): Promise<ComplianceResult[]>;
+  evaluate(prompt: string): Promise<RawComplianceResult[]>;
 }
 
 interface BeveragePromptBuilder {
@@ -129,14 +129,14 @@ class RegulatoryPromptBuilder implements BeveragePromptBuilder {
 
 class OpenAIBeverageComplianceModel implements ComplianceModel {
   private readonly model: ChatOpenAI;
-  private readonly parser: JsonOutputParser<ComplianceResult[]>;
+  private readonly parser: JsonOutputParser<RawComplianceResult[]>;
 
-  constructor(model: ChatOpenAI, parser: JsonOutputParser<ComplianceResult[]>) {
+  constructor(model: ChatOpenAI, parser: JsonOutputParser<RawComplianceResult[]>) {
     this.model = model;
     this.parser = parser;
   }
 
-  async evaluate(prompt: string): Promise<ComplianceResult[]> {
+  async evaluate(prompt: string): Promise<RawComplianceResult[]> {
     try {
       const response = await this.model.invoke(prompt);
       const rawContent = response.content?.toString() ?? "";
@@ -164,7 +164,7 @@ class BeverageCheckService {
     this.complianceModel = complianceModel;
   }
 
-  async check(input: BeverageCheckInput): Promise<ComplianceResult[]> {
+  async check(input: BeverageCheckInput): Promise<RawComplianceResult[]> {
     const lawContext =
       input.lawContext ?? (await this.searchProvider.searchLawContext(input));
 
@@ -233,7 +233,7 @@ IMPORTANTE:
 `.trim()
 );
 
-const defaultParser = new JsonOutputParser<ComplianceResult[]>();
+const defaultParser = new JsonOutputParser<RawComplianceResult[]>();
 const defaultPromptBuilder = new RegulatoryPromptBuilder(
   promptTemplate,
   defaultParser.getFormatInstructions()
@@ -254,7 +254,7 @@ const defaultService = new BeverageCheckService(
 
 const beverageCheck = async (
   input: BeverageCheckInput
-): Promise<ComplianceResult[]> => {
+): Promise<RawComplianceResult[]> => {
   return defaultService.check(input);
 };
 

@@ -1,0 +1,58 @@
+version: "3.8"
+
+# Docker Compose con Tailscale Funnel integrato
+# Usa: docker compose -f docker-compose.tailscale.yml up -d
+
+services:
+  formit-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: formit-mcp
+    restart: unless-stopped
+    network_mode: "service:tailscale"
+    # Carica tutte le variabili dal file .env
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - MCP_HTTP_PORT=3007
+      # Sovrascrive DATABASE_URL per usare path interno al container
+      - DATABASE_URL=file:/app/data/formit.db
+    volumes:
+      - formit-data:/app/data
+      - ./uploads:/app/uploads:ro
+      - ./data/analisi_microbiologiche:/app/analisi:ro
+    depends_on:
+      - tailscale
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: formit-tailscale
+    hostname: formit-mcp
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - TS_AUTHKEY=${TAILSCALE_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json
+      - TS_USERSPACE=false
+    command: >
+      sh -c "
+        tailscaled --state=/var/lib/tailscale/tailscaled.state &
+        sleep 5 &&
+        tailscale up --authkey=$${TS_AUTHKEY} --hostname=formit-mcp &&
+        tailscale funnel 3007 &&
+        sleep infinity
+      "
+
+volumes:
+  formit-data:
+    driver: local
+  tailscale-state:
+    driver: local

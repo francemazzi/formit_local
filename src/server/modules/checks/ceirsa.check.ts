@@ -8,7 +8,7 @@ import {
 } from "../ceirsa_categorizer";
 import { MatrixExtractionResult } from "../extract_matrix_from_text";
 import { Analyses } from "../extract_analyses_from_text";
-import { ComplianceResult } from "./index";
+import { RawComplianceResult } from "./index";
 
 interface CeirsaCategoryProvider {
   loadAll(): Promise<CeirsaCategory[]>;
@@ -98,6 +98,57 @@ const extractUnitFromLimit = (limitText: string): string | null => {
   return match?.[1]?.trim() ?? null;
 };
 
+/**
+ * Detects if the unit is a surface unit (UFC/cm², UFC/cm2, etc.)
+ * Surface units are INCOMPATIBLE with food/mass units (UFC/g).
+ */
+const isSurfaceUnit = (unit: string): boolean => {
+  const normalized = normalizeUnit(unit);
+  return (
+    normalized.includes("cm2") ||
+    normalized.includes("cm²") ||
+    normalized.includes("/cm") ||
+    normalized.includes("percm")
+  );
+};
+
+/**
+ * Detects if the unit is a food/mass unit (UFC/g, UFC/ml, etc.)
+ */
+const isFoodUnit = (unit: string): boolean => {
+  const normalized = normalizeUnit(unit);
+  return (
+    (normalized.includes("/g") ||
+      normalized.includes("ufcg") ||
+      normalized.includes("ufc/g")) &&
+    !isSurfaceUnit(unit)
+  );
+};
+
+/**
+ * Checks if two units are conceptually incompatible (surface vs food).
+ * This is a hard block - no conversion is possible.
+ */
+const areUnitsIncompatible = (
+  measuredUnit: string,
+  limitUnit: string
+): boolean => {
+  const measuredIsSurface = isSurfaceUnit(measuredUnit);
+  const limitIsSurface = isSurfaceUnit(limitUnit);
+  const measuredIsFood = isFoodUnit(measuredUnit);
+  const limitIsFood = isFoodUnit(limitUnit);
+
+  // Surface vs Food = INCOMPATIBLE
+  if (
+    (measuredIsSurface && limitIsFood) ||
+    (measuredIsFood && limitIsSurface)
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
 const normalizeLimit = (limitText: string): string => {
   if (!limitText) return limitText;
   return limitText.replace(/\b10([1-9][0-9]*)\b/g, "10^$1");
@@ -178,6 +229,23 @@ const decideCompliance = (input: {
     extractUnitFromLimit(sat) ??
     extractUnitFromLimit(acc) ??
     extractUnitFromLimit(unsat);
+
+  // CRITICAL: Check for conceptually incompatible units (surface vs food)
+  // UFC/cm² (surfaces) CANNOT be compared to UFC/g (food) - no valid conversion exists
+  if (ceirsaUnit && input.measuredUnit) {
+    if (areUnitsIncompatible(input.measuredUnit, ceirsaUnit)) {
+      return {
+        band: "unknown",
+        isCheck: null,
+        appliedLimit: null,
+        rationale:
+          `ERRORE: Unità incompatibili. Il risultato è in ${input.measuredUnit} (superficie) ma i limiti CEIRSA sono in ${ceirsaUnit} (alimento). ` +
+          `Non esiste una conversione valida tra UFC/cm² e UFC/g. ` +
+          `Per tamponi ambientali, consultare i limiti specifici per superfici/attrezzature del piano HACCP.`,
+      };
+    }
+  }
+
   if (ceirsaUnit) {
     const ceirsaUnitNorm = normalizeUnit(ceirsaUnit);
     if (
@@ -307,6 +375,66 @@ const normalizeParameterName = (name: string): string => {
     .trim();
 };
 
+/**
+ * Cache for parameter matching results to avoid redundant LLM calls.
+ */
+const parameterMatchCache = new Map<string, boolean>();
+
+const buildMatchCacheKey = (
+  analysisParam: string,
+  ceirsaParam: string
+): string => {
+  return `${normalizeParameterName(analysisParam)}::${normalizeParameterName(
+    ceirsaParam
+  )}`;
+};
+
+/**
+ * Uses LLM to determine if two microbiological parameters are semantically equivalent.
+ */
+const checkParameterEquivalenceWithLLM = async (
+  analysisParam: string,
+  ceirsaParam: string
+): Promise<boolean> => {
+  const cacheKey = buildMatchCacheKey(analysisParam, ceirsaParam);
+
+  if (parameterMatchCache.has(cacheKey)) {
+    return parameterMatchCache.get(cacheKey)!;
+  }
+
+  try {
+    const matcherModel = new ChatOpenAI({
+      modelName: "gpt-4o-mini",
+      temperature: 0,
+    });
+
+    const prompt = `Sei un esperto di microbiologia alimentare. Determina se questi due parametri microbiologici sono equivalenti o riferiti allo stesso tipo di analisi.
+
+PARAMETRO DALL'ANALISI: "${analysisParam}"
+PARAMETRO CEIRSA: "${ceirsaParam}"
+
+Considera che:
+- I nomi possono essere abbreviati o scritti in modo diverso (es. "CBT" = "Conta Batterica Totale" = "Microrganismi mesofili aerobi")
+- Possono essere usati sinonimi scientifici o nomi comuni
+- Le unità di misura possono variare ma il parametro essere lo stesso
+
+Rispondi SOLO con "true" se sono equivalenti, "false" altrimenti. Nessuna spiegazione.`;
+
+    const response = await matcherModel.invoke(prompt);
+    const result = response.content?.toString().trim().toLowerCase() === "true";
+
+    parameterMatchCache.set(cacheKey, result);
+    return result;
+  } catch (error) {
+    console.warn("LLM parameter matching failed:", error);
+    return false;
+  }
+};
+
+/**
+ * Checks if an analysis parameter matches a CEIRSA parameter.
+ * Uses simple string matching first, then falls back to LLM for semantic matching.
+ */
 const isParameterMatching = (
   analysisParam: string,
   ceirsaParam: string
@@ -314,8 +442,10 @@ const isParameterMatching = (
   const normalizedAnalysis = normalizeParameterName(analysisParam);
   const normalizedCeirsa = normalizeParameterName(ceirsaParam);
 
+  // Direct match
   if (normalizedAnalysis === normalizedCeirsa) return true;
 
+  // Substring match with minimum length
   if (
     normalizedAnalysis.includes(normalizedCeirsa) ||
     normalizedCeirsa.includes(normalizedAnalysis)
@@ -328,6 +458,22 @@ const isParameterMatching = (
   }
 
   return false;
+};
+
+/**
+ * Async version that includes LLM-based semantic matching.
+ */
+const isParameterMatchingAsync = async (
+  analysisParam: string,
+  ceirsaParam: string
+): Promise<boolean> => {
+  // First try simple matching
+  if (isParameterMatching(analysisParam, ceirsaParam)) {
+    return true;
+  }
+
+  // Fall back to LLM for semantic matching
+  return checkParameterEquivalenceWithLLM(analysisParam, ceirsaParam);
 };
 
 const buildPrompt = async (
@@ -405,8 +551,8 @@ const buildPrompt = async (
 const evaluateCompliance = async (
   prompt: string,
   model: ChatOpenAI,
-  parser: JsonOutputParser<ComplianceResult[]>
-): Promise<ComplianceResult[]> => {
+  parser: JsonOutputParser<RawComplianceResult[]>
+): Promise<RawComplianceResult[]> => {
   try {
     const response = await model.invoke(prompt);
     const rawContent = response.content?.toString() ?? "";
@@ -423,8 +569,8 @@ const checkCompliance = async (
   template: PromptTemplate,
   formatInstructions: string,
   model: ChatOpenAI,
-  parser: JsonOutputParser<ComplianceResult[]>
-): Promise<ComplianceResult[]> => {
+  parser: JsonOutputParser<RawComplianceResult[]>
+): Promise<RawComplianceResult[]> => {
   const prompt = await buildPrompt(input, template, formatInstructions);
   const results = await evaluateCompliance(prompt, model, parser);
   const normalizedResults = Array.isArray(results) ? results : [];
@@ -444,7 +590,7 @@ const checkCompliance = async (
   });
 
   if (decision.isCheck !== null && decision.appliedLimit) {
-    const base: ComplianceResult =
+    const base: RawComplianceResult =
       normalizedResults[0] ??
       ({
         name: input.ceirsaParameter,
@@ -452,9 +598,9 @@ const checkCompliance = async (
         isCheck: decision.isCheck,
         description: "",
         sources: [],
-      } satisfies ComplianceResult);
+      } satisfies RawComplianceResult);
 
-    const enforced: ComplianceResult = {
+    const enforced: RawComplianceResult = {
       ...base,
       name: input.ceirsaParameter,
       value: decision.appliedLimit,
@@ -556,17 +702,51 @@ IMPORTANTE:
 `.trim()
 );
 
-const defaultParser = new JsonOutputParser<ComplianceResult[]>();
+const defaultParser = new JsonOutputParser<RawComplianceResult[]>();
 const defaultModel = new ChatOpenAI({
   modelName: "gpt-4o-mini",
   temperature: 0,
 });
 
+/**
+ * Finds the matching CEIRSA parameter for an analysis parameter.
+ * Uses async LLM-based matching if simple matching fails.
+ */
+const findMatchingCeirsaParameter = async (
+  analysisParam: string,
+  categoryData: any[]
+): Promise<any | null> => {
+  // First try simple synchronous matching
+  const simpleMatch = categoryData.find(
+    (param: any) =>
+      param.parameter && isParameterMatching(analysisParam, param.parameter)
+  );
+
+  if (simpleMatch) {
+    return simpleMatch;
+  }
+
+  // Fall back to async LLM matching
+  for (const param of categoryData) {
+    if (param.parameter) {
+      const isMatch = await isParameterMatchingAsync(
+        analysisParam,
+        param.parameter
+      );
+      if (isMatch) {
+        return param;
+      }
+    }
+  }
+
+  return null;
+};
+
 export const ceirsaComplianceCheck = async (
   category: CeirsaCategory,
   analyses: Analyses[],
   markdownContent: string
-): Promise<ComplianceResult[]> => {
+): Promise<RawComplianceResult[]> => {
   if (!category || !category.data || !Array.isArray(category.data)) {
     return [];
   }
@@ -575,14 +755,13 @@ export const ceirsaComplianceCheck = async (
     return [];
   }
 
-  const results: ComplianceResult[] = [];
+  const results: RawComplianceResult[] = [];
   const formatInstructions = defaultParser.getFormatInstructions();
 
   for (const analysis of analyses) {
-    const matchingParameter = category.data.find(
-      (param: any) =>
-        param.parameter &&
-        isParameterMatching(analysis.parameter, param.parameter)
+    const matchingParameter = await findMatchingCeirsaParameter(
+      analysis.parameter,
+      category.data
     );
 
     if (matchingParameter) {
