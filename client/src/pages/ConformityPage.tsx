@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { Info, X, Database, Upload } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Info, X, Database, Upload, Loader2 } from "lucide-react";
 import { PdfDropZone } from "../components/PdfDropZone";
 import { ResultsDisplay } from "../components/ResultsDisplay";
 import { ExtractionsList } from "../components/ExtractionsList";
 import {
   conformityApi,
   type ConformityPdfResponse,
+  type JobStatusResponse,
+  type PdfCheckResult,
 } from "../api/conformityPdf";
 
 interface ConformityPageProps {
@@ -17,16 +19,118 @@ type ViewMode = "upload" | "extractions";
 export function ConformityPage({
   onNavigateToCustomChecks: _onNavigateToCustomChecks,
 }: ConformityPageProps) {
+  // Suppress unused parameter warning
+  void _onNavigateToCustomChecks;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<ConformityPdfResponse | null>(null);
+  const [jobStatuses, setJobStatuses] = useState<
+    Map<string, JobStatusResponse>
+  >(new Map());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("upload");
+  const pollingIntervalRef = useRef<number | null>(null);
+
+  const pollJobStatus = async (jobId: string) => {
+    try {
+      const status = await conformityApi.getJobStatus(jobId);
+      setJobStatuses((prev) => {
+        const next = new Map(prev);
+        next.set(jobId, status);
+        return next;
+      });
+
+      // If job is completed or failed, check if all jobs are done
+      if (status.state === "completed" || status.state === "failed") {
+        return status;
+      }
+      return null;
+    } catch (err) {
+      console.error(`Error polling job ${jobId}:`, err);
+      return null;
+    }
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (results?.jobIds && results.jobIds.length > 0) {
+      // Start polling for all jobs
+      const pollAllJobs = async () => {
+        const jobIds = results.jobIds!; // Safe because we checked above
+        const jobPromises = jobIds.map((jobId) => pollJobStatus(jobId));
+        await Promise.all(jobPromises);
+      };
+
+      // Poll immediately
+      pollAllJobs();
+
+      // Then poll every 2 seconds
+      pollingIntervalRef.current = window.setInterval(pollAllJobs, 2000);
+
+      return () => {
+        stopPolling();
+      };
+    }
+  }, [results?.jobIds]);
+
+  // Check if all jobs are completed and convert to results format
+  useEffect(() => {
+    if (results?.jobIds && jobStatuses.size > 0) {
+      const allCompleted = results.jobIds.every((jobId) => {
+        const status = jobStatuses.get(jobId);
+        return (
+          status && (status.state === "completed" || status.state === "failed")
+        );
+      });
+
+      if (allCompleted) {
+        stopPolling();
+
+        // Convert job results to ConformityPdfResponse format
+        const pdfResults: PdfCheckResult[] = results.jobIds.map((jobId) => {
+          const status = jobStatuses.get(jobId);
+          if (status?.result) {
+            return {
+              fileName: status.result.fileName,
+              success: status.result.success,
+              results: status.result.results || [],
+              error: status.result.error,
+            };
+          }
+          return {
+            fileName: `Job ${jobId}`,
+            success: false,
+            results: [],
+            error: status?.error || "Unknown error",
+          };
+        });
+
+        const processedCount = pdfResults.filter((r) => r.success).length;
+
+        // Use setTimeout to avoid calling setState synchronously in effect
+        setTimeout(() => {
+          setIsLoading(false);
+          setResults({
+            totalFiles: results.totalFiles,
+            processedFiles: processedCount,
+            results: pdfResults,
+          } as ConformityPdfResponse);
+        }, 0);
+      }
+    }
+  }, [jobStatuses, results]);
 
   const handleFilesSelected = async (files: File[]) => {
     try {
       setIsLoading(true);
       setError(null);
+      setJobStatuses(new Map());
 
       const response = await conformityApi.checkPdfs(files);
       setResults(response);
@@ -38,18 +142,34 @@ export function ConformityPage({
         (err as { message?: string }).message ||
         "Errore durante l'analisi dei documenti";
       setError(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
 
   const handleReset = () => {
+    stopPolling();
     setResults(null);
     setError(null);
+    setJobStatuses(new Map());
   };
 
-  // If we have results, show them
-  if (results) {
+  // Show processing status if jobs are in progress
+  const hasActiveJobs =
+    results?.jobIds &&
+    results.jobIds.length > 0 &&
+    results.jobIds.some((jobId) => {
+      const status = jobStatuses.get(jobId);
+      return (
+        !status || (status.state !== "completed" && status.state !== "failed")
+      );
+    });
+
+  // If we have results with processedFiles (old format or converted), show them
+  if (
+    results &&
+    "processedFiles" in results &&
+    results.processedFiles !== undefined
+  ) {
     return (
       <div className="conformity-page">
         {error && (
@@ -107,6 +227,37 @@ export function ConformityPage({
             )}
 
             <div className="upload-section">
+              {hasActiveJobs && results.jobIds && (
+                <div className="processing-status">
+                  <Loader2 size={20} className="spinning" />
+                  <div>
+                    <h3>Elaborazione in corso...</h3>
+                    <div className="job-status-list">
+                      {results.jobIds.map((jobId) => {
+                        const status = jobStatuses.get(jobId);
+                        const progress = status?.progress || 0;
+                        return (
+                          <div key={jobId} className="job-status-item">
+                            <div className="job-progress-bar">
+                              <div
+                                className="job-progress-fill"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                            <span className="job-status-text">
+                              {status?.state === "waiting" && "In attesa..."}
+                              {status?.state === "active" &&
+                                `Elaborazione... ${progress}%`}
+                              {status?.state === "completed" && "✓ Completato"}
+                              {status?.state === "failed" && "✗ Errore"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
               <PdfDropZone
                 onFilesSelected={handleFilesSelected}
                 isLoading={isLoading}

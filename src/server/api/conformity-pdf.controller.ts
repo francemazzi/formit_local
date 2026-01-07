@@ -9,6 +9,7 @@ import { extractTextFromPdf, ExtractedTextEntry } from "../modules/extract_text_
 import { extractMatrixFromText, MatrixExtractionResult } from "../modules/extract_matrix_from_text";
 import { extractAnalysesFromText, Analyses } from "../modules/extract_analyses_from_text";
 import { getDatabaseClient } from "../prisma.client";
+import { pdfProcessingQueue } from "../queue/pdf-processing.queue";
 
 interface PdfCheckResult {
   fileName: string;
@@ -19,8 +20,16 @@ interface PdfCheckResult {
 
 interface ConformityPdfResponse {
   totalFiles: number;
-  processedFiles: number;
-  results: PdfCheckResult[];
+  jobIds: string[];
+  message: string;
+}
+
+interface JobStatusResponse {
+  jobId: string;
+  state: string;
+  progress?: number;
+  result?: PdfCheckResult;
+  error?: string;
 }
 
 interface UploadedFile {
@@ -378,6 +387,83 @@ export class ConformityPdfController {
       }
     );
 
+    // Endpoint to check job status
+    fastify.get(
+      "/conformity-pdf/jobs/:jobId",
+      {
+        schema: {
+          description: "Get the status of a PDF processing job",
+          tags: ["Conformity"],
+          summary: "Get job status",
+          params: {
+            type: "object",
+            properties: {
+              jobId: {
+                type: "string",
+                description: "Job ID returned from POST /conformity-pdf",
+              },
+            },
+          },
+          response: {
+            200: {
+              description: "Job status",
+              type: "object",
+              properties: {
+                jobId: { type: "string" },
+                state: { type: "string", enum: ["waiting", "active", "completed", "failed", "delayed"] },
+                progress: { type: "number", minimum: 0, maximum: 100 },
+                result: {
+                  type: "object",
+                  properties: {
+                    fileName: { type: "string" },
+                    success: { type: "boolean" },
+                    extractionId: { type: "string" },
+                    results: { type: "array" },
+                    error: { type: "string" },
+                  },
+                },
+                error: { type: "string" },
+              },
+            },
+            404: {
+              description: "Job not found",
+              type: "object",
+              properties: {
+                error: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const params = request.params as { jobId: string };
+        const jobState = await pdfProcessingQueue.getJobState(params.jobId);
+
+        if (!jobState) {
+          return reply.status(404).send({
+            error: "Job not found",
+          });
+        }
+
+        const response: JobStatusResponse = {
+          jobId: jobState.id,
+          state: jobState.state,
+          ...(jobState.progress !== undefined && { progress: jobState.progress }),
+          ...(jobState.result && {
+            result: {
+              fileName: jobState.result.fileName,
+              success: jobState.result.success,
+              results: jobState.result.results || [],
+              ...(jobState.result.error && { error: jobState.result.error }),
+            },
+          }),
+          ...(jobState.error && { error: jobState.error }),
+        };
+
+        return reply.status(200).send(response);
+      }
+    );
+
     fastify.post<{
       Reply: ConformityPdfResponse;
     }>(
@@ -389,107 +475,22 @@ export class ConformityPdfController {
           tags: ["Conformity"],
           summary: "Check PDF compliance",
           response: {
-            200: {
-              description: "Successful compliance check",
+            202: {
+              description: "PDF files queued for processing",
               type: "object",
               properties: {
                 totalFiles: {
                   type: "number",
                   description: "Total number of files uploaded",
                 },
-                processedFiles: {
-                  type: "number",
-                  description: "Number of files successfully processed",
-                },
-                results: {
+                jobIds: {
                   type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      fileName: {
-                        type: "string",
-                        description: "Original file name",
-                      },
-                      success: {
-                        type: "boolean",
-                        description: "Whether processing was successful",
-                      },
-                      results: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            name: {
-                              type: "string",
-                              description: "Parameter name",
-                            },
-                            matrix: {
-                              type: "object",
-                              description: "Extracted matrix information",
-                              properties: {
-                                matrix: {
-                                  type: "string",
-                                  description: "Matrix type (e.g., 'Tampone ambientale')",
-                                },
-                                description: {
-                                  type: "string",
-                                  nullable: true,
-                                  description: "Matrix description",
-                                },
-                                product: {
-                                  type: "string",
-                                  nullable: true,
-                                  description: "Product name",
-                                },
-                                category: {
-                                  type: "string",
-                                  enum: ["food", "beverage", "other"],
-                                  description: "Product category",
-                                },
-                                ceirsaCategory: {
-                                  type: "string",
-                                  nullable: true,
-                                  description: "Matched CEIRSA category name",
-                                },
-                              },
-                            },
-                            value: {
-                              type: "string",
-                              description: "Limit value applied",
-                            },
-                            isCheck: {
-                              type: "boolean",
-                              description: "Whether the check passed",
-                            },
-                            description: {
-                              type: "string",
-                              description: "Detailed description of the check",
-                            },
-                            sources: {
-                              type: "array",
-                              items: {
-                                type: "object",
-                                properties: {
-                                  id: { type: "string" },
-                                  title: { type: "string" },
-                                  url: {
-                                    type: "string",
-                                    nullable: true,
-                                  },
-                                  excerpt: { type: "string" },
-                                },
-                              },
-                            },
-                          },
-                        },
-                      },
-                      error: {
-                        type: "string",
-                        nullable: true,
-                        description: "Error message if processing failed",
-                      },
-                    },
-                  },
+                  items: { type: "string" },
+                  description: "Array of job IDs for tracking processing status",
+                },
+                message: {
+                  type: "string",
+                  description: "Information message about the queued jobs",
                 },
               },
             },
@@ -524,19 +525,29 @@ export class ConformityPdfController {
           });
         }
 
-        const results = await Promise.all(
-          pdfFiles.map((file) => processSinglePdf(file))
-        );
-
-        const processedCount = results.filter((r) => r.success).length;
+        // Save files and create jobs
+        const jobIds: string[] = [];
+        
+        for (const file of pdfFiles) {
+          const fileId = randomUUID();
+          const tempFilePath = await saveTempFile(file.buffer, file.filename);
+          
+          const job = await pdfProcessingQueue.addJob({
+            fileId,
+            fileName: file.filename,
+            filePath: tempFilePath,
+          });
+          
+          jobIds.push(job.id!);
+        }
 
         const response: ConformityPdfResponse = {
           totalFiles: pdfFiles.length,
-          processedFiles: processedCount,
-          results,
+          jobIds,
+          message: "PDF files queued for processing. Use /conformity-pdf/jobs/:jobId to check status.",
         };
 
-        return reply.status(200).send(response);
+        return reply.status(202).send(response);
       }
     );
   }

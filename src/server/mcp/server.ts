@@ -255,7 +255,12 @@ export class FormitMcpServer {
     lines.push("");
 
     for (const check of result.complianceResults) {
-      const status = check.isCompliant ? "✅" : "❌";
+      const status =
+        check.isCompliant === true
+          ? "✅"
+          : check.isCompliant === false
+          ? "❌"
+          : "⚠️"; // null = da confermare
       lines.push(`- **${check.name}:** ${check.value} ${status}`);
       lines.push(`  - ${check.description}`);
 

@@ -187,15 +187,6 @@ export function CustomChecksPage() {
     <div className="custom-checks-page">
       <header className="page-header">
         <div className="header-content">
-          <div className="header-title">
-            <FlaskConical size={32} />
-            <div>
-              <h1>Formit</h1>
-              <p>
-                Definisci categorie e parametri di conformità personalizzati
-              </p>
-            </div>
-          </div>
           <div className="header-actions">
             <button
               className="btn-secondary"

@@ -25,7 +25,7 @@ export interface ComplianceResultMatrix {
 export interface ComplianceResult {
   name: string;
   value: string;
-  isCheck: boolean;
+  isCheck: boolean | null; // true = conforme, false = non conforme, null = da confermare
   description: string;
   sources: Source[];
   matrix: ComplianceResultMatrix;
@@ -40,8 +40,18 @@ export interface PdfCheckResult {
 
 export interface ConformityPdfResponse {
   totalFiles: number;
-  processedFiles: number;
-  results: PdfCheckResult[];
+  jobIds?: string[];
+  message?: string;
+  processedFiles?: number;
+  results?: PdfCheckResult[];
+}
+
+export interface JobStatusResponse {
+  jobId: string;
+  state: string;
+  progress?: number;
+  result?: PdfCheckResult;
+  error?: string;
 }
 
 // ========================================
@@ -113,6 +123,7 @@ export interface PdfExtractionsResponse {
 export const conformityApi = {
   /**
    * Upload PDF files for compliance checking.
+   * Returns job IDs that can be used to track processing status.
    * The AI will automatically categorize and check each document.
    */
   checkPdfs: async (
@@ -141,6 +152,17 @@ export const conformityApi = {
           }
         },
       }
+    );
+
+    return response.data;
+  },
+
+  /**
+   * Get the status of a PDF processing job.
+   */
+  getJobStatus: async (jobId: string): Promise<JobStatusResponse> => {
+    const response = await axios.get<JobStatusResponse>(
+      `${API_BASE_URL}/conformity-pdf/jobs/${jobId}`
     );
 
     return response.data;

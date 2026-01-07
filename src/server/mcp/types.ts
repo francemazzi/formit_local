@@ -25,7 +25,7 @@ export interface SinglePdfResult {
 export interface ComplianceCheckResult {
   name: string;
   value: string;
-  isCompliant: boolean;
+  isCompliant: boolean | null; // true = conforme, false = non conforme, null = da confermare
   description: string;
   sources: AnalysisSource[];
 }

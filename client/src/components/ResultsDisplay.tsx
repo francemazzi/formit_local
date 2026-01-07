@@ -29,15 +29,23 @@ const CATEGORY_LABELS: Record<string, string> = {
 function ComplianceResultCard({ result }: { result: ComplianceResult }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const getStatusClass = () => {
+    if (result.isCheck === true) return "pass";
+    if (result.isCheck === false) return "fail";
+    return "pending"; // null = da confermare
+  };
+
+  const getStatusIcon = () => {
+    if (result.isCheck === true) return <CheckCircle2 size={24} className="icon-pass" />;
+    if (result.isCheck === false) return <XCircle size={24} className="icon-fail" />;
+    return <AlertCircle size={24} className="icon-pending" />; // null = da confermare
+  };
+
   return (
-    <div className={`compliance-result ${result.isCheck ? "pass" : "fail"}`}>
+    <div className={`compliance-result ${getStatusClass()}`}>
       <div className="result-header" onClick={() => setIsExpanded(!isExpanded)}>
         <div className="result-status">
-          {result.isCheck ? (
-            <CheckCircle2 size={24} className="icon-pass" />
-          ) : (
-            <XCircle size={24} className="icon-fail" />
-          )}
+          {getStatusIcon()}
         </div>
         <div className="result-main">
           <h4>{result.name}</h4>
@@ -120,8 +128,9 @@ function ComplianceResultCard({ result }: { result: ComplianceResult }) {
 function FileResultCard({ fileResult }: { fileResult: PdfCheckResult }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const passCount = fileResult.results.filter((r) => r.isCheck).length;
-  const failCount = fileResult.results.filter((r) => !r.isCheck).length;
+  const passCount = fileResult.results.filter((r) => r.isCheck === true).length;
+  const failCount = fileResult.results.filter((r) => r.isCheck === false).length;
+  const pendingCount = fileResult.results.filter((r) => r.isCheck === null).length;
   const totalChecks = fileResult.results.length;
 
   return (
@@ -141,6 +150,12 @@ function FileResultCard({ fileResult }: { fileResult: PdfCheckResult }) {
                   <XCircle size={14} />
                   {failCount} non conforme
                 </span>
+                {pendingCount > 0 && (
+                  <span className="stat pending">
+                    <AlertCircle size={14} />
+                    {pendingCount} da confermare
+                  </span>
+                )}
                 <span className="stat total">{totalChecks} verifiche</span>
               </div>
             ) : (
@@ -175,15 +190,21 @@ function FileResultCard({ fileResult }: { fileResult: PdfCheckResult }) {
 }
 
 export function ResultsDisplay({ response, onReset }: ResultsDisplayProps) {
-  const totalPass = response.results.reduce(
-    (sum, file) => sum + file.results.filter((r) => r.isCheck).length,
+  const results = response.results || [];
+  
+  const totalPass = results.reduce(
+    (sum, file) => sum + file.results.filter((r) => r.isCheck === true).length,
     0
   );
-  const totalFail = response.results.reduce(
-    (sum, file) => sum + file.results.filter((r) => !r.isCheck).length,
+  const totalFail = results.reduce(
+    (sum, file) => sum + file.results.filter((r) => r.isCheck === false).length,
     0
   );
-  const totalChecks = totalPass + totalFail;
+  const totalPending = results.reduce(
+    (sum, file) => sum + file.results.filter((r) => r.isCheck === null).length,
+    0
+  );
+  const totalChecks = totalPass + totalFail + totalPending;
 
   return (
     <div className="results-display">
@@ -206,6 +227,12 @@ export function ResultsDisplay({ response, onReset }: ResultsDisplayProps) {
             <span className="stat-value">{totalFail}</span>
             <span className="stat-label">Non Conformi</span>
           </div>
+          {totalPending > 0 && (
+            <div className="summary-stat pending">
+              <span className="stat-value">{totalPending}</span>
+              <span className="stat-label">Da Confermare</span>
+            </div>
+          )}
         </div>
 
         <button className="btn-secondary" onClick={onReset}>
@@ -215,7 +242,7 @@ export function ResultsDisplay({ response, onReset }: ResultsDisplayProps) {
 
       {/* Results List */}
       <div className="results-list">
-        {response.results.map((fileResult, idx) => (
+        {results.map((fileResult, idx) => (
           <FileResultCard key={idx} fileResult={fileResult} />
         ))}
       </div>

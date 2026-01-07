@@ -13,6 +13,7 @@ import { getCeirsaCategories, CeirsaCategory } from "../ceirsa_categorizer";
 import { ceirsaCheck, ceirsaComplianceCheck } from "./ceirsa.check";
 import { beverageCheck, BeverageCheckInput } from "./beverage.check";
 import { customCheck, customComplianceCheck } from "./custom.check";
+import { environmentalSwabComplianceCheck } from "./environmental_swab.check";
 import {
   customCheckService,
   CategoryWithParameters,
@@ -50,7 +51,7 @@ export interface ComplianceResultMatrix {
 export interface RawComplianceResult {
   name: string;
   value: string;
-  isCheck: boolean;
+  isCheck: boolean | null; // true = conforme, false = non conforme, null = da confermare
   description: string;
   sources: Source[];
 }
@@ -238,33 +239,6 @@ const isEnvironmentalSample = (sampleType: SampleType): boolean => {
   return sampleType === "environmental_swab" || sampleType === "personnel_swab";
 };
 
-/**
- * Creates an informative result explaining why CEIRSA limits cannot be applied.
- */
-const createEnvironmentalSampleWarning = (
-  matrix: MatrixExtractionResult
-): RawComplianceResult => ({
-  name: "Avviso: Campione di superficie",
-  value: "N/A - Limiti CEIRSA non applicabili",
-  isCheck: true, // No non-conformità rilevabile con i dati disponibili
-  description:
-    `Questo è un tampone ambientale/superficie (${matrix.matrix}${
-      matrix.description ? `: ${matrix.description}` : ""
-    }). ` +
-    `I risultati sono espressi in UFC/cm² e NON possono essere confrontati con i limiti CEIRSA per alimenti (UFC/g). ` +
-    `Per valutare la conformità, è necessario consultare i limiti specifici per superfici/attrezzature ` +
-    `definiti nel piano HACCP o nelle specifiche interne dell'azienda.`,
-  sources: [
-    {
-      id: "surface-swab-warning",
-      title: "Avviso: Unità di misura non comparabili",
-      url: null,
-      excerpt:
-        "UFC/cm² (superfici) ≠ UFC/g (alimenti). Necessari limiti specifici per superfici.",
-    },
-  ],
-});
-
 export const checks = async (
   textObjects: ExtractedTextEntry[]
 ): Promise<ComplianceResult[]> => {
@@ -288,11 +262,16 @@ export const checks = async (
   if (isEnvironmentalSample(matrix.sampleType)) {
     console.log(
       `[checks.standard] Environmental sample detected (${matrix.sampleType}): ${matrix.matrix}. ` +
-        `CEIRSA food limits (UFC/g) NOT applicable to surface swabs (UFC/cm²).`
+        `CEIRSA food limits (UFC/g) NOT applicable to surface swabs (UFC/cm²). Using environmental swab check.`
     );
-    const warningResult = createEnvironmentalSampleWarning(matrix);
+    const analyses = await extractAnalysesFromText(textObjects);
+    const rawResults = await environmentalSwabComplianceCheck({
+      matrix,
+      analyses,
+      markdownContent,
+    });
     const matrixInfo = buildComplianceResultMatrix(matrix, null);
-    return enrichResultsWithMatrix([warningResult], matrixInfo);
+    return enrichResultsWithMatrix(rawResults, matrixInfo);
   }
 
   // Prima verifica se rientra in una categoria CEIRSA
@@ -391,21 +370,68 @@ export const checks = async (
     }
   }
 
-  // Se non è stato possibile trovare una categoria, restituisci array vuoto
-  console.log(`[checks.standard] No matching category found - returning empty`);
+  // Se non è stato possibile trovare una categoria, prova con ricerca Tavily generica
+  console.log(
+    `[checks.standard] No matching category found - trying Tavily search as fallback`
+  );
+  const analyses = await extractAnalysesFromText(textObjects);
+
+  if (analyses.length > 0) {
+    // Search with Tavily for general regulatory context
+    const tavilyResult = await searchRegulatoryContext(
+      analyses,
+      "limiti normativa sicurezza alimentare criteri microbiologici"
+    );
+
+    if (tavilyResult.sources.length > 0) {
+      console.log(
+        `[checks.standard] Found ${tavilyResult.sources.length} regulatory sources via Tavily, applying generic check`
+      );
+      const safetyResults = await applyUniversalFoodSafetyChecks(
+        analyses,
+        markdownContent
+      );
+
+      if (safetyResults.length > 0) {
+        console.log(
+          `[checks.standard] Found ${safetyResults.length} results via Tavily fallback`
+        );
+        const matrixInfo = buildComplianceResultMatrix(
+          matrix,
+          "Ricerca normativa (Tavily)"
+        );
+        return enrichResultsWithMatrix(safetyResults, matrixInfo);
+      }
+    }
+  }
+
+  console.log(`[checks.standard] No results found - returning empty`);
   return [];
 };
 
 /**
- * Searches Tavily for food safety regulatory context.
+ * Tavily search result with structured sources.
  */
-const searchFoodSafetyContext = async (
-  analyses: Analyses[]
-): Promise<string> => {
+export interface TavilySearchResult {
+  contextText: string;
+  sources: Source[];
+}
+
+/**
+ * Searches Tavily for regulatory context and returns both formatted text and structured sources.
+ *
+ * @param analyses - Array of analyses to search for
+ * @param querySuffix - Additional terms to add to the search query (e.g., "limiti superfici HACCP")
+ * @returns Object with context text and structured sources
+ */
+export const searchRegulatoryContext = async (
+  analyses: Analyses[],
+  querySuffix: string = "limiti sicurezza alimentare normativa"
+): Promise<TavilySearchResult> => {
   const apiKey = process.env.TAVILY_API_KEY;
   if (!apiKey) {
-    console.log("[checks.safety] No Tavily API key, skipping law search");
-    return "";
+    console.log("[checks] No Tavily API key, skipping regulatory search");
+    return { contextText: "", sources: [] };
   }
 
   try {
@@ -414,59 +440,128 @@ const searchFoodSafetyContext = async (
       .slice(0, 5)
       .join(", ");
 
-    const query = `${parameterNames} limiti sicurezza alimentare Regolamento CE 2073/2005 criteri microbiologici alimenti`;
+    const query = `${parameterNames} ${querySuffix}`;
 
-    const response = await fetch("https://api.tavily.com/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        query,
-        max_results: 5,
-        include_answer: true,
-      }),
-    });
+    // Create AbortController with longer timeout (30 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
 
-    if (!response.ok) {
-      return "";
-    }
+    try {
+      const response = await fetch("https://api.tavily.com/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          query,
+          max_results: 5,
+          include_answer: true,
+        }),
+        signal: controller.signal,
+      });
 
-    const result = (await response.json()) as {
-      answer?: string;
-      results?: {
-        content?: string;
-        url?: string;
-        title?: string;
-      }[];
-    };
+      clearTimeout(timeoutId);
 
-    const formattedResults = (result.results ?? [])
-      .map((item, index) => {
-        const content = item.content?.trim();
-        if (!content) return null;
+      if (!response.ok) {
+        console.warn(
+          `[checks] Tavily API returned error: ${response.status} ${response.statusText}`
+        );
+        return { contextText: "", sources: [] };
+      }
 
-        return `[FONTE ${index + 1}]
+      const result = (await response.json()) as {
+        answer?: string;
+        results?: {
+          content?: string;
+          url?: string;
+          title?: string;
+        }[];
+      };
+
+      // Build structured sources
+      const structuredSources: Source[] = (result.results ?? [])
+        .map((item, index) => {
+          const content = item.content?.trim();
+          if (!content) return null;
+
+          return {
+            id: `tavily-source-${index + 1}`,
+            title: item.title || `Fonte normativa ${index + 1}`,
+            url: item.url || null,
+            excerpt: content.substring(0, 500), // Limit excerpt length
+          };
+        })
+        .filter((item): item is Source => Boolean(item));
+
+      // Build formatted text for LLM context
+      const formattedResults = (result.results ?? [])
+        .map((item, index) => {
+          const content = item.content?.trim();
+          if (!content) return null;
+
+          return `[FONTE ${index + 1}]
 Titolo: ${item.title || `Fonte ${index + 1}`}
 URL: ${item.url || "N/A"}
 Contenuto: ${content}`;
-      })
-      .filter((item): item is string => Boolean(item));
+        })
+        .filter((item): item is string => Boolean(item));
 
-    const answer = result.answer
-      ? `RISPOSTA TAVILY:\n${result.answer}\n\n`
-      : "";
-    const sources =
-      formattedResults.length > 0
-        ? `FONTI TROVATE:\n${formattedResults.join("\n\n")}`
+      const answer = result.answer
+        ? `RISPOSTA TAVILY:\n${result.answer}\n\n`
         : "";
+      const sources =
+        formattedResults.length > 0
+          ? `FONTI TROVATE:\n${formattedResults.join("\n\n")}`
+          : "";
 
-    return [answer, sources].filter(Boolean).join("\n\n").trim();
-  } catch (error) {
-    console.warn("[checks.safety] Tavily search failed:", error);
-    return "";
+      const contextText = [answer, sources].filter(Boolean).join("\n\n").trim();
+
+      console.log(
+        `[checks] Tavily search found ${structuredSources.length} sources for query: ${query}`
+      );
+
+      return { contextText, sources: structuredSources };
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+
+      if (
+        fetchError.name === "AbortError" ||
+        fetchError.code === "UND_ERR_CONNECT_TIMEOUT"
+      ) {
+        console.warn(
+          `[checks] Tavily search timeout - connection took too long. Continuing without Tavily sources.`
+        );
+      } else {
+        console.warn(
+          `[checks] Tavily search failed: ${
+            fetchError.message || fetchError
+          }. Continuing without Tavily sources.`
+        );
+      }
+      return { contextText: "", sources: [] };
+    }
+  } catch (error: any) {
+    console.warn(
+      `[checks] Tavily search error: ${
+        error.message || error
+      }. Continuing without Tavily sources.`
+    );
+    return { contextText: "", sources: [] };
   }
+};
+
+/**
+ * Searches Tavily for food safety regulatory context (legacy function, kept for compatibility).
+ */
+const searchFoodSafetyContext = async (
+  analyses: Analyses[]
+): Promise<string> => {
+  const result = await searchRegulatoryContext(
+    analyses,
+    "limiti sicurezza alimentare Regolamento CE 2073/2005 criteri microbiologici alimenti"
+  );
+  return result.contextText;
 };
 
 /**
@@ -479,8 +574,12 @@ const applyUniversalFoodSafetyChecks = async (
 ): Promise<RawComplianceResult[]> => {
   if (analyses.length === 0) return [];
 
-  // Search for real regulatory context via Tavily
-  const lawContext = await searchFoodSafetyContext(analyses);
+  // Search for real regulatory context via Tavily with structured sources
+  const tavilyResult = await searchRegulatoryContext(
+    analyses,
+    "limiti sicurezza alimentare Regolamento CE 2073/2005 criteri microbiologici alimenti"
+  );
+  const lawContext = tavilyResult.contextText;
   const analysesJson = JSON.stringify(analyses, null, 2);
 
   const prompt = `Sei un esperto di sicurezza alimentare e normativa europea.
@@ -560,22 +659,35 @@ JSON:`;
 
     const parsed = JSON.parse(jsonMatch[0]) as SafetyCheckResult[];
 
-    return parsed.map((item) => ({
-      name: `${item.name} (Sicurezza Alimentare)`,
-      value: item.value,
-      isCheck: item.isCheck,
-      description: item.description,
-      sources: item.sources?.length
-        ? item.sources
-        : [
-            {
-              id: `safety-${item.name.toLowerCase().replace(/\s+/g, "-")}`,
-              title: "Reg. CE 2073/2005 - Criteri microbiologici",
-              url: null,
-              excerpt: item.description,
-            },
-          ],
-    }));
+    return parsed.map((item) => {
+      // Merge LLM sources with Tavily sources (avoid duplicates)
+      const llmSources = item.sources || [];
+      const llmSourceIds = new Set(llmSources.map((s) => s.id));
+      const newTavilySources = tavilyResult.sources.filter(
+        (s) => !llmSourceIds.has(s.id)
+      );
+
+      const allSources =
+        llmSources.length > 0
+          ? [...llmSources, ...newTavilySources]
+          : [
+              {
+                id: `safety-${item.name.toLowerCase().replace(/\s+/g, "-")}`,
+                title: "Reg. CE 2073/2005 - Criteri microbiologici",
+                url: null,
+                excerpt: item.description,
+              },
+              ...tavilyResult.sources,
+            ];
+
+      return {
+        name: `${item.name} (Sicurezza Alimentare)`,
+        value: item.value,
+        isCheck: item.isCheck,
+        description: item.description,
+        sources: allSources,
+      };
+    });
   } catch (error) {
     console.error("[checks.safety] LLM evaluation failed:", error);
     return [];
@@ -745,13 +857,17 @@ export const checksWithOptions = async (
       return enrichResultsWithMatrix(allResults, matrixInfo);
     }
 
-    // If no custom categories matched, return informative warning
+    // If no custom categories matched, use environmental swab check with LLM
     console.log(
-      `[checks] No matching custom categories found for environmental sample`
+      `[checks] No matching custom categories found for environmental sample. Using environmental swab check.`
     );
-    const warningResult = createEnvironmentalSampleWarning(matrix);
+    const rawResults = await environmentalSwabComplianceCheck({
+      matrix,
+      analyses,
+      markdownContent,
+    });
     const matrixInfo = buildComplianceResultMatrix(matrix, null);
-    return enrichResultsWithMatrix([warningResult], matrixInfo);
+    return enrichResultsWithMatrix(rawResults, matrixInfo);
   }
 
   // Run standard checks for non-environmental samples

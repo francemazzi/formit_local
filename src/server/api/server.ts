@@ -178,6 +178,14 @@ export class ApiServer {
       await registerPlugins(this.fastify);
       await registerRoutes(this.fastify);
 
+      // Start PDF processing worker (dynamic import to avoid circular dependencies)
+      try {
+        const workerModule = await import("../queue/pdf-processing.worker.js");
+        workerModule.startPdfProcessingWorker();
+      } catch (error) {
+        console.warn("[Server] Failed to start PDF processing worker:", error);
+      }
+
       await this.fastify.listen({
         port: this.config.port,
         host: this.config.host,
@@ -210,6 +218,12 @@ export class ApiServer {
 
   async stop(): Promise<void> {
     await this.fastify.close();
+    try {
+      const workerModule = await import("../queue/pdf-processing.worker.js");
+      await workerModule.stopPdfProcessingWorker();
+    } catch (error) {
+      console.warn("[Server] Failed to stop PDF processing worker:", error);
+    }
   }
 
   getInstance(): FastifyInstance {

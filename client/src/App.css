@@ -1040,6 +1040,10 @@ body {
   color: var(--color-unsatisfactory);
 }
 
+.summary-stat.pending .stat-value {
+  color: #f59e0b; /* amber-500 */
+}
+
 /* File Result Card */
 .file-result-card {
   background: var(--bg-card);
@@ -1138,6 +1142,10 @@ body {
   border-left: 3px solid var(--color-unsatisfactory);
 }
 
+.compliance-result.pending {
+  border-left: 3px solid #f59e0b; /* amber-500 */
+}
+
 .result-header {
   display: flex;
   align-items: center;
@@ -1152,6 +1160,10 @@ body {
 
 .result-status .icon-fail {
   color: var(--color-unsatisfactory);
+}
+
+.result-status .icon-pending {
+  color: #f59e0b; /* amber-500 */
 }
 
 .result-main {
