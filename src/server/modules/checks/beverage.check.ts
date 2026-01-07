@@ -4,6 +4,7 @@ import { ChatOpenAI } from "@langchain/openai";
 
 import { RawComplianceResult } from ".";
 import { beverageCheckPromptTemplate } from "../../prompts/beverage_check.prompt";
+import { getTavilyApiKey } from "../../utils/api-keys.utils";
 
 export interface BeverageRawComplianceResult {
   ragResults: RawComplianceResult[];
@@ -33,7 +34,7 @@ interface BeveragePromptBuilder {
 
 class TavilyLawSearchProvider implements LawSearchProvider {
   async searchLawContext(input: BeverageCheckInput): Promise<string> {
-    const apiKey = process.env.TAVILY_API_KEY;
+    const apiKey = await getTavilyApiKey();
     if (!apiKey) {
       return "";
     }
@@ -132,7 +133,10 @@ class OpenAIBeverageComplianceModel implements ComplianceModel {
   private readonly model: ChatOpenAI;
   private readonly parser: JsonOutputParser<RawComplianceResult[]>;
 
-  constructor(model: ChatOpenAI, parser: JsonOutputParser<RawComplianceResult[]>) {
+  constructor(
+    model: ChatOpenAI,
+    parser: JsonOutputParser<RawComplianceResult[]>
+  ) {
     this.model = model;
     this.parser = parser;
   }

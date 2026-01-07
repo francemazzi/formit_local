@@ -287,9 +287,10 @@ const inferMatrixFromContent = async (
   categories: string[]
 ): Promise<MatrixExtractionResult> => {
   try {
-    const openAIApiKey = process.env.OPENAI_API_KEY;
+    const { getOpenAIApiKey } = await import("../utils/api-keys.utils.js");
+    const openAIApiKey = await getOpenAIApiKey();
     if (!openAIApiKey) {
-      throw new Error("OPENAI_API_KEY environment variable is required");
+      throw new Error("OpenAI API key is required. Please configure it in Settings.");
     }
 
     const categoriesBlock =

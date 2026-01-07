@@ -66,7 +66,7 @@ RUN mkdir -p /app/data /app/uploads
 # Variabili ambiente di default
 ENV NODE_ENV=production
 ENV MCP_HTTP_PORT=3007
-ENV DATABASE_URL=file:/app/data/formit.db
+ENV DATABASE_URL=file:/app/data/dev.db
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

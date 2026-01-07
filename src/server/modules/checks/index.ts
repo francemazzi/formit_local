@@ -27,6 +27,7 @@ import {
   buildCeirsaCategoryMatchingPrompt,
   buildUniversalFoodSafetyPrompt,
 } from "../../prompts/general_check.prompts";
+import { getTavilyApiKey } from "../../utils/api-keys.utils";
 
 export interface Source {
   id: string;
@@ -409,7 +410,7 @@ export const searchRegulatoryContext = async (
   analyses: Analyses[],
   querySuffix: string = "limiti sicurezza alimentare normativa"
 ): Promise<TavilySearchResult> => {
-  const apiKey = process.env.TAVILY_API_KEY;
+  const apiKey = await getTavilyApiKey();
   if (!apiKey) {
     console.log("[checks] No Tavily API key, skipping regulatory search");
     return { contextText: "", sources: [] };
