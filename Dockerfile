@@ -56,6 +56,10 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./
 
+# Copia script di avvio
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
 # Crea directory per database e uploads
 RUN mkdir -p /app/data /app/uploads
 
@@ -71,6 +75,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Espone porta MCP
 EXPOSE 3007
 
-# Avvia server MCP HTTP
-CMD ["node", "dist/server/mcp/http-transport.js"]
+# Avvia con script che esegue migrazioni e poi il server
+CMD ["./docker-entrypoint.sh"]
 

@@ -96,6 +96,59 @@ docker compose logs -f formit-mcp
 docker compose restart
 ```
 
+## 🐳 Uso con Docker Compose
+
+Se preferisci usare Docker Compose direttamente, puoi avviare sia il backend che il frontend con un singolo comando:
+
+### Avviare tutti i servizi (Backend + Frontend)
+```bash
+docker compose up -d
+```
+
+Questo comando avvierà:
+- **Redis** sulla porta 6380
+- **Backend API** (`formit-mcp`) sulla porta 3007
+- **Frontend** (`formit-frontend`) sulla porta 5173
+
+### Accedere all'applicazione
+
+Dopo l'avvio, l'applicazione sarà disponibile su:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3007
+- **Documentazione API (Swagger)**: http://localhost:3007/docs
+
+### Build e avvio
+```bash
+# Build e avvio in un unico comando
+docker compose up -d --build
+```
+
+### Visualizzare i log di tutti i servizi
+```bash
+# Log di tutti i servizi
+docker compose logs -f
+
+# Log solo del backend
+docker compose logs -f formit-mcp
+
+# Log solo del frontend
+docker compose logs -f formit-frontend
+```
+
+### Fermare tutti i servizi
+```bash
+docker compose down
+```
+
+### Riavviare un servizio specifico
+```bash
+# Riavvia solo il backend
+docker compose restart formit-mcp
+
+# Riavvia solo il frontend
+docker compose restart formit-frontend
+```
+
 ## 📸 Screenshot dell'Applicazione
 
 Durante l'elaborazione dei PDF, vedrai un indicatore di caricamento:

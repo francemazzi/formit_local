@@ -15,6 +15,10 @@ export default defineConfig({
         target: 'http://localhost:3007',
         changeOrigin: true,
       },
+      '/api-keys': {
+        target: 'http://localhost:3007',
+        changeOrigin: true,
+      },
     },
   },
 })

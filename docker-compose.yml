@@ -45,8 +45,8 @@ services:
     volumes:
       # Database persistente
       - formit-data:/app/data
-      # PDF da analizzare (opzionale, monta cartella locale)
-      - ./uploads:/app/uploads:ro
+      # PDF uploads (scrivibile per salvare i file caricati)
+      - ./uploads:/app/uploads
       # Cartella analisi microbiologiche
       - ./data/analisi_microbiologiche:/app/analisi:ro
     healthcheck:
@@ -55,6 +55,23 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  formit-frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: formit-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      formit-mcp:
+        condition: service_healthy
     logging:
       driver: "json-file"
       options:
