@@ -30,3 +30,113 @@ model Job {
   error     String?
   data      Json
 }
+
+// ========================================
+// Custom Compliance Checks
+// ========================================
+
+enum CustomSampleType {
+  FOOD_PRODUCT        // Alimento (UFC/g)
+  BEVERAGE            // Bevanda
+  ENVIRONMENTAL_SWAB  // Tampone ambientale (UFC/cm²)
+  PERSONNEL_SWAB      // Tampone operatore
+  OTHER
+}
+
+enum CriterionType {
+  HYGIENE    // Criterio di igiene di processo
+  SAFETY     // Criterio di sicurezza alimentare
+}
+
+// Categoria di verifica personalizzata (es. "Gelati artigianali", "Superfici produzione")
+model CustomCheckCategory {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  name        String   @unique
+  description String?
+  
+  // Tipo di campione applicabile
+  sampleType  CustomSampleType @default(FOOD_PRODUCT)
+  
+  // Parametri all'interno di questa categoria
+  parameters  CustomCheckParameter[]
+}
+
+// Singolo parametro con limiti di conformità
+model CustomCheckParameter {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relazione con categoria
+  categoryId  String
+  category    CustomCheckCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  // Nome parametro (es. "Escherichia coli", "Conta batterica totale")
+  parameter   String
+  
+  // Metodo di analisi (es. "ISO 7932")
+  analysisMethod String?
+  
+  // Tipo di criterio
+  criterionType CriterionType @default(HYGIENE)
+  
+  // Limiti con fasce
+  satisfactoryValue   String?   // es. "<10 (ufc/g)"
+  acceptableValue     String?   // es. "10≤ x <102 (ufc/g)"
+  unsatisfactoryValue String?   // es. "≥102 (ufc/g)"
+  
+  // Metadati
+  bibliographicReferences String?
+  notes                   String?
+  
+  @@unique([categoryId, parameter])
+}
+
+// ========================================
+// PDF Extraction Results
+// ========================================
+
+// Risultati completi dell'estrazione e analisi di un PDF
+model PdfExtraction {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Nome del file PDF originale
+  fileName    String
+  
+  // Dati estratti dal PDF salvati come JSON
+  // Include: textObjects, matrix, analyses, results, metadata
+  extractedData Json
+  
+  // Indica se l'estrazione è stata completata con successo
+  success     Boolean  @default(true)
+  
+  // Messaggio di errore se l'estrazione è fallita
+  error       String?
+  
+  // Indice per ricerca rapida per nome file
+  @@index([fileName])
+  
+  // Indice per ordinamento per data
+  @@index([createdAt])
+}
+
+// ========================================
+// API Keys Configuration
+// ========================================
+
+// Singleton model for storing API keys
+// Only one record should exist in this table
+model ApiKey {
+  id          String   @id @default("singleton")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // API keys for external services
+  tavilyApiKey  String?
+  openaiApiKey  String?
+}

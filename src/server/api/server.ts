@@ -5,6 +5,8 @@ import fastifyMultipart from "@fastify/multipart";
 import fastifyCors from "@fastify/cors";
 
 import { conformityPdfController } from "./conformity-pdf.controller";
+import { customChecksController } from "./custom-checks.controller";
+import { apiKeysController } from "./api-keys.controller";
 
 interface ServerConfig {
   port: number;
@@ -74,8 +76,16 @@ const registerPlugins = async (fastify: FastifyInstance): Promise<void> => {
           description: "PDF compliance checking endpoints",
         },
         {
+          name: "Custom Checks",
+          description: "Custom compliance check categories and parameters management",
+        },
+        {
           name: "Health",
           description: "Health check endpoints",
+        },
+        {
+          name: "Settings",
+          description: "API keys and settings management",
         },
       ],
     },
@@ -146,6 +156,12 @@ const registerRoutes = async (fastify: FastifyInstance): Promise<void> => {
 
   // Register conformity controller
   await conformityPdfController.registerRoutes(fastify);
+
+  // Register custom checks controller
+  await customChecksController.registerRoutes(fastify);
+
+  // Register API keys controller
+  await apiKeysController.registerRoutes(fastify);
 };
 
 export class ApiServer {
@@ -168,16 +184,23 @@ export class ApiServer {
       });
 
       console.log(`
-╔══════════════════════════════════════════════════════════╗
-║           Formit Conformity API Server                   ║
-╠══════════════════════════════════════════════════════════╣
-║  Server running at: http://${this.config.host}:${this.config.port}              ║
-║  Swagger docs at:   http://localhost:${this.config.port}/docs          ║
-║                                                          ║
-║  Endpoints:                                              ║
-║  - POST /conformity-pdf  Upload PDFs for compliance check║
-║  - GET  /health          Health check                    ║
-╚══════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════╗
+║              Formit Conformity API Server                        ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Server running at: http://${this.config.host}:${this.config.port}                    ║
+║  Swagger docs at:   http://localhost:${this.config.port}/docs                ║
+║                                                                  ║
+║  Endpoints:                                                      ║
+║  - POST /conformity-pdf                   PDF compliance check   ║
+║  - GET  /health                           Health check           ║
+║                                                                  ║
+║  Custom Checks API:                                              ║
+║  - GET/POST /custom-checks/categories     Manage categories      ║
+║  - POST /custom-checks/categories/:id/parameters  Add parameters ║
+║  - PUT/DELETE /custom-checks/parameters/:id       Edit/Delete    ║
+║  - POST /custom-checks/import             Import category        ║
+║  - GET  /custom-checks/export/:id         Export category        ║
+╚══════════════════════════════════════════════════════════════════╝
       `);
     } catch (error) {
       this.fastify.log.error(error);

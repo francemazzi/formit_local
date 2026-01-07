@@ -3,8 +3,11 @@ export const extractMatrixPrompt = {
 
 Analizza attentamente il contenuto e ricava sempre:
 1. "matrix" → tipologia del campione (es. "Tampone ambientale", "Prodotto alimentare", "Tampone al personale").
-2. "description" → descrizione sintetica dell'oggetto o superficie campionata (es. "Paletta gelato", "Banco acciaio").
-3. "product" → prodotto specifico SE E SOLO SE è un campione alimentare diretto (non applicabile per tamponi su superfici).
+2. "description" → descrizione sintetica dell'oggetto o superficie campionata (es. "Paletta gelato", "Banco acciaio", "Crema con Taleggio").
+3. "product" → ⚠️ IMPORTANTE: per campioni alimentari (sampleType = "food_product"), estrai SEMPRE il nome specifico del prodotto!
+   - Se trovi "Descrizione: Crema con Taleggio" → product: "Crema con Taleggio"
+   - Se trovi "Alimento: Gelato alla vaniglia" → product: "Gelato alla vaniglia"
+   - Per tamponi su superfici → product: null (valore JSON null, NON la stringa "null")
 4. "category" → scegli SOLO tra "food", "beverage", "other".
 5. "ceirsa_category" → scegli la categoria CEIRSA più adatta dall'elenco fornito; restituisci null se nessuna si applica O se è un tampone ambientale/superficie.
 6. "specialFeatures" → elenco di attributi rilevanti (es. "personale", "superficie acciaio"). Se non presenti, restituisci [].
@@ -39,13 +42,18 @@ CONTENUTO DEL DOCUMENTO:
 Rispondi ESCLUSIVAMENTE con un JSON valido nel formato seguente:
 {{
   "matrix": "string",
-  "description": "string | null",
-  "product": "string | null (null se tampone su superficie)",
+  "description": "string oppure null",
+  "product": "NOME SPECIFICO del prodotto alimentare (es. 'Crema con Taleggio', 'Gelato alla vaniglia') oppure null per tamponi",
   "category": "food | beverage | other",
-  "ceirsa_category": "string | null (SEMPRE null per tamponi ambientali)",
-  "specialFeatures": "string[]",
+  "ceirsa_category": "string oppure null (SEMPRE null per tamponi ambientali)",
+  "specialFeatures": [],
   "sampleType": "environmental_swab | food_product | personnel_swab | water | other"
 }}
+
+⚠️ ATTENZIONE ai valori null:
+- Usa il valore JSON null, NON la stringa "null"
+- Esempio CORRETTO: "product": null
+- Esempio SBAGLIATO: "product": "null"
 `,
 } as const;
 
@@ -81,12 +89,16 @@ Rispondi con un oggetto JSON nel seguente formato:
 {{
   "matrix": "tipo di matrice inferito",
   "description": "descrizione del campione se trovata",
-  "product": "null per tamponi su superfici, prodotto se campione alimentare",
+  "product": "NOME SPECIFICO del prodotto alimentare (es. 'Crema con Taleggio') oppure null per tamponi",
   "category": "food/beverage/other",
   "ceirsa_category": "null per tamponi, categoria appropriata per alimenti",
   "specialFeatures": [],
   "sampleType": "environmental_swab | food_product | personnel_swab | water | other"
 }}
+
+⚠️ IMPORTANTE:
+- Per campioni alimentari, estrai SEMPRE il nome specifico del prodotto dalla descrizione!
+- Usa il valore JSON null (NON la stringa "null") per i campi non applicabili
 
 Fornisci SOLO il JSON, senza testo aggiuntivo.
 `,

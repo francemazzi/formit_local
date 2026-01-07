@@ -2,9 +2,13 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
 
-import { checks, ComplianceResult } from "../modules/checks";
-import { extractTextFromPdf } from "../modules/extract_text_from_pdf";
+import { checksWithOptions, ComplianceResult } from "../modules/checks";
+import { extractTextFromPdf, ExtractedTextEntry } from "../modules/extract_text_from_pdf";
+import { extractMatrixFromText, MatrixExtractionResult } from "../modules/extract_matrix_from_text";
+import { extractAnalysesFromText, Analyses } from "../modules/extract_analyses_from_text";
+import { getDatabaseClient } from "../prisma.client";
 
 interface PdfCheckResult {
   fileName: string;
@@ -66,7 +70,28 @@ const processSinglePdf = async (
     tempFilePath = await saveTempFile(file.buffer, file.filename);
 
     const textObjects = await extractTextFromPdf(tempFilePath);
-    const results = await checks(textObjects);
+    
+    // Extract matrix and analyses separately to save them in database
+    const matrix = await extractMatrixFromText(textObjects);
+    const analyses = await extractAnalysesFromText(textObjects);
+    
+    // Use checksWithOptions with fallbackToCustom to enable custom category matching
+    // for samples that don't fit standard CEIRSA categories (e.g., environmental swabs)
+    // Pass pdfPath to enable GPT-4 Vision OCR fallback for corrupted text
+    const results = await checksWithOptions(textObjects, {
+      fallbackToCustom: true,
+      pdfPath: tempFilePath,
+    });
+
+    // Save extracted data to database
+    await saveExtractionToDatabase({
+      fileName: file.filename,
+      textObjects,
+      matrix,
+      analyses,
+      results,
+      success: true,
+    });
 
     return {
       fileName: file.filename,
@@ -76,6 +101,17 @@ const processSinglePdf = async (
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+
+    // Save failed extraction to database
+    await saveExtractionToDatabase({
+      fileName: file.filename,
+      textObjects: [],
+      matrix: null,
+      analyses: [],
+      results: [],
+      success: false,
+      error: errorMessage,
+    });
 
     return {
       fileName: file.filename,
@@ -90,8 +126,258 @@ const processSinglePdf = async (
   }
 };
 
+interface ExtractionData {
+  fileName: string;
+  textObjects: ExtractedTextEntry[];
+  matrix: MatrixExtractionResult | null;
+  analyses: Analyses[];
+  results: ComplianceResult[];
+  success: boolean;
+  error?: string;
+}
+
+const saveExtractionToDatabase = async (
+  data: ExtractionData
+): Promise<void> => {
+  try {
+    const client = getDatabaseClient();
+    
+    // Serialize data to JSON-compatible format
+    const extractedData: Prisma.InputJsonValue = JSON.parse(
+      JSON.stringify({
+        textObjects: data.textObjects,
+        matrix: data.matrix,
+        analyses: data.analyses,
+        results: data.results,
+        metadata: {
+          extractedAt: new Date().toISOString(),
+          totalTextEntries: data.textObjects.length,
+          totalAnalyses: data.analyses.length,
+          totalResults: data.results.length,
+        },
+      })
+    );
+
+    await client.pdfExtraction.create({
+      data: {
+        fileName: data.fileName,
+        extractedData,
+        success: data.success,
+        error: data.error || null,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to save extraction to database:", error);
+    // Don't throw - we don't want to fail the request if DB save fails
+  }
+};
+
 export class ConformityPdfController {
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
+    // Endpoint to get all PDF extractions
+    fastify.get(
+      "/conformity-pdf/extractions",
+      {
+        schema: {
+          description: "Get all PDF extraction results",
+          tags: ["Conformity"],
+          summary: "List all PDF extractions",
+          querystring: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "number",
+                description: "Maximum number of results to return",
+                default: 50,
+              },
+              offset: {
+                type: "number",
+                description: "Number of results to skip",
+                default: 0,
+              },
+            },
+          },
+          response: {
+            200: {
+              description: "List of PDF extractions",
+              type: "object",
+              properties: {
+                total: { type: "number" },
+                limit: { type: "number" },
+                offset: { type: "number" },
+                extractions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: { type: "string" },
+                      fileName: { type: "string" },
+                      createdAt: { type: "string" },
+                      updatedAt: { type: "string" },
+                      success: { type: "boolean" },
+                      error: { type: "string", nullable: true },
+                      extractedData: { 
+                        type: "object",
+                        additionalProperties: true 
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const query = request.query as { limit?: number; offset?: number };
+        const limit = Math.min(query.limit || 50, 100); // Max 100
+        const offset = query.offset || 0;
+
+        const client = getDatabaseClient();
+        
+        // Get raw data from database to ensure JSON is properly retrieved
+        // Note: Prisma $queryRaw with SQLite automatically deserializes JSON columns
+        const rawExtractions = await client.$queryRaw<Array<{
+          id: string;
+          fileName: string;
+          createdAt: Date;
+          updatedAt: Date;
+          success: number;
+          error: string | null;
+          extractedData: any; // Can be string or already parsed object
+        }>>`SELECT * FROM PdfExtraction ORDER BY createdAt DESC LIMIT ${limit} OFFSET ${offset}`;
+        
+        const total = await client.pdfExtraction.count();
+
+        // Parse JSON data from SQLite text field
+        const serializedExtractions = rawExtractions.map((extraction) => {
+          let extractedData = {};
+          try {
+            // Prisma with $queryRaw already deserializes JSON fields as objects
+            // If it's already an object, use it directly. If it's a string, parse it.
+            if (typeof extraction.extractedData === 'string') {
+              extractedData = JSON.parse(extraction.extractedData);
+            } else if (extraction.extractedData && typeof extraction.extractedData === 'object' && !Array.isArray(extraction.extractedData)) {
+              // Already an object, use it directly
+              extractedData = extraction.extractedData;
+            }
+          } catch (error) {
+            console.error(`[ERROR] Failed to parse extractedData for ${extraction.fileName}:`, error);
+          }
+          
+          // SQLite stores booleans as integers (0/1)
+          // Convert to boolean: any truthy number becomes true
+          const success = Boolean(extraction.success);
+          
+          return {
+            id: extraction.id,
+            fileName: extraction.fileName,
+            createdAt: new Date(extraction.createdAt).toISOString(),
+            updatedAt: new Date(extraction.updatedAt).toISOString(),
+            success,
+            error: extraction.error,
+            extractedData,
+          };
+        });
+
+        return reply.status(200).send({
+          total,
+          limit,
+          offset,
+          extractions: serializedExtractions,
+        });
+      }
+    );
+
+    // Endpoint to get a specific PDF extraction by ID
+    fastify.get(
+      "/conformity-pdf/extractions/:id",
+      {
+        schema: {
+          description: "Get a specific PDF extraction by ID",
+          tags: ["Conformity"],
+          summary: "Get PDF extraction by ID",
+          params: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                description: "Extraction ID",
+              },
+            },
+          },
+          response: {
+            200: {
+              description: "PDF extraction details",
+              type: "object",
+              additionalProperties: true,
+            },
+            404: {
+              description: "Extraction not found",
+              type: "object",
+              properties: {
+                error: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const params = request.params as { id: string };
+        const client = getDatabaseClient();
+        
+        // Get raw data from database to ensure JSON is properly retrieved
+        // Note: Prisma $queryRaw with SQLite automatically deserializes JSON columns
+        const rawExtractions = await client.$queryRaw<Array<{
+          id: string;
+          fileName: string;
+          createdAt: Date;
+          updatedAt: Date;
+          success: number;
+          error: string | null;
+          extractedData: any; // Can be string or already parsed object
+        }>>`SELECT * FROM PdfExtraction WHERE id = ${params.id}`;
+
+        if (!rawExtractions || rawExtractions.length === 0) {
+          return reply.status(404).send({
+            error: "Extraction not found",
+          });
+        }
+
+        const extraction = rawExtractions[0]!;
+        
+        let extractedData = {};
+        try {
+          // Prisma with $queryRaw already deserializes JSON fields as objects
+          // If it's already an object, use it directly. If it's a string, parse it.
+          if (typeof extraction.extractedData === 'string') {
+            extractedData = JSON.parse(extraction.extractedData);
+          } else if (extraction.extractedData && typeof extraction.extractedData === 'object' && !Array.isArray(extraction.extractedData)) {
+            // Already an object, use it directly
+            extractedData = extraction.extractedData;
+          }
+        } catch (error) {
+          console.error(`[ERROR] Failed to parse extractedData for ${extraction.fileName}:`, error);
+        }
+        
+        // SQLite stores booleans as integers (0/1)
+        // Convert to boolean: any truthy number becomes true
+        const success = Boolean(extraction.success);
+        
+        const serializedExtraction = {
+          id: extraction.id,
+          fileName: extraction.fileName,
+          createdAt: new Date(extraction.createdAt).toISOString(),
+          updatedAt: new Date(extraction.updatedAt).toISOString(),
+          success,
+          error: extraction.error,
+          extractedData,
+        };
+
+        return reply.status(200).send(serializedExtraction);
+      }
+    );
+
     fastify.post<{
       Reply: ConformityPdfResponse;
     }>(

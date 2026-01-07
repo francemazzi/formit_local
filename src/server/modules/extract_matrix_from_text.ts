@@ -152,8 +152,19 @@ const normalizeString = (value: unknown): string | null => {
     return null;
   }
 
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  const trimmed = value.trim().toLowerCase();
+
+  // Handle LLM returning the literal string "null" instead of JSON null
+  if (
+    trimmed === "null" ||
+    trimmed === "none" ||
+    trimmed === "n/a" ||
+    trimmed === "undefined"
+  ) {
+    return null;
+  }
+
+  return value.trim().length > 0 ? value.trim() : null;
 };
 
 const normalizeCategory = (

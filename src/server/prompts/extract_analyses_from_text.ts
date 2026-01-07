@@ -1,36 +1,61 @@
 export const extractAnalysesPrompt = {
   prompt: `Sei un esperto nell'estrazione di dati analitici da rapporti di laboratorio.
-Analizza il seguente contenuto markdown ed estrai TUTTI i parametri analitici microbiologici presenti.
+Analizza il seguente contenuto ed estrai TUTTI i parametri analitici presenti, inclusi:
 
-Cerca parametri come:
-- Conta Escherichia coli
-- Conta Stafilococchi coagulasi-positivi
+PARAMETRI MICROBIOLOGICI come per esempio:
+- Conta Escherichia coli, E. coli
+- Conta Stafilococchi coagulasi-positivi, Staphylococcus aureus
 - Salmonella
 - Listeria monocytogenes
-- Enterobatteri
-- Conta batterica totale
-- E. coli
-- Staphylococcus aureus
-- E qualsiasi altro parametro microbiologico
+- Enterobatteri, Enterobacteriaceae
+- Conta batterica totale, Carica microbica
+- Coliformi totali, Coliformi fecali
+- Muffe e lieviti
+- Bacillus cereus
+- Clostridium perfringens
 
-IMPORTANTE:
-- Estrai sia i parametri dalle tabelle che dal testo
-- Gestisci qualsiasi formato di tabella (markdown, HTML, testo)
-- Preserva i valori esatti con operatori (<, >, ≤, ≥, =)
-- Includi sempre le unità di misura (UFC/cm2, UFC/g, UFC/ml, etc.)
-- Gestisci valori come "< 1", "13", "Assente", "Presente"
+ALLERGENI (PCR/ELISA) come per esempio:
+- Allergene arachide
+- Allergene mandorla
+- Allergene noce
+- Allergene senape
+- Allergene soia
+- Allergene latte
+- Allergene uova
+- Allergene glutine/grano/frumento
+- Allergene pesce
+- Allergene crostacei
+- Allergene sedano
+- Allergene lupino
+- Allergene sesamo
+- Allergene molluschi
+- Allergene solfiti
+- Qualsiasi altro allergene
 
-Restituisci ESCLUSIVAMENTE un array JSON con questa struttura:
+ALTRI PARAMETRI:
+- pH, Aw (attività dell'acqua)
+- Qualsiasi parametro chimico-fisico
+- Qualsiasi altro parametro di laboratorio
+
+REGOLE DI ESTRAZIONE:
+- Estrai TUTTI i parametri presenti, non solo microbiologici
+- Gestisci qualsiasi formato di tabella (markdown, HTML, testo separato)
+- Preserva i valori esatti: <, >, ≤, ≥, =
+- Per allergeni: "rilevato", "non rilevato", "presente", "assente"
+- Includi unità di misura se disponibili (UFC/cm², UFC/g, mg/kg, ppm, etc.)
+- Se U.M. non disponibile, usa "_" o lascia vuoto
+
+Restituisci ESCLUSIVAMENTE un array JSON:
 [
   {
-    "Parametro": "Nome completo del parametro microbiologico",
-    "Risultato": "Valore trovato (es. < 1, 13, Assente)",
-    "U.M.": "Unità di misura (es. UFC/cm2, UFC/g, UFC/ml)",
-    "Metodo": "Metodo di analisi se disponibile (opzionale)"
+    "Parametro": "Nome completo del parametro",
+    "Risultato": "Valore trovato (es. < 1, rilevato, non rilevato, Assente)",
+    "U.M.": "Unità di misura (es. UFC/cm², UFC/g, mg/kg) o _ se non disponibile",
+    "Metodo": "Metodo di analisi se disponibile"
   }
 ]
 
-Se non trovi parametri analitici, restituisci un array vuoto [].
+Se non trovi parametri analitici, restituisci [].
 
 Contenuto da analizzare:
 {markdownContent}

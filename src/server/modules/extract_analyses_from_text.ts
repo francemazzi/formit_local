@@ -112,22 +112,31 @@ const createAnalysesExtractionService = (
   return {
     async extract(textObjects: ExtractedTextEntry[]): Promise<Analyses[]> {
       if (!Array.isArray(textObjects) || textObjects.length === 0) {
+        console.log(`[extractAnalyses] No text objects provided`);
         return [];
       }
 
       const markdownContent = composeMarkdownPayload(textObjects);
 
       if (!markdownContent) {
+        console.log(`[extractAnalyses] Empty markdown content`);
         return [];
       }
+
+      console.log(`[extractAnalyses] Processing ${textObjects.length} text entries, ${markdownContent.length} chars`);
+      console.log(`[extractAnalyses] Content preview: ${markdownContent.substring(0, 1000)}...`);
 
       try {
         const analyses = await generateAnalyses(
           markdownContent,
           dependencies.model
         );
-        return normalizeResponse(analyses);
+        console.log(`[extractAnalyses] Raw analyses count: ${analyses?.length ?? 0}`);
+        const normalized = normalizeResponse(analyses);
+        console.log(`[extractAnalyses] Normalized analyses count: ${normalized.length}`);
+        return normalized;
       } catch (error) {
+        console.error(`[extractAnalyses] Error:`, error);
         throw new Error("Failed to extract analyses from text", {
           cause: error instanceof Error ? error : undefined,
         });
@@ -141,9 +150,20 @@ const generateAnalyses = async (
   model = defaultDependencies.model
 ): Promise<RawAnalysisRecord[]> => {
   const prompt = buildPrompt(markdownContent);
-  const response = await model.invoke(prompt);
-  const resolvedContent = LangChainMessageUtils.extractTextContent(response);
-  return analysesParser.parse(resolvedContent);
+  console.log(`[extractAnalyses] Prompt length: ${prompt.length} chars`);
+  
+  try {
+    const response = await model.invoke(prompt);
+    const resolvedContent = LangChainMessageUtils.extractTextContent(response);
+    console.log(`[extractAnalyses] LLM response: ${resolvedContent.substring(0, 500)}...`);
+    
+    const parsed = await analysesParser.parse(resolvedContent);
+    console.log(`[extractAnalyses] Parsed records: ${parsed?.length ?? 0}`);
+    return parsed;
+  } catch (parseError) {
+    console.error(`[extractAnalyses] Parse error:`, parseError);
+    return [];
+  }
 };
 
 const buildPrompt = (markdownContent: string): string => {

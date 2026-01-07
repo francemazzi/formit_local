@@ -58,6 +58,7 @@
     "fastify": "^5.2.1",
     "glob": "^11.0.3",
     "langchain": "^1.0.4",
+    "pdf2pic": "^3.2.0",
     "pdfjs-dist": "^5.4.394",
     "pino-pretty": "^13.0.0",
     "zod": "^4.1.12"
