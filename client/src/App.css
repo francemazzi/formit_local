@@ -1674,4 +1674,141 @@ body {
     align-items: flex-start;
     gap: 0.5rem;
   }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analyses-table {
+    overflow-x: auto;
+  }
+
+  .analyses-table table {
+    font-size: 0.8rem;
+  }
+}
+
+/* ========================================
+   Extraction Details Section
+   ======================================== */
+.extraction-details-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.extraction-details-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.extraction-info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.extraction-info-card:last-child {
+  margin-bottom: 0;
+}
+
+.extraction-info-card h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent-secondary);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.info-item .label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.info-item .value {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Analyses Table */
+.analyses-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.analyses-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.analyses-table thead {
+  background: var(--bg-secondary);
+}
+
+.analyses-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.analyses-table td {
+  padding: 0.875rem 1rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.analyses-table tbody tr:hover {
+  background: var(--bg-secondary);
+}
+
+.analyses-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.analyses-table td:nth-child(2) {
+  color: var(--accent-secondary);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* Metadata Card */
+.extraction-info-card.metadata {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.extraction-info-card.metadata h4 {
+  color: var(--accent-primary);
 }

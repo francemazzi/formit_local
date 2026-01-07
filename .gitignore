@@ -1,7 +1,5 @@
 dist
 node_modules
 .env
-data
+data/
 uploads
-data/analisi_microbiologiche/*
-!data/analisi_microbiologiche/.gitkeep

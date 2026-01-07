@@ -85,6 +85,8 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
       ],
     };
 
+    const data = selectedExtraction.extractedData;
+
     return (
       <div className="extractions-list">
         <div className="extraction-header">
@@ -100,6 +102,100 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
             {formatDate(selectedExtraction.createdAt)}
           </span>
         </div>
+
+        {/* Dati di Estrazione */}
+        {selectedExtraction.success && (
+          <div className="extraction-details-section">
+            <h3>📊 Dati di Estrazione</h3>
+            
+            {data.matrix && (
+              <div className="extraction-info-card">
+                <h4>Informazioni Matrice</h4>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="label">Matrice:</span>
+                    <span className="value">{data.matrix.matrix}</span>
+                  </div>
+                  {data.matrix.description && (
+                    <div className="info-item">
+                      <span className="label">Descrizione:</span>
+                      <span className="value">{data.matrix.description}</span>
+                    </div>
+                  )}
+                  {data.matrix.product && (
+                    <div className="info-item">
+                      <span className="label">Prodotto:</span>
+                      <span className="value">{data.matrix.product}</span>
+                    </div>
+                  )}
+                  <div className="info-item">
+                    <span className="label">Categoria:</span>
+                    <span className="value">{data.matrix.category}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Tipo Campione:</span>
+                    <span className="value">{data.matrix.sampleType}</span>
+                  </div>
+                  {data.matrix.ceirsa_category && (
+                    <div className="info-item">
+                      <span className="label">Categoria CEIRSA:</span>
+                      <span className="value">{data.matrix.ceirsa_category}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {data.analyses && data.analyses.length > 0 && (
+              <div className="extraction-info-card">
+                <h4>Analisi Estratte ({data.analyses.length})</h4>
+                <div className="analyses-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Parametro</th>
+                        <th>Risultato</th>
+                        <th>U.M.</th>
+                        <th>Metodo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.analyses.map((analysis, idx) => (
+                        <tr key={idx}>
+                          <td>{analysis.parameter}</td>
+                          <td><strong>{analysis.result}</strong></td>
+                          <td>{analysis.um_result}</td>
+                          <td>{analysis.method}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {data.metadata && (
+              <div className="extraction-info-card metadata">
+                <h4>Metadata Estrazione</h4>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="label">Data Estrazione:</span>
+                    <span className="value">{formatDate(data.metadata.extractedAt)}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Totale Analisi:</span>
+                    <span className="value">{data.metadata.totalAnalyses}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Totale Risultati:</span>
+                    <span className="value">{data.metadata.totalResults}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <ResultsDisplay
           response={response}
           onReset={() => setSelectedExtraction(null)}
