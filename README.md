@@ -1,232 +1,126 @@
-# Formit - Analisi Automatica di Documenti Microbiologici
+# Formit - Intelligent Microbiological Analysis
 
-**Formit** è un'applicazione web che utilizza l'intelligenza artificiale per analizzare automaticamente documenti PDF di analisi microbiologiche e verificare la conformità rispetto ai limiti normativi.
+**Formit** is an AI-powered web application designed to automatically analyze microbiological analysis PDF documents and verify their conformity against regulatory limits.
 
-## 🚀 Come Avviare l'Applicazione
+## 🚀 Features
 
-### Per Utenti Non Esperti
+- **Automated PDF Analysis**: Upload and process microbiological analysis reports (PDF).
+- **AI Extraction**: Utilizes Large Language Models (LLMs) via LangChain to extract:
+  - Food matrix/product type.
+  - Regulatory categories (e.g., CEIRSA, beverages).
+  - Microbiological parameters and results.
+- **Conformity Verification**: Automatically checks results against regulatory limits.
+- **Custom Checks**: Create and manage custom verification categories with user-defined parameters.
+- **Queue Management**: Robust background processing using BullMQ and Redis for handling multiple files.
+- **Modern Stack**: Built with React, Node.js (Fastify), Prisma, and TypeScript.
 
-Avviare Formit è semplicissimo! Basta **un doppio clic** su uno di questi file:
+## 🛠 Tech Stack
 
-#### Su Windows:
-- **Clicca due volte** sul file `start.bat`
-- Lo script installerà automaticamente Docker (se necessario) e avvierà l'applicazione
+- **Frontend**: React, Vite, TailwindCSS (implied via UI), React Query.
+- **Backend**: Node.js, Fastify, LangChain (OpenAI/Anthropic integration).
+- **Database**: SQLite (via Prisma ORM).
+- **Queue**: Redis & BullMQ.
+- **Infrastructure**: Docker & Docker Compose.
+- **MCP**: Implements Model Context Protocol for standardized AI interactions.
 
-#### Su Mac o Linux:
-- **Clicca due volte** sul file `start.sh` (oppure clic destro → Apri con → Terminale)
-- Lo script installerà automaticamente Docker (se necessario) e avvierà l'applicazione
+## 📋 Prerequisites
 
-### Cosa Succede Quando Avvii l'Applicazione
+Before running the application, ensure you have the following installed:
 
-1. Lo script verifica se Docker è installato sul tuo computer
-2. Se Docker non è presente, lo installerà automaticamente (potrebbe richiedere alcuni minuti)
-3. Una volta installato Docker, l'applicazione si avvierà automaticamente
-4. Dopo qualche secondo, l'applicazione sarà disponibile nel tuo browser all'indirizzo: **http://localhost:3007**
+- **Docker Desktop** (Recommended for easiest setup)
+- **Node.js 20+** (For local development)
+- **npm** or **yarn**
 
-> **Nota**: Se è la prima volta che avvii l'applicazione, l'installazione di Docker potrebbe richiedere alcuni minuti. Dopo la prima installazione, l'avvio sarà molto più veloce.
+## 🐳 Quick Start (Docker)
 
-### Aprire l'Applicazione nel Browser
+The easiest way to run Formit is using Docker Compose. This starts the Database, Redis, Backend, and Frontend services automatically.
 
-Dopo aver avviato lo script, apri il tuo browser preferito (Chrome, Firefox, Safari, ecc.) e vai all'indirizzo:
+### Start Application
 
-```
-http://localhost:3007
-```
-
-## 📖 Come Funziona Formit
-
-Formit ti aiuta a verificare automaticamente se i documenti di analisi microbiologiche sono conformi ai limiti normativi. L'applicazione ha due funzionalità principali:
-
-### 1. 📄 Verifica PDF
-
-Questa è la funzionalità principale dell'applicazione. Ti permette di:
-
-- **Caricare uno o più PDF** di analisi microbiologiche (fino a 10 file alla volta, massimo 50MB ciascuno)
-- **Analisi automatica**: L'intelligenza artificiale estrae automaticamente:
-  - Il tipo di alimento/prodotto analizzato (matrice)
-  - La categoria normativa (CEIRSA, bevande, ecc.)
-  - I parametri microbiologici con i loro risultati
-- **Verifica conformità**: Il sistema confronta automaticamente i risultati con i limiti normativi
-- **Visualizzazione risultati**: Vedi immediatamente quali parametri sono conformi e quali no
-
-![Esempio di analisi PDF](public/analisi.png)
-
-### 2. ⚗️ Verifiche Custom
-
-Questa funzionalità ti permette di creare categorie personalizzate di verifiche con parametri e limiti definiti da te.
-
-- **Crea categorie personalizzate** per tipi di prodotti specifici
-- **Definisci parametri e limiti** secondo le tue esigenze
-- **Importa/Esporta** categorie per condividerle o fare backup
-
-![Esempio di categorie custom](public/categorie_custom.png)
-
-## 🖥️ Requisiti di Sistema
-
-- **Windows 10/11**, **macOS 10.15+**, o **Linux** (Ubuntu, Debian, Fedora, ecc.)
-- **Docker Desktop** (verrà installato automaticamente dallo script di avvio)
-- **4 GB di RAM** disponibili
-- **Connessione Internet** (solo per la prima installazione)
-
-## 🛠️ Comandi Utili
-
-### Avviare l'Applicazione
 ```bash
-# Windows
-start.bat
-
-# Mac/Linux
-./start.sh
-```
-
-### Fermare l'Applicazione
-Apri un terminale nella cartella del progetto e digita:
-```bash
-docker compose down
-```
-
-### Visualizzare i Log
-Per vedere cosa sta succedendo nell'applicazione:
-```bash
-docker compose logs -f formit-mcp
-```
-
-### Riavviare l'Applicazione
-```bash
-docker compose restart
-```
-
-## 🐳 Uso con Docker Compose
-
-Se preferisci usare Docker Compose direttamente, puoi avviare sia il backend che il frontend con un singolo comando:
-
-### Avviare tutti i servizi (Backend + Frontend)
-```bash
+# Start all services in the background
 docker compose up -d
-```
 
-Questo comando avvierà:
-- **Redis** sulla porta 6380
-- **Backend API** (`formit-mcp`) sulla porta 3007
-- **Frontend** (`formit-frontend`) sulla porta 5173
-
-### Accedere all'applicazione
-
-Dopo l'avvio, l'applicazione sarà disponibile su:
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3007
-- **Documentazione API (Swagger)**: http://localhost:3007/docs
-
-### Build e avvio
-```bash
-# Build e avvio in un unico comando
-docker compose up -d --build
-```
-
-### Visualizzare i log di tutti i servizi
-```bash
-# Log di tutti i servizi
+# View logs
 docker compose logs -f
-
-# Log solo del backend
-docker compose logs -f formit-mcp
-
-# Log solo del frontend
-docker compose logs -f formit-frontend
 ```
 
-### Fermare tutti i servizi
+Once started, access the application at:
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend API**: [http://localhost:3007](http://localhost:3007)
+- **API Docs (Swagger)**: [http://localhost:3007/docs](http://localhost:3007/docs)
+
+### Stop Application
+
 ```bash
 docker compose down
 ```
 
-### Riavviare un servizio specifico
-```bash
-# Riavvia solo il backend
-docker compose restart formit-mcp
+## 💻 Local Development Setup
 
-# Riavvia solo il frontend
-docker compose restart formit-frontend
+If you want to contribute or modify the code, follow these steps to run the services locally.
+
+### 1. Backend Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Setup Environment Variables
+# Copy example .env if available, otherwise ensure DATABASE_URL is set
+# Default: DATABASE_URL="file:./dev.db"
+
+# Generate Prisma Client
+npm run prisma:generate
+
+# Run Database Migrations
+npm run prisma:migrate
+
+# Start Backend in Development Mode
+npm run api:dev
 ```
 
-## 📸 Screenshot dell'Applicazione
+### 2. Frontend Setup
 
-Durante l'elaborazione dei PDF, vedrai un indicatore di caricamento:
-
-![Loader durante l'elaborazione](public/loader.png)
-
-## ❓ Domande Frequenti
-
-### L'applicazione non si avvia, cosa devo fare?
-
-1. Assicurati che Docker Desktop sia in esecuzione (su Windows/Mac, cerca "Docker Desktop" nelle applicazioni)
-2. Se Docker non è installato, esegui di nuovo lo script `start.bat` o `start.sh`
-3. Controlla che la porta 3007 non sia già utilizzata da un'altra applicazione
-
-### Posso usare l'applicazione senza Internet?
-
-Sì, dopo la prima installazione, l'applicazione funziona completamente offline. L'accesso a Internet è necessario solo per:
-- La prima installazione di Docker
-- L'aggiornamento dell'applicazione
-
-### Come posso aggiornare l'applicazione?
-
-1. Ferma l'applicazione: `docker compose down`
-2. Aggiorna il codice del progetto
-3. Riavvia: `./start.sh` o `start.bat`
-
-### I miei dati sono al sicuro?
-
-Sì, tutti i dati vengono salvati localmente sul tuo computer. Nessun dato viene inviato a server esterni.
-
-## 🔧 Per Sviluppatori
-
-Se sei uno sviluppatore e vuoi contribuire o modificare il codice, consulta la sezione tecnica qui sotto.
-
-### Requisiti per lo Sviluppo
-
-- Node.js 20+
-- SQLite (incluso nel runtime)
-- npm o yarn
-
-### Configurazione
-
-1. Copia il file `.env` di esempio e verifica il valore di `DATABASE_URL` (default `file:./dev.db`)
-2. Installa le dipendenze: `npm install`
-3. Genera il client Prisma: `npm run prisma:generate`
-
-### Migrazioni Database
-
-- Crea o aggiorna il database locale: `npm run prisma:migrate`
-- Apri Prisma Studio per ispezionare i dati: `npm run prisma:studio`
-
-### Esecuzione in Sviluppo
-
-- Ambiente di sviluppo TypeScript: `npm run dev`
-- Build di produzione: `npm run build` seguito da `npm run start`
-- API in sviluppo: `npm run api:dev`
-- Client React in sviluppo: vai nella cartella `client` e esegui `npm run dev`
-
-### Test
-
-Per lanciare i test di integrazione:
 ```bash
-npx vitest run test/integration
+cd client
+
+# Install dependencies
+npm install
+
+# Start Frontend
+npm run dev
 ```
 
-## 📁 Struttura del Progetto
+### 3. Worker & Queue Setup
 
-- `start.sh` / `start.bat`: Script per avviare l'applicazione (per utenti finali)
-- `docker-compose.yml`: Configurazione Docker
-- `client/`: Applicazione web React (frontend)
-- `src/`: Codice sorgente del server (backend)
-- `prisma/`: Database e schema dati
-- `public/`: Immagini e file statici
+The PDF processing requires Redis and the worker process running.
 
-## 📞 Supporto
+```bash
+# Ensure Redis is running (e.g., via Docker)
+docker run -d -p 6380:6379 redis
 
-Per problemi o domande, consulta la documentazione tecnica o apri una issue sul repository GitHub.
+# Start the worker process
+npm run dev # This starts the main entry point which orchestrates services
+```
 
----
+## 📂 Project Structure
 
-**Formit** - Analisi intelligente di documenti microbiologici
+- `client/` - React frontend application.
+- `src/server/` - Backend API (Fastify) and controllers.
+- `src/modules/` - Business logic including conformity checks (CEIRSA, custom, etc.).
+- `src/mcp/` - Model Context Protocol integration.
+- `prisma/` - Database schema and migrations.
+- `scripts/` - Utility scripts for setup/deployment.
+
+## 🧪 Testing
+
+Run integration tests using Vitest:
+
+```bash
+npm test
+```
+
+## 📄 License
+
+This project is licensed under the MIT License.
