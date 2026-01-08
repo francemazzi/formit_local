@@ -49,6 +49,8 @@ services:
       - ./uploads:/app/uploads
       # Cartella analisi microbiologiche
       - ./data/analisi_microbiologiche:/app/analisi:ro
+      # Dataset CEIRSA e altri dati di riferimento
+      - ./dataset:/app/dataset:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3007/health"]
       interval: 30s

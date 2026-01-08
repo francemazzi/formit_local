@@ -92,3 +92,66 @@ Considera che:
 - Le unità di misura possono variare ma il parametro essere lo stesso
 
 Rispondi SOLO con "true" se sono equivalenti, "false" altrimenti. Nessuna spiegazione.`;
+
+/**
+ * Prompt for LLM-based compliance decision.
+ * Handles unit compatibility checks, numeric parsing, and threshold comparison.
+ */
+export const ceirsaComplianceDecisionPrompt = `Sei un esperto di microbiologia alimentare e sicurezza alimentare.
+
+RISULTATO ANALISI:
+- Valore misurato: {measuredResult}
+- Unità di misura: {measuredUnit}
+
+LIMITI CEIRSA:
+- Soddisfacente: {satisfactoryValue}
+- Accettabile: {acceptableValue}
+- Insoddisfacente: {unsatisfactoryValue}
+
+COMPITO:
+Analizza il risultato e determina la conformità secondo i criteri CEIRSA.
+
+STEP 1 - ANALISI UNITÀ DI MISURA:
+Verifica se le unità sono compatibili:
+- Unità per SUPERFICI: UFC/cm², UFC/cm2, ufc per cm quadrato (usate per tamponi ambientali)
+- Unità per ALIMENTI: UFC/g, UFC/ml, ufc/g, ufc/ml (usate per matrici alimentari)
+
+⚠️ IMPORTANTE: Le unità per superfici e quelle per alimenti sono INCOMPATIBILI tra loro.
+Non esiste conversione tra UFC/cm² e UFC/g. Se rilevi questa incompatibilità, restituisci band "unknown".
+
+STEP 2 - PARSING DEI VALORI:
+Interpreta correttamente:
+- Notazione scientifica: "10^3" = 1000, "10^2" = 100, "10^4" = 10000
+- Notazione compressa: "102" in contesto CEIRSA spesso significa "10^2" = 100
+- Operatori: "<" (minore), "≤" (minore o uguale), "≥" (maggiore o uguale), ">" (maggiore)
+- Valori speciali: "Assente", "Non rilevato", "NR", "Rilevato", "Presente"
+- Intervalli: "10 ≤ x < 100" significa valore tra 10 (incluso) e 100 (escluso)
+
+STEP 3 - DECISIONE:
+Classifica in UNA delle fasce:
+- "satisfactory": valore conforme entro soglia soddisfacente
+- "acceptable": valore nella fascia di attenzione ma ancora conforme
+- "unsatisfactory": valore oltre la soglia insoddisfacente
+- "unknown": impossibile determinare (unità incompatibili, dati mancanti, confronto non valido)
+
+FORMATO RISPOSTA JSON:
+{{
+  "band": "satisfactory" | "acceptable" | "unsatisfactory" | "unknown",
+  "isCheck": true | false | null,
+  "appliedLimit": "testo esatto del limite applicato o null",
+  "rationale": "spiegazione dettagliata della decisione"
+}}
+
+REGOLE isCheck:
+- "satisfactory" → isCheck = true
+- "acceptable" → isCheck = true (conforme ma in attenzione)
+- "unsatisfactory" → isCheck = false
+- "unknown" → isCheck = null
+
+IMPORTANTE:
+- Se il criterio richiede "Assente" e il risultato indica presenza/rilevazione → unsatisfactory
+- Se il criterio richiede "Assente" e il risultato è "Assente/Non rilevato/NR" → satisfactory
+- Se non riesci a confrontare i valori con certezza → unknown
+- NON indovinare mai. Se hai dubbi, restituisci "unknown"
+
+Rispondi SOLO con il JSON, nessun testo aggiuntivo.`;

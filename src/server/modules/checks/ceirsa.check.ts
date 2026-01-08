@@ -12,6 +12,7 @@ import { RawComplianceResult } from "./index";
 import {
   ceirsaCompliancePromptTemplate,
   ceirsaParameterEquivalencePrompt,
+  ceirsaComplianceDecisionPrompt,
 } from "../../prompts/ceirsa_check.prompts";
 
 interface CeirsaCategoryProvider {
@@ -92,129 +93,41 @@ interface CeirsaDecision {
   rationale: string;
 }
 
-const normalizeUnit = (unitText: string): string => {
-  return unitText.toLowerCase().replace(/\s+/g, "").replace(/\./g, "").trim();
-};
-
-const extractUnitFromLimit = (limitText: string): string | null => {
-  if (!limitText) return null;
-  const match = limitText.match(/\(([^)]+)\)/);
-  return match?.[1]?.trim() ?? null;
-};
-
-/**
- * Detects if the unit is a surface unit (UFC/cm², UFC/cm2, etc.)
- * Surface units are INCOMPATIBLE with food/mass units (UFC/g).
- */
-const isSurfaceUnit = (unit: string): boolean => {
-  const normalized = normalizeUnit(unit);
-  return (
-    normalized.includes("cm2") ||
-    normalized.includes("cm²") ||
-    normalized.includes("/cm") ||
-    normalized.includes("percm")
-  );
-};
-
-/**
- * Detects if the unit is a food/mass unit (UFC/g, UFC/ml, etc.)
- */
-const isFoodUnit = (unit: string): boolean => {
-  const normalized = normalizeUnit(unit);
-  return (
-    (normalized.includes("/g") ||
-      normalized.includes("ufcg") ||
-      normalized.includes("ufc/g")) &&
-    !isSurfaceUnit(unit)
-  );
-};
-
-/**
- * Checks if two units are conceptually incompatible (surface vs food).
- * This is a hard block - no conversion is possible.
- */
-const areUnitsIncompatible = (
-  measuredUnit: string,
-  limitUnit: string
-): boolean => {
-  const measuredIsSurface = isSurfaceUnit(measuredUnit);
-  const limitIsSurface = isSurfaceUnit(limitUnit);
-  const measuredIsFood = isFoodUnit(measuredUnit);
-  const limitIsFood = isFoodUnit(limitUnit);
-
-  // Surface vs Food = INCOMPATIBLE
-  if (
-    (measuredIsSurface && limitIsFood) ||
-    (measuredIsFood && limitIsSurface)
-  ) {
-    return true;
-  }
-
-  return false;
-};
-
-const normalizeLimit = (limitText: string): string => {
-  if (!limitText) return limitText;
-  return limitText.replace(/\b10([1-9][0-9]*)\b/g, "10^$1");
-};
-
-const parseCeirsaNumber = (value: string): number => {
-  const trimmed = value.trim().toLowerCase();
-  const pow = trimmed.match(/^10\^([0-9])$/);
-  if (pow?.[1]) return Math.pow(10, Number(pow[1]));
-  return Number(trimmed);
-};
-
-const parseMeasuredNumeric = (resultLower: string): number | null => {
-  const lt = resultLower.match(/<\s*([0-9]+(?:\.[0-9]+)?)/);
-  if (lt?.[1]) return Number(lt[1]);
-  const num = resultLower.match(/([0-9]+(?:\.[0-9]+)?)/);
-  if (num?.[1]) return Number(num[1]);
-  return null;
-};
-
-const parseUpperThresholdFromLimit = (limitText: string): number | null => {
-  if (!limitText) return null;
-  const normalized = normalizeLimit(limitText.toLowerCase());
-  const match = normalized.match(/(<|≤)\s*(10\^[0-9]|[0-9]+(?:\.[0-9]+)?)/);
-  if (!match?.[2]) return null;
-  return parseCeirsaNumber(match[2]);
-};
-
-const parseLowerThresholdFromLimit = (limitText: string): number | null => {
-  if (!limitText) return null;
-  const normalized = normalizeLimit(limitText.toLowerCase());
-  const match = normalized.match(/(≥|>=)\s*(10\^[0-9]|[0-9]+(?:\.[0-9]+)?)/);
-  if (!match?.[2]) return null;
-  return parseCeirsaNumber(match[2]);
-};
-
-const parseRangeFromLimit = (
-  limitText: string
-): {
-  minInclusive: number | null;
-  maxExclusive: number | null;
-} | null => {
-  if (!limitText) return null;
-  const normalized = normalizeLimit(limitText.toLowerCase());
-  const match = normalized.match(
-    /(10\^[0-9]|[0-9]+(?:\.[0-9]+)?)\s*≤\s*x\s*<\s*(10\^[0-9]|[0-9]+(?:\.[0-9]+)?)/
-  );
-  if (!match?.[1] || !match?.[2]) return null;
-  return {
-    minInclusive: parseCeirsaNumber(match[1]),
-    maxExclusive: parseCeirsaNumber(match[2]),
-  };
-};
-
-const decideCompliance = (input: {
+interface ComplianceDecisionInput {
   resultRaw: string;
   measuredUnit: string;
   satisfactoryValue?: string;
   acceptableValue?: string;
   unsatisfactoryValue?: string;
-}): CeirsaDecision => {
-  const result = (input.resultRaw ?? "").trim().toLowerCase();
+}
+
+/**
+ * Cache for compliance decision results to avoid redundant LLM calls.
+ */
+const complianceDecisionCache = new Map<string, CeirsaDecision>();
+
+const buildComplianceDecisionCacheKey = (
+  input: ComplianceDecisionInput
+): string => {
+  return `${input.resultRaw}::${input.measuredUnit}::${
+    input.satisfactoryValue ?? ""
+  }::${input.acceptableValue ?? ""}::${input.unsatisfactoryValue ?? ""}`;
+};
+
+/**
+ * Uses LLM to determine compliance decision.
+ * Handles unit compatibility checks, numeric parsing, and threshold comparison.
+ */
+const decideComplianceWithLLM = async (
+  input: ComplianceDecisionInput
+): Promise<CeirsaDecision> => {
+  const cacheKey = buildComplianceDecisionCacheKey(input);
+
+  if (complianceDecisionCache.has(cacheKey)) {
+    return complianceDecisionCache.get(cacheKey)!;
+  }
+
+  const result = (input.resultRaw ?? "").trim();
   if (!result) {
     return {
       band: "unknown",
@@ -224,151 +137,62 @@ const decideCompliance = (input: {
     };
   }
 
-  const sat = input.satisfactoryValue?.trim() ?? "";
-  const acc = input.acceptableValue?.trim() ?? "";
-  const unsat = input.unsatisfactoryValue?.trim() ?? "";
+  try {
+    const decisionModel = new ChatOpenAI({
+      modelName: "gpt-4o-mini",
+      temperature: 0,
+    });
 
-  const measuredUnitNorm = normalizeUnit(input.measuredUnit ?? "");
-  const ceirsaUnit =
-    extractUnitFromLimit(sat) ??
-    extractUnitFromLimit(acc) ??
-    extractUnitFromLimit(unsat);
+    const prompt = ceirsaComplianceDecisionPrompt
+      .replace("{measuredResult}", input.resultRaw)
+      .replace("{measuredUnit}", input.measuredUnit || "non specificata")
+      .replace(
+        "{satisfactoryValue}",
+        input.satisfactoryValue || "non specificato"
+      )
+      .replace("{acceptableValue}", input.acceptableValue || "non specificato")
+      .replace(
+        "{unsatisfactoryValue}",
+        input.unsatisfactoryValue || "non specificato"
+      );
 
-  // CRITICAL: Check for conceptually incompatible units (surface vs food)
-  // UFC/cm² (surfaces) CANNOT be compared to UFC/g (food) - no valid conversion exists
-  if (ceirsaUnit && input.measuredUnit) {
-    if (areUnitsIncompatible(input.measuredUnit, ceirsaUnit)) {
+    const response = await decisionModel.invoke(prompt);
+    const rawContent = response.content?.toString().trim() ?? "";
+
+    const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.warn(
+        "LLM compliance decision returned invalid JSON:",
+        rawContent
+      );
       return {
         band: "unknown",
         isCheck: null,
         appliedLimit: null,
-        rationale:
-          `ERRORE: Unità incompatibili. Il risultato è in ${input.measuredUnit} (superficie) ma i limiti CEIRSA sono in ${ceirsaUnit} (alimento). ` +
-          `Non esiste una conversione valida tra UFC/cm² e UFC/g. ` +
-          `Per tamponi ambientali, consultare i limiti specifici per superfici/attrezzature del piano HACCP.`,
+        rationale: "Errore nel parsing della risposta LLM.",
       };
     }
-  }
 
-  if (ceirsaUnit) {
-    const ceirsaUnitNorm = normalizeUnit(ceirsaUnit);
-    if (
-      measuredUnitNorm &&
-      ceirsaUnitNorm &&
-      measuredUnitNorm !== ceirsaUnitNorm
-    ) {
-      return {
-        band: "unknown",
-        isCheck: null,
-        appliedLimit: null,
-        rationale:
-          "Units are not comparable between measured result and CEIRSA limits (best-effort).",
-      };
-    }
-  }
+    const parsed = JSON.parse(jsonMatch[0]) as CeirsaDecision;
 
-  const isAbsent =
-    result.includes("assente") ||
-    result.includes("non rilevato") ||
-    result === "nr";
-  const isDetected = result.includes("rilevato") || result === "r";
-
-  if (sat.toLowerCase().includes("assente") && isDetected) {
-    return {
-      band: "unsatisfactory",
-      isCheck: false,
-      appliedLimit: sat,
-      rationale:
-        "Il criterio richiede assenza ma il risultato indica rilevazione/presenza.",
+    const decision: CeirsaDecision = {
+      band: parsed.band || "unknown",
+      isCheck: parsed.isCheck ?? null,
+      appliedLimit: parsed.appliedLimit ?? null,
+      rationale: parsed.rationale || "Nessuna motivazione fornita.",
     };
-  }
-  if (sat.toLowerCase().includes("assente") && isAbsent) {
-    return {
-      band: "satisfactory",
-      isCheck: true,
-      appliedLimit: sat,
-      rationale: "Il criterio richiede assenza e il risultato è assente/NR.",
-    };
-  }
 
-  const numeric = parseMeasuredNumeric(result);
-  if (numeric === null) {
+    complianceDecisionCache.set(cacheKey, decision);
+    return decision;
+  } catch (error) {
+    console.warn("LLM compliance decision failed:", error);
     return {
       band: "unknown",
       isCheck: null,
       appliedLimit: null,
-      rationale: "Risultato non numerico e non gestibile con regole semplici.",
+      rationale: "Errore durante la valutazione di conformità.",
     };
   }
-
-  if (acc) {
-    const satUpper = parseUpperThresholdFromLimit(sat);
-    const accRange = parseRangeFromLimit(acc);
-    const unsatLower = parseLowerThresholdFromLimit(unsat);
-
-    if (satUpper !== null && numeric < satUpper) {
-      return {
-        band: "satisfactory",
-        isCheck: true,
-        appliedLimit: sat,
-        rationale: `Valore ${numeric} < soglia soddisfacente ${satUpper}.`,
-      };
-    }
-
-    if (unsatLower !== null && numeric >= unsatLower) {
-      return {
-        band: "unsatisfactory",
-        isCheck: false,
-        appliedLimit: unsat,
-        rationale: `Valore ${numeric} ≥ soglia insoddisfacente ${unsatLower}.`,
-      };
-    }
-
-    if (accRange) {
-      const okMin =
-        accRange.minInclusive === null
-          ? true
-          : numeric >= accRange.minInclusive;
-      const okMax =
-        accRange.maxExclusive === null ? true : numeric < accRange.maxExclusive;
-      if (okMin && okMax) {
-        return {
-          band: "acceptable",
-          isCheck: true,
-          appliedLimit: acc,
-          rationale: `Valore ${numeric} rientra nel range accettabile.`,
-        };
-      }
-    }
-  }
-
-  const satUpper = parseUpperThresholdFromLimit(sat);
-  const unsatLower = parseLowerThresholdFromLimit(unsat);
-
-  if (satUpper !== null && numeric < satUpper) {
-    return {
-      band: "satisfactory",
-      isCheck: true,
-      appliedLimit: sat,
-      rationale: `Valore ${numeric} < soglia soddisfacente ${satUpper}.`,
-    };
-  }
-  if (unsatLower !== null && numeric >= unsatLower) {
-    return {
-      band: "unsatisfactory",
-      isCheck: false,
-      appliedLimit: unsat,
-      rationale: `Valore ${numeric} ≥ soglia insoddisfacente ${unsatLower}.`,
-    };
-  }
-
-  return {
-    band: "unknown",
-    isCheck: null,
-    appliedLimit: null,
-    rationale:
-      "Impossibile classificare in modo deterministico con i limiti disponibili.",
-  };
 };
 
 const normalizeParameterName = (name: string): string => {
@@ -486,18 +310,8 @@ const buildPrompt = async (
     .filter(Boolean)
     .join("\n");
 
-  const normalizedCeirsaLimits = [
-    input.satisfactoryValue &&
-      `Soddisfacente: ${normalizeLimit(input.satisfactoryValue)}`,
-    input.acceptableValue &&
-      `Accettabile: ${normalizeLimit(input.acceptableValue)}`,
-    input.unsatisfactoryValue &&
-      `Insoddisfacente: ${normalizeLimit(input.unsatisfactoryValue)}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const decision = decideCompliance({
+  // Get compliance decision from LLM
+  const decision = await decideComplianceWithLLM({
     resultRaw: input.result,
     measuredUnit: input.unit,
     ...(input.satisfactoryValue
@@ -518,8 +332,7 @@ const buildPrompt = async (
     method: input.method || "",
     ceirsaParameter: input.ceirsaParameter,
     ceirsaLimits: ceirsaLimits || "Nessun limite specificato",
-    normalizedCeirsaLimits:
-      normalizedCeirsaLimits || "Nessun limite specificato",
+    normalizedCeirsaLimits: ceirsaLimits || "Nessun limite specificato",
     autoBand:
       decision.band === "satisfactory"
         ? "soddisfacente"
@@ -571,7 +384,8 @@ const checkCompliance = async (
   const results = await evaluateCompliance(prompt, model, parser);
   const normalizedResults = Array.isArray(results) ? results : [];
 
-  const decision = decideCompliance({
+  // Get compliance decision from LLM
+  const decision = await decideComplianceWithLLM({
     resultRaw: input.result,
     measuredUnit: input.unit,
     ...(input.satisfactoryValue

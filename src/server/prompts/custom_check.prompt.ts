@@ -1,6 +1,7 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
-export const customCheckPromptTemplate = PromptTemplate.fromTemplate(`
+export const customCheckPromptTemplate = PromptTemplate.fromTemplate(
+  `
 Analizza i seguenti criteri personalizzati per determinare la conformità del parametro analitico.
 
 PARAMETRO ANALIZZATO:
@@ -59,4 +60,5 @@ FORMATO RISPOSTA (JSON) - DEVI RESTITUIRE UN ARRAY CON 1 ELEMENTO:
 Se non trovi criteri chiari o non puoi confrontare, restituisci array vuoto [].
 
 {formatInstructions}
-`.trim());
+`.trim()
+);

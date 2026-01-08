@@ -99,14 +99,13 @@ export const environmentalSwabComplianceCheck = async (
           : analysis.result;
         return {
           name: analysis.parameter,
-          value: resultValue,
+          value: "Limite non specificato per superfici",
           isCheck: null, // Da confermare - nessun limite chiaro trovato
           description:
-            `Questo è un tampone ambientale/superficie (${matrix.matrix}${descriptionText}). ` +
-            `I risultati sono espressi in UFC/cm² e NON possono essere confrontati con i limiti CEIRSA per alimenti (UFC/g). ` +
-            `Per valutare la conformità, è necessario consultare i limiti specifici per superfici/attrezzature ` +
-            `definiti nel piano HACCP o nelle specifiche interne dell'azienda. ` +
-            `Stato: DA CONFERMARE - non è stato possibile determinare limiti normativi chiari per questo parametro.`,
+            `Risultato: ${resultValue}. ` +
+            `I limiti CEIRSA per alimenti (UFC/g) NON sono applicabili ai tamponi ambientali (UFC/cm²). ` +
+            `Non è stato possibile determinare limiti normativi specifici per superfici. ` +
+            `Consultare i limiti definiti nel piano HACCP o nelle specifiche interne dell'azienda.`,
           sources: baseSources,
         };
       });
@@ -134,7 +133,7 @@ export const environmentalSwabComplianceCheck = async (
       ...tavilyResult.sources,
     ];
 
-    // Add missing analyses with default warning and ensure value contains actual result
+    // Add missing analyses with default warning
     for (const analysis of analyses) {
       const normalizedName = analysis.parameter.toLowerCase().trim();
       if (!resultParamNames.has(normalizedName)) {
@@ -143,29 +142,21 @@ export const environmentalSwabComplianceCheck = async (
           : analysis.result;
         parsed.push({
           name: analysis.parameter,
-          value: resultValue,
+          value: "Limite non specificato per superfici",
           isCheck: null, // Da confermare - nessun limite chiaro trovato
           description:
-            `Questo è un tampone ambientale/superficie (${matrix.matrix}${descriptionText}). ` +
-            `I risultati sono espressi in UFC/cm² e NON possono essere confrontati con i limiti CEIRSA per alimenti (UFC/g). ` +
-            `Per valutare la conformità, è necessario consultare i limiti specifici per superfici/attrezzature ` +
-            `definiti nel piano HACCP o nelle specifiche interne dell'azienda. ` +
-            `Stato: DA CONFERMARE - non è stato possibile determinare limiti normativi chiari per questo parametro.`,
+            `Risultato: ${resultValue}. ` +
+            `I limiti CEIRSA per alimenti (UFC/g) NON sono applicabili ai tamponi ambientali (UFC/cm²). ` +
+            `Non è stato possibile determinare limiti normativi specifici per questo parametro. ` +
+            `Consultare i limiti definiti nel piano HACCP o nelle specifiche interne dell'azienda.`,
           sources: baseSources,
         });
       } else {
-        // Ensure existing results have the actual analysis value if it's still "N/A"
+        // Merge Tavily sources with existing sources (avoid duplicates)
         const existingResult = parsed.find(
           (r) => r.name.toLowerCase().trim() === normalizedName
         );
         if (existingResult) {
-          if (existingResult.value.includes("N/A")) {
-            const resultValue = analysis.um_result
-              ? `${analysis.result} ${analysis.um_result}`
-              : analysis.result;
-            existingResult.value = resultValue;
-          }
-          // Merge Tavily sources with existing sources (avoid duplicates)
           const existingSourceIds = new Set(existingResult.sources.map(s => s.id));
           const newTavilySources = tavilyResult.sources.filter(s => !existingSourceIds.has(s.id));
           existingResult.sources = [...existingResult.sources, ...newTavilySources];
@@ -200,13 +191,12 @@ export const environmentalSwabComplianceCheck = async (
         : analysis.result;
       return {
         name: analysis.parameter,
-        value: resultValue,
-        isCheck: true,
+        value: "Limite non specificato per superfici",
+        isCheck: null, // Da confermare - errore durante valutazione
         description:
-          `Questo è un tampone ambientale/superficie (${matrix.matrix}${descriptionText}). ` +
-          `I risultati sono espressi in UFC/cm² e NON possono essere confrontati con i limiti CEIRSA per alimenti (UFC/g). ` +
-          `Per valutare la conformità, è necessario consultare i limiti specifici per superfici/attrezzature ` +
-          `definiti nel piano HACCP o nelle specifiche interne dell'azienda.`,
+          `Risultato: ${resultValue}. ` +
+          `I limiti CEIRSA per alimenti (UFC/g) NON sono applicabili ai tamponi ambientali (UFC/cm²). ` +
+          `Errore durante la valutazione automatica. Consultare i limiti definiti nel piano HACCP.`,
         sources: baseSources,
       };
     });

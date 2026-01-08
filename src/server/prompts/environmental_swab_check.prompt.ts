@@ -15,67 +15,66 @@ INFORMAZIONI SUL CAMPIONE:
 CONTESTO DOCUMENTO ORIGINALE:
 {markdownContent}
 
-CONTESTO NORMATIVO (ricerca web Tavily):
+CONTESTO NORMATIVO (ricerca web Tavily) - FONTE AUTOREVOLE PER I LIMITI:
 {tavilyContext}
 
-⚠️ REGOLA CRITICA - UNITÀ DI MISURA INCOMPATIBILI:
-I tamponi ambientali misurano la carica microbica su SUPERFICI e utilizzano l'unità di misura UFC/cm² (unità formanti colonia per centimetro quadrato).
-
-I limiti CEIRSA sono definiti per ALIMENTI e utilizzano l'unità di misura UFC/g (unità formanti colonia per grammo).
-
-⚠️ NON ESISTE UNA CONVERSIONE VALIDA tra UFC/cm² (superfici) e UFC/g (alimenti).
-Queste unità misurano entità completamente diverse:
-- UFC/cm² misura la contaminazione microbica su una superficie
-- UFC/g misura la contaminazione microbica in un alimento
+⚠️ NOTA IMPORTANTE:
+I limiti CEIRSA sono definiti per ALIMENTI (UFC/g) e NON sono applicabili ai tamponi ambientali (UFC/cm²).
+DEVI usare i limiti trovati nel CONTESTO NORMATIVO (Tavily) sopra per valutare la conformità.
 
 COMPITO:
-Valuta OGNI parametro analizzato nel tampone ambientale confrontando il risultato con i limiti normativi trovati nel contesto normativo (Tavily).
+1. LEGGI ATTENTAMENTE il contesto normativo (Tavily) per ESTRARRE i limiti per superfici/tamponi
+2. CONFRONTA il risultato numerico con i limiti trovati
+3. EMETTI un VERDETTO chiaro (conforme/non conforme)
 
-IMPORTANTE:
-- I risultati sono espressi in UFC/cm² e NON possono essere confrontati con i limiti CEIRSA per alimenti (UFC/g)
-- ANALIZZA ATTENTAMENTE il contesto normativo (Tavily) per trovare limiti specifici per superfici/tamponi ambientali
-- Se trovi limiti chiari nel contesto normativo:
-  * Confronta il risultato numerico con il limite trovato
-  * Se il risultato è SUPERIORE al limite → isCheck = false (NON CONFORME)
-  * Se il risultato è INFERIORE o UGUALE al limite → isCheck = true (CONFORME)
-  * Nella description spiega il confronto: "Risultato: X UFC/cm². Limite normativo: Y UFC/cm². [Conforme/Non conforme]"
-- Se NON trovi limiti chiari o non puoi determinare con certezza → isCheck = null (DA CONFERMARE)
-- Nella description includi sempre l'avviso che i limiti CEIRSA non sono applicabili
+LIMITI DI RIFERIMENTO COMUNI PER SUPERFICI (da usare se trovati nel contesto Tavily):
+- Microrganismi mesofili/Conta totale: generalmente 4 UFC/cm² (superfici di lavorazione), 1 UFC/cm² (utensili a contatto diretto)
+- Enterobatteri: generalmente < 1 UFC/cm²
+- Coliformi totali: generalmente < 1 UFC/cm²
+- Stafilococchi coagulasi positivi: generalmente assenti
+
+REGOLE DI DECISIONE (OBBLIGATORIE):
+1. Se il CONTESTO NORMATIVO (Tavily) contiene un limite numerico per il parametro:
+   - ESTRAI il valore numerico del limite (es. "4 UFC/cm²")
+   - CONFRONTA con il risultato dell'analisi
+   - Se risultato ≤ limite → isCheck = TRUE (CONFORME)
+   - Se risultato > limite → isCheck = FALSE (NON CONFORME)
+
+2. ESEMPI CONCRETI:
+   - Risultato "33 UFC/cm²", limite trovato "4 UFC/cm²" → 33 > 4 → isCheck = FALSE (NON CONFORME)
+   - Risultato "2 UFC/cm²", limite trovato "4 UFC/cm²" → 2 ≤ 4 → isCheck = TRUE (CONFORME)
+   - Risultato "< 1 UFC/cm²", limite trovato "4 UFC/cm²" → < 1 ≤ 4 → isCheck = TRUE (CONFORME)
+
+3. SOLO se NON trovi NESSUN limite nel contesto normativo → isCheck = null
 
 FORMATO RISPOSTA (JSON array):
 [
   {{
     "name": "Nome parametro",
-    "value": "Risultato con unità di misura (es. '18 UFC/cm²')",
+    "value": "Limite normativo applicato (es. '≤ 4 UFC/cm²' o 'Assente')",
     "isCheck": true/false/null,
-    "description": "Descrizione completa con confronto risultato vs limite normativo",
+    "description": "Risultato: X UFC/cm². Limite normativo per superfici: Y UFC/cm². Esito: CONFORME/NON CONFORME. [motivazione]",
     "sources": [
       {{
-        "id": "environmental-swab-warning",
-        "title": "Avviso: Unità di misura non comparabili",
+        "id": "surface-limit-source",
+        "title": "Limite microbiologico superfici",
         "url": null,
-        "excerpt": "UFC/cm² (superfici) ≠ UFC/g (alimenti). Necessari limiti specifici per superfici."
+        "excerpt": "Limite applicato: Y UFC/cm² (fonte: [nome fonte dal contesto Tavily])"
       }}
     ]
   }}
 ]
 
-REGOLE PER isCheck:
-- isCheck = true → se il risultato è CONFORME rispetto ai limiti trovati nel contesto normativo
-- isCheck = false → se il risultato è NON CONFORME (supera i limiti trovati)
-- isCheck = null → se NON trovi limiti chiari nel contesto normativo o non puoi determinare con certezza
-
-REGOLE GENERALI:
-- Restituisci UN risultato per OGNI parametro analizzato
-- value deve contenere il RISULTATO EFFETTIVO dell'analisi con la sua unità di misura (es. "18 UFC/cm²", "non rilevato", ecc.)
-- NON usare "N/A" nel campo value - mostra sempre il risultato reale dell'analisi
-- description deve includere:
-  1. L'avviso che i limiti CEIRSA non sono applicabili
-  2. Il confronto tra risultato e limite normativo (se trovato)
-  3. La motivazione della decisione (conforme/non conforme/da confermare)
-- Se nel contesto normativo (Tavily) trovi limiti specifici, estrai il valore numerico e confrontalo con il risultato
-- sources: includi SEMPRE l'avviso sulle unità di misura non comparabili come prima fonte
-- Le fonti Tavily verranno aggiunte automaticamente dal sistema, NON includerle manualmente
+REGOLE FORMATO:
+- name: Nome del parametro analizzato
+- value: Il LIMITE NORMATIVO applicato (NON il risultato dell'analisi)
+- isCheck: true (conforme) / false (non conforme) / null (solo se nessun limite trovato)
+- description: DEVE contenere:
+  1. Il RISULTATO dell'analisi (es. "33 UFC/cm²")
+  2. Il LIMITE normativo trovato (es. "4 UFC/cm²")
+  3. Il VERDETTO chiaro: "CONFORME" o "NON CONFORME"
+  4. Breve motivazione del confronto
+- sources: Fonti normative usate per il limite
 
 {formatInstructions}
 `.trim());
