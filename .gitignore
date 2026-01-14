@@ -4,3 +4,4 @@ node_modules
 data/
 dataset/ground_truth/
 uploads
+package-lock.json

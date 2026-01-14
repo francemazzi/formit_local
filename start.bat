@@ -82,16 +82,64 @@ docker compose up -d --build
 
 if %errorlevel% equ 0 (
     echo.
-    echo Formit avviato con successo!
-    echo Il servizio e' disponibile su http://localhost:3007
+    echo ========================================
+    echo   Formit avviato con successo!
+    echo   Il servizio e' disponibile su:
+    echo   http://localhost:3007
+    echo ========================================
     echo.
-    echo Per vedere i log: docker compose logs -f formit-mcp
-    echo Per fermare: docker compose down
+    goto menu
 ) else (
     echo.
     echo Errore durante l'avvio di Formit.
     echo Controlla i log con: docker compose logs
+    pause
+    exit /b 1
 )
 
-pause
+:menu
+echo.
+echo === Menu Formit ===
+echo [1] Visualizza i log in tempo reale
+echo [2] Ferma il servizio
+echo [3] Riavvia il servizio
+echo [4] Esci (il servizio rimane attivo in background)
+echo.
+set /p choice="Scegli un'opzione (1-4): "
+
+if "%choice%"=="1" (
+    echo.
+    echo Premi CTRL+C per tornare al menu...
+    echo.
+    docker compose logs -f formit-mcp
+    goto menu
+)
+if "%choice%"=="2" (
+    echo.
+    echo Arresto del servizio...
+    docker compose down
+    echo Servizio arrestato.
+    pause
+    exit /b 0
+)
+if "%choice%"=="3" (
+    echo.
+    echo Riavvio del servizio...
+    docker compose down
+    docker compose up -d --build
+    echo Servizio riavviato.
+    goto menu
+)
+if "%choice%"=="4" (
+    echo.
+    echo Il servizio Formit continua a girare in background.
+    echo Per fermarlo, esegui: docker compose down
+    echo.
+    timeout /t 3 >nul
+    exit /b 0
+)
+
+echo.
+echo Opzione non valida. Riprova.
+goto menu
 
