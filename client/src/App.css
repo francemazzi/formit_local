@@ -1824,3 +1824,282 @@ body {
 .extraction-info-card.metadata h4 {
   color: var(--accent-primary);
 }
+
+/* ========================================
+   Folder Tree Structure
+   ======================================== */
+.folder-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Date Folder */
+.folder-date {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.folder-date:hover {
+  border-color: var(--accent-primary);
+}
+
+.folder-date-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(99, 102, 241, 0.05) 100%);
+  transition: background 0.2s;
+}
+
+.folder-date-header:hover {
+  background: linear-gradient(135deg, var(--bg-card-hover) 0%, rgba(99, 102, 241, 0.1) 100%);
+}
+
+.folder-icon {
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+}
+
+.folder-chevron {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+.folder-type-icon {
+  color: var(--accent-secondary);
+  margin-left: 0.25rem;
+}
+
+.folder-type-icon.company {
+  color: #a855f7;
+}
+
+.folder-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.company-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.folder-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.stat-badge.companies {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.stat-badge.files {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-primary-hover);
+}
+
+.stat-badge.pass {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-satisfactory);
+}
+
+.stat-badge.fail {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-unsatisfactory);
+}
+
+.stat-badge.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-unsatisfactory);
+}
+
+.stat-badge.mini {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.7rem;
+  border-radius: 8px;
+}
+
+.folder-date-content {
+  padding: 0.5rem 0.5rem 0.75rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+/* Company Folder */
+.folder-company {
+  margin-top: 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.folder-company:first-child {
+  margin-top: 0.75rem;
+}
+
+.folder-company-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  transition: background 0.2s;
+}
+
+.folder-company-header:hover {
+  background: var(--bg-card-hover);
+}
+
+.folder-company-content {
+  padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+/* Extraction File Item */
+.extraction-file {
+  margin-top: 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.extraction-file:first-child {
+  margin-top: 0.5rem;
+}
+
+.extraction-file:hover {
+  border-color: var(--accent-primary);
+}
+
+.extraction-file.success {
+  border-left: 3px solid var(--color-satisfactory);
+}
+
+.extraction-file.error {
+  border-left: 3px solid var(--color-unsatisfactory);
+}
+
+.extraction-file-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.extraction-file-header:hover {
+  background: var(--bg-secondary);
+}
+
+.file-icon {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.extraction-file.error .file-icon {
+  color: var(--color-unsatisfactory);
+}
+
+.extraction-file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.extraction-file-info .file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.extraction-file-info .file-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.extraction-file-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.extraction-file-details {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+/* Spinning animation for refresh */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive adjustments for folder tree */
+@media (max-width: 768px) {
+  .folder-date-header,
+  .folder-company-header {
+    padding: 0.875rem 1rem;
+  }
+  
+  .folder-name {
+    font-size: 0.9375rem;
+  }
+  
+  .company-name {
+    font-size: 0.875rem;
+  }
+  
+  .folder-stats {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .stat-badge {
+    font-size: 0.7rem;
+    padding: 0.125rem 0.375rem;
+  }
+  
+  .folder-date-content,
+  .folder-company-content {
+    padding-left: 0.75rem;
+  }
+  
+  .extraction-file-info .file-name {
+    font-size: 0.8rem;
+  }
+}
