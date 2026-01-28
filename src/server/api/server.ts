@@ -7,6 +7,7 @@ import fastifyCors from "@fastify/cors";
 import { conformityPdfController } from "./conformity-pdf.controller";
 import { customChecksController } from "./custom-checks.controller";
 import { apiKeysController } from "./api-keys.controller";
+import { envSetupController } from "./env-setup.controller";
 
 interface ServerConfig {
   port: number;
@@ -162,6 +163,9 @@ const registerRoutes = async (fastify: FastifyInstance): Promise<void> => {
 
   // Register API keys controller
   await apiKeysController.registerRoutes(fastify);
+
+  // Register env setup controller
+  await envSetupController.registerRoutes(fastify);
 };
 
 export class ApiServer {

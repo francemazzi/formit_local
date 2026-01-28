@@ -3,12 +3,14 @@ import { Info, X, Database, Upload, Loader2 } from "lucide-react";
 import { PdfDropZone } from "../components/PdfDropZone";
 import { ResultsDisplay } from "../components/ResultsDisplay";
 import { ExtractionsList } from "../components/ExtractionsList";
+import { ApiKeySetupModal } from "../components/ApiKeySetupModal";
 import {
   conformityApi,
   type ConformityPdfResponse,
   type JobStatusResponse,
   type PdfCheckResult,
 } from "../api/conformityPdf";
+import { envSetupApi } from "../api/apiKeys";
 
 interface ConformityPageProps {
   onNavigateToCustomChecks: () => void;
@@ -29,6 +31,8 @@ export function ConformityPage({
   >(new Map());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("upload");
+  const [showApiKeySetup, setShowApiKeySetup] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
   const pollingIntervalRef = useRef<number | null>(null);
 
   const pollJobStatus = async (jobId: string) => {
@@ -126,7 +130,7 @@ export function ConformityPage({
     }
   }, [jobStatuses, results]);
 
-  const handleFilesSelected = async (files: File[]) => {
+  const processFiles = async (files: File[]) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -144,6 +148,42 @@ export function ConformityPage({
       setError(errorMessage);
       setIsLoading(false);
     }
+  };
+
+  const handleFilesSelected = async (files: File[]) => {
+    try {
+      // Check if API keys are configured
+      const envStatus = await envSetupApi.getStatus();
+
+      if (!envStatus.isConfigured) {
+        // Store files for later and show setup modal
+        setPendingFiles(files);
+        setShowApiKeySetup(true);
+        return;
+      }
+
+      // API keys are configured, proceed with analysis
+      await processFiles(files);
+    } catch (err: unknown) {
+      console.error("Error checking env status:", err);
+      // If we can't check the status, try to proceed anyway
+      await processFiles(files);
+    }
+  };
+
+  const handleApiKeySetupSuccess = async () => {
+    setShowApiKeySetup(false);
+
+    // If there are pending files, process them now
+    if (pendingFiles && pendingFiles.length > 0) {
+      await processFiles(pendingFiles);
+      setPendingFiles(null);
+    }
+  };
+
+  const handleApiKeySetupClose = () => {
+    setShowApiKeySetup(false);
+    setPendingFiles(null);
   };
 
   const handleReset = () => {
@@ -302,6 +342,14 @@ export function ConformityPage({
           />
         )}
       </main>
+
+      {/* API Key Setup Modal */}
+      {showApiKeySetup && (
+        <ApiKeySetupModal
+          onClose={handleApiKeySetupClose}
+          onSuccess={handleApiKeySetupSuccess}
+        />
+      )}
 
       {/* Drawer */}
       {isDrawerOpen && (

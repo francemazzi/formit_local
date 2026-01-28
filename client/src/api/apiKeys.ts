@@ -40,3 +40,41 @@ export const apiKeysApi = {
   },
 };
 
+// ========================================
+// Env Setup Types
+// ========================================
+
+export interface EnvStatus {
+  exists: boolean;
+  hasOpenaiKey: boolean;
+  hasTavilyKey: boolean;
+  hasDatabaseUrl: boolean;
+  isConfigured: boolean;
+}
+
+export interface EnvSetupInput {
+  openaiApiKey: string;
+  tavilyApiKey: string;
+}
+
+export interface EnvSetupResponse {
+  success: boolean;
+  message: string;
+}
+
+// ========================================
+// Env Setup API
+// ========================================
+
+export const envSetupApi = {
+  getStatus: async (): Promise<EnvStatus> => {
+    const response = await api.get<EnvStatus>("/env-status");
+    return response.data;
+  },
+
+  setup: async (data: EnvSetupInput): Promise<EnvSetupResponse> => {
+    const response = await api.post<EnvSetupResponse>("/env-setup", data);
+    return response.data;
+  },
+};
+

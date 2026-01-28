@@ -46,7 +46,8 @@ docker compose logs -f
 ```
 
 Once started, access the application at:
-- **Frontend**: [http://localhost:5173](http://localhost:5173)
+
+- **Frontend**: [http://localhost:5179](http://localhost:5179)
 - **Backend API**: [http://localhost:3007](http://localhost:3007)
 - **API Docs (Swagger)**: [http://localhost:3007/docs](http://localhost:3007/docs)
 

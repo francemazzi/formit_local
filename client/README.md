@@ -19,14 +19,14 @@ npm install
 
 ### Avvio in Sviluppo
 
-Il client React si avvia su **porta 5173** e si connette automaticamente al server backend sulla porta 3007.
+Il client React si avvia su **porta 5179** e si connette automaticamente al server backend sulla porta 3007.
 
 ```bash
 # Avvia il client in modalità sviluppo
 npm run dev
 ```
 
-L'applicazione sarà disponibile su: **http://localhost:5173**
+L'applicazione sarà disponibile su: **http://localhost:5179**
 
 > **Nota**: Assicurati che il server backend sia in esecuzione. Avvialo con `npm run api:dev` dalla root del progetto.
 
@@ -91,9 +91,10 @@ Il sistema utilizza diversi tipi di verifiche a seconda della categoria del docu
 ### 1. Check CEIRSA (Alimenti)
 
 **Parametri utilizzati:**
+
 - **Categoria CEIRSA**: Identificata automaticamente dalla matrice
 - **Parametro normativo**: Nome del parametro secondo database CEIRSA
-- **Limiti normativi**: 
+- **Limiti normativi**:
   - **Soddisfacente**: Valore limite superiore (es. `< 10² UFC/g`)
   - **Accettabile**: Range intermedio (es. `10² ≤ x < 10³ UFC/g`)
   - **Insoddisfacente**: Valore limite inferiore (es. `≥ 10³ UFC/g`)
@@ -101,6 +102,7 @@ Il sistema utilizza diversi tipi di verifiche a seconda della categoria del docu
 - **Criterio microbiologico**: Descrizione del criterio applicabile
 
 **Logica di valutazione:**
+
 - Se risultato è nella fascia **soddisfacente** → `isCheck: true`
 - Se risultato è nella fascia **accettabile** → `isCheck: true` (conforme ma in attenzione)
 - Se risultato è nella fascia **insoddisfacente** → `isCheck: false`
@@ -108,6 +110,7 @@ Il sistema utilizza diversi tipi di verifiche a seconda della categoria del docu
 ### 2. Check Bevande
 
 **Parametri utilizzati:**
+
 - **Categoria**: "beverage" (identificata automaticamente)
 - **Limiti specifici**: Standard normativi per bevande
 - **Parametri analizzati**: Microbiologia specifica per bevande
@@ -132,6 +135,7 @@ Il sistema utilizza diversi tipi di verifiche a seconda della categoria del docu
 - **Note**: Note aggiuntive sul parametro
 
 **Logica di valutazione:**
+
 1. **Confronto deterministico**: Il sistema confronta automaticamente valori numerici e unità
 2. **Fallback LLM**: Se il confronto automatico non è possibile, usa l'AI per valutare
 3. **Gestione unità**: Conversione automatica quando possibile (es. UFC/g, UFC/cm²)
@@ -140,6 +144,7 @@ Il sistema utilizza diversi tipi di verifiche a seconda della categoria del docu
 ### 4. Check Tamponi Ambientali
 
 **Parametri utilizzati:**
+
 - **Tipo campione**: Identificato come "environmental" o "surface"
 - **Avviso automatico**: Il sistema avvisa che i limiti CEIRSA (UFC/g) non sono applicabili
 - **Unità di misura**: I tamponi usano UFC/cm² invece di UFC/g
@@ -228,16 +233,19 @@ Il sistema supporta automaticamente:
 ## 🐛 Troubleshooting
 
 **Il client non si connette al backend:**
+
 - Verifica che il server backend sia in esecuzione (`npm run api:dev`)
 - Controlla che la porta 3007 sia disponibile
 - Verifica le impostazioni del proxy in `vite.config.ts`
 
 **Errori durante l'upload PDF:**
+
 - Verifica che i file siano PDF validi
 - Controlla la dimensione massima (50MB per file)
 - Assicurati che il backend abbia le API keys configurate (vedi impostazioni)
 
 **Risultati non corretti:**
+
 - Verifica che il PDF contenga dati di analisi microbiologiche leggibili
 - Controlla che la matrice sia identificata correttamente
 - Usa le verifiche custom per parametri non standard

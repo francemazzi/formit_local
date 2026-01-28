@@ -70,7 +70,7 @@ services:
     container_name: formit-frontend
     restart: unless-stopped
     ports:
-      - "5173:80"
+      - "5179:80"
     depends_on:
       formit-mcp:
         condition: service_healthy

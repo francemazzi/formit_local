@@ -1,57 +1,29 @@
 export const extractAnalysesPrompt = {
-  prompt: `Sei un esperto nell'estrazione di dati analitici da rapporti di laboratorio.
-Analizza il seguente contenuto ed estrai TUTTI i parametri analitici presenti, inclusi:
+  prompt: `Sei un esperto nell'estrazione di dati da rapporti di laboratorio.
 
-PARAMETRI MICROBIOLOGICI come per esempio:
-- Conta Escherichia coli, E. coli
-- Conta Stafilococchi coagulasi-positivi, Staphylococcus aureus
-- Salmonella
-- Listeria monocytogenes
-- Enterobatteri, Enterobacteriaceae
-- Conta batterica totale, Carica microbica
-- Coliformi totali, Coliformi fecali
-- Muffe e lieviti
-- Bacillus cereus
-- Clostridium perfringens
+OBIETTIVO: Estrai TUTTI i parametri analitici presenti nel documento, senza eccezioni.
 
-ALLERGENI (PCR/ELISA) come per esempio:
-- Allergene arachide
-- Allergene mandorla
-- Allergene noce
-- Allergene senape
-- Allergene soia
-- Allergene latte
-- Allergene uova
-- Allergene glutine/grano/frumento
-- Allergene pesce
-- Allergene crostacei
-- Allergene sedano
-- Allergene lupino
-- Allergene sesamo
-- Allergene molluschi
-- Allergene solfiti
-- Qualsiasi altro allergene
-
-ALTRI PARAMETRI:
-- pH, Aw (attività dell'acqua)
-- Qualsiasi parametro chimico-fisico
-- Qualsiasi altro parametro di laboratorio
+COME RICONOSCERE I DATI DA ESTRARRE:
+I rapporti di laboratorio contengono tipicamente una sezione "Risultati analitici" con una tabella strutturata.
+Cerca colonne con intestazioni come: "Parametro", "U.M.", "Risultato", "Metodo", "Incertezza".
+Ogni riga della tabella rappresenta un parametro da estrarre.
 
 REGOLE DI ESTRAZIONE:
-- Estrai TUTTI i parametri presenti, non solo microbiologici
-- Gestisci qualsiasi formato di tabella (markdown, HTML, testo separato)
-- Preserva i valori esatti: <, >, ≤, ≥, =
-- Per allergeni: "rilevato", "non rilevato", "presente", "assente"
-- Includi unità di misura se disponibili (UFC/cm², UFC/g, mg/kg, ppm, etc.)
-- Se U.M. non disponibile, usa "_" o lascia vuoto
+1. Estrai OGNI riga della tabella dei risultati - non importa quale sia il nome del parametro
+2. Il nome del parametro può essere qualsiasi cosa: microbiologico, chimico, fisico, allergene, etc.
+3. Preserva i valori esatti come appaiono: <, >, ≤, ≥, < 10, < 1, "Non rilevato", etc.
+4. L'unità di misura può essere: UFC/g, UFC/cm², R/NR in 25 g, mg/kg, ppm, %, o qualsiasi altra
+5. Il metodo può essere: ISO, AFNOR, UNI EN, o qualsiasi riferimento normativo
+6. Se un campo non è presente, lascialo vuoto o usa "_"
+7. NON filtrare i parametri - estrai TUTTO ciò che è presente nella tabella
 
-Restituisci ESCLUSIVAMENTE un array JSON:
+FORMATO OUTPUT - Array JSON con tutti i parametri trovati:
 [
   {
-    "Parametro": "Nome completo del parametro",
-    "Risultato": "Valore trovato (es. < 1, rilevato, non rilevato, Assente)",
-    "U.M.": "Unità di misura (es. UFC/cm², UFC/g, mg/kg) o _ se non disponibile",
-    "Metodo": "Metodo di analisi se disponibile"
+    "Parametro": "Nome esatto del parametro come appare nel documento",
+    "Risultato": "Valore esatto (es. < 10, Non rilevato, 5.2, Assente)",
+    "U.M.": "Unità di misura o _ se non presente",
+    "Metodo": "Metodo di analisi o _ se non presente"
   }
 ]
 

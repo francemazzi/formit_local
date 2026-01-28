@@ -89,9 +89,10 @@ FORMATO RISPOSTA (JSON array):
 ]
 
 REGOLE:
-- Valuta SOLO parametri rilevanti per sicurezza alimentare (patogeni critici)
-- Se un parametro non è critico per sicurezza, NON includerlo
+- Valuta TUTTI i parametri presenti nell'analisi, nessuno escluso
+- Includi Enterobacteriaceae, Pseudomonas, e qualsiasi altro parametro presente
 - isCheck = true se CONFORME, false se NON CONFORME
+- Per parametri igienico-sanitari senza limite specifico, usa criteri generali
 - USA le URL reali dalle fonti Tavily quando disponibili
 - Se non ci sono URL nel contesto, metti url: null
 - NON inventare URL
