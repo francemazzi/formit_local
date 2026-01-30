@@ -77,34 +77,43 @@ export const ocrPdfWithVision = async (
   
   const openai = new OpenAI();
   
-  const prompt = `Sei un esperto OCR per documenti di laboratorio di analisi microbiologiche e allergeni.
+  const prompt = `Sei un esperto OCR per documenti di laboratorio di analisi microbiologiche, chimiche e allergeni.
 
-COMPITO:
-Estrai TUTTO il testo da questo documento PDF, in particolare:
-1. Intestazione e dati del campione (matrice, descrizione, riferimenti)
-2. TABELLA DEI RISULTATI con: Parametro, Risultato, Metodo, Unità di misura
-3. Note e riferimenti bibliografici
+COMPITO CRITICO:
+Estrai TUTTO il testo da questo documento PDF. È FONDAMENTALE che tu estragga OGNI SINGOLA RIGA della tabella dei risultati senza omettere NULLA.
+
+SEZIONI DA ESTRARRE:
+1. Intestazione e dati del campione (matrice, descrizione, lotto, data produzione, scadenza, committente)
+2. TABELLA DEI RISULTATI - ESTRAI OGNI RIGA: ogni parametro analizzato con risultato, unità di misura e metodo
+3. Note, riferimenti normativi e firme
 
 FORMATO OUTPUT:
 Restituisci il testo in formato strutturato:
 
 DATI CAMPIONE:
 - Matrice: [valore]
-- Descrizione: [valore]
-- Riferimenti: [valore]
+- Descrizione/Prodotto: [valore]
+- Lotto: [valore]
+- Produzione: [data]
+- Scadenza: [data]
+- Committente: [nome]
 
 RISULTATI ANALISI:
+Per OGNI parametro trovato nella tabella, crea una riga:
 | Parametro | Risultato | U.M. | Metodo |
 |-----------|-----------|------|--------|
-| [nome] | [valore] | [unità] | [metodo] |
+| [nome completo del parametro] | [valore esatto] | [unità] | [metodo/norma] |
 
 NOTE:
-[eventuali note]
+[eventuali note, legenda, riferimenti]
 
-REGOLE:
-- Mantieni i valori ESATTI (es. "< 10", "non rilevato", "rilevato")
-- Includi TUTTI i parametri trovati (microbiologici E allergeni)
-- Se un campo non è presente, scrivi "-"`;
+REGOLE CRITICHE:
+1. NON OMETTERE NESSUN PARAMETRO - estrai TUTTE le righe della tabella, anche se sembrano ripetitive
+2. Mantieni i valori ESATTI come scritti (es. "< 10", "Non rilevato", "Rilevato", "Assente in 25g")
+3. Includi TUTTI i tipi di parametri: microbiologici (Enterobatteri, E. coli, Stafilococchi, Salmonella, Listeria, Pseudomonas, Coliformi, CBT, ecc.), chimici, allergeni
+4. Se un parametro ha più metodi/norme associati, includi tutti
+5. Se ci sono più tabelle, estrai tutte
+6. Non riassumere, non aggregare - ogni riga della tabella deve essere una riga nel tuo output`;
 
   try {
     const response = await openai.chat.completions.create({

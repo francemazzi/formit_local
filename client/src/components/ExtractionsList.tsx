@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   FileText,
   Calendar,
@@ -12,6 +12,8 @@ import {
   Folder,
   FolderOpen,
   Building2,
+  RotateCw,
+  Upload,
 } from "lucide-react";
 import { conformityApi, type PdfExtraction } from "../api/conformityPdf";
 import { ResultsDisplay } from "./ResultsDisplay";
@@ -121,6 +123,10 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(new Set());
   const [expandedExtractions, setExpandedExtractions] = useState<Set<string>>(new Set());
+  const [reprocessingId, setReprocessingId] = useState<string | null>(null);
+  const [reprocessMessage, setReprocessMessage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingReprocessId, setPendingReprocessId] = useState<string | null>(null);
 
   const loadExtractions = async () => {
     try {
@@ -187,6 +193,42 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
     setSelectedExtraction(extraction);
     if (onSelectExtraction) {
       onSelectExtraction(extraction);
+    }
+  };
+
+  const handleReprocessClick = (extractionId: string) => {
+    setPendingReprocessId(extractionId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !pendingReprocessId) {
+      setPendingReprocessId(null);
+      return;
+    }
+
+    try {
+      setReprocessingId(pendingReprocessId);
+      setReprocessMessage(null);
+      const result = await conformityApi.reprocessWithOcr(pendingReprocessId, file);
+      setReprocessMessage(`Rielaborazione avviata (Job ID: ${result.jobId}). Aggiorna la lista tra qualche secondo.`);
+
+      // Reload extractions after a delay
+      setTimeout(() => {
+        loadExtractions();
+        setReprocessMessage(null);
+      }, 5000);
+    } catch (err) {
+      console.error("Error reprocessing extraction:", err);
+      setReprocessMessage("Errore durante la rielaborazione");
+    } finally {
+      setReprocessingId(null);
+      setPendingReprocessId(null);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -401,6 +443,22 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
 
   return (
     <div className="extractions-list">
+      {/* Hidden file input for reprocessing */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        accept=".pdf"
+        onChange={handleFileSelected}
+      />
+
+      {reprocessMessage && (
+        <div className="reprocess-message">
+          <RefreshCw size={16} className={reprocessingId ? "spinning" : ""} />
+          {reprocessMessage}
+        </div>
+      )}
+
       <div className="extractions-header">
         <h2>
           <Database size={24} />
@@ -602,17 +660,57 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
                                             </div>
                                           )}
 
-                                          <button
-                                            className="btn-primary"
-                                            onClick={() => handleSelectExtraction(extraction)}
-                                          >
-                                            Visualizza Dettagli Completi
-                                          </button>
+                                          <div className="extraction-actions">
+                                            <button
+                                              className="btn-primary"
+                                              onClick={() => handleSelectExtraction(extraction)}
+                                            >
+                                              Visualizza Dettagli Completi
+                                            </button>
+                                            <button
+                                              className="btn-secondary btn-ocr"
+                                              onClick={() => handleReprocessClick(extraction.id)}
+                                              disabled={reprocessingId === extraction.id}
+                                              title="Ricarica il PDF e rielabora con OCR forzato"
+                                            >
+                                              {reprocessingId === extraction.id ? (
+                                                <>
+                                                  <RotateCw size={14} className="spinning" />
+                                                  Elaborazione...
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <Upload size={14} />
+                                                  Ripeti con OCR
+                                                </>
+                                              )}
+                                            </button>
+                                          </div>
                                         </>
                                       ) : (
-                                        <div className="extraction-error">
-                                          <XCircle size={20} />
-                                          <p>{extraction.error || "Errore durante l'estrazione"}</p>
+                                        <div className="extraction-error-section">
+                                          <div className="extraction-error">
+                                            <XCircle size={20} />
+                                            <p>{extraction.error || "Errore durante l'estrazione"}</p>
+                                          </div>
+                                          <button
+                                            className="btn-secondary btn-ocr"
+                                            onClick={() => handleReprocessClick(extraction.id)}
+                                            disabled={reprocessingId === extraction.id}
+                                            title="Ricarica il PDF e rielabora con OCR forzato"
+                                          >
+                                            {reprocessingId === extraction.id ? (
+                                              <>
+                                                <RotateCw size={14} className="spinning" />
+                                                Elaborazione...
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Upload size={14} />
+                                                Ripeti con OCR
+                                              </>
+                                            )}
+                                          </button>
                                         </div>
                                       )}
                                     </div>

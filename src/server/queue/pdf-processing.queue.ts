@@ -5,6 +5,10 @@ export interface PdfProcessingJobData {
   fileId: string;
   fileName: string;
   filePath: string;
+  /** If true, force OCR extraction even if text appears valid */
+  forceOcr?: boolean;
+  /** ID of existing extraction to update (for reprocessing) */
+  existingExtractionId?: string;
 }
 
 export interface PdfProcessingJobResult {

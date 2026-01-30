@@ -657,34 +657,69 @@ export interface ChecksOptions {
    * When provided and text appears corrupted, will use GPT-4 Vision OCR.
    */
   pdfPath?: string;
+
+  /**
+   * If true, always use OCR extraction regardless of corruption detection.
+   * Useful for PDFs that have missing data but don't trigger corruption detection.
+   * Default: false
+   */
+  forceOcr?: boolean;
+}
+
+/**
+ * Extended result from checksWithOptions including extracted data.
+ * Used when OCR fallback is triggered to return the OCR-extracted text objects.
+ */
+export interface ChecksWithOptionsResult {
+  results: ComplianceResult[];
+  /** The text objects actually used for analysis (may be OCR-extracted if original was corrupted) */
+  effectiveTextObjects: ExtractedTextEntry[];
+  /** The matrix extracted from the effective text objects */
+  effectiveMatrix: MatrixExtractionResult | null;
+  /** The analyses extracted from the effective text objects */
+  effectiveAnalyses: Analyses[];
+  /** Whether OCR fallback was used */
+  usedOcrFallback: boolean;
 }
 
 /**
  * Extended checks function with support for custom categories.
+ * Returns detailed results including the effective text objects used (important when OCR fallback is triggered).
  *
  * @param textObjects - Extracted text from PDF
  * @param options - Optional configuration for custom category usage
- * @returns Compliance results
+ * @returns Object containing compliance results and the effective text objects used
  */
 export const checksWithOptions = async (
   textObjects: ExtractedTextEntry[],
   options: ChecksOptions = {}
-): Promise<ComplianceResult[]> => {
+): Promise<ChecksWithOptionsResult> => {
   let markdownContent = composeMarkdownPayload(textObjects);
   let effectiveTextObjects = textObjects;
+  let usedOcrFallback = false;
 
   if (!markdownContent) {
-    return [];
+    return {
+      results: [],
+      effectiveTextObjects: textObjects,
+      effectiveMatrix: null,
+      effectiveAnalyses: [],
+      usedOcrFallback: false,
+    };
   }
 
-  // Check if text appears corrupted and OCR fallback is available
-  if (isTextCorrupted(markdownContent) && options.pdfPath) {
+  // Check if text appears corrupted OR forceOcr is enabled, and OCR fallback is available
+  const pdfPath = options.pdfPath;
+  const shouldUseOcr = pdfPath && (options.forceOcr || isTextCorrupted(markdownContent));
+
+  if (shouldUseOcr && pdfPath) {
+    const reason = options.forceOcr ? "forceOcr enabled" : "corrupted text detected";
     console.log(
-      `[checks] ⚠️ Corrupted text detected, attempting GPT-4 Vision OCR...`
+      `[checks] ⚠️ Using GPT-4 Vision OCR (${reason})...`
     );
 
     try {
-      const ocrResults = await ocrPdfWithVision(options.pdfPath);
+      const ocrResults = await ocrPdfWithVision(pdfPath);
       const ocrText = ocrResults.map((r) => r.text).join("\n\n");
 
       if (ocrText.length > 100) {
@@ -692,6 +727,7 @@ export const checksWithOptions = async (
           `[checks] ✓ Vision OCR successful: ${ocrText.length} chars extracted`
         );
         markdownContent = ocrText;
+        usedOcrFallback = true;
 
         // Create synthetic text objects from OCR results
         effectiveTextObjects = ocrResults.map((r, idx) => ({
@@ -712,6 +748,15 @@ export const checksWithOptions = async (
 
   const matrix = await extractMatrixFromText(effectiveTextObjects);
   const analyses = await extractAnalysesFromText(effectiveTextObjects);
+
+  // Helper to build the result object
+  const buildResult = (results: ComplianceResult[]): ChecksWithOptionsResult => ({
+    results,
+    effectiveTextObjects,
+    effectiveMatrix: matrix,
+    effectiveAnalyses: analyses,
+    usedOcrFallback,
+  });
 
   console.log(`[checks] Extracted ${analyses.length} analyses from PDF`);
   if (analyses.length > 0) {
@@ -739,7 +784,7 @@ export const checksWithOptions = async (
         matrix,
         `custom:${customCategory.name}`
       );
-      return enrichResultsWithMatrix(rawResults, matrixInfo);
+      return buildResult(enrichResultsWithMatrix(rawResults, matrixInfo));
     } else {
       console.warn(
         `[checks] Custom category not found: ${options.customCategoryId}`
@@ -796,7 +841,7 @@ export const checksWithOptions = async (
           ? `custom:${matchedCategories.join(", ")}`
           : `custom:${matchedCategories[0]}`;
       const matrixInfo = buildComplianceResultMatrix(matrix, categoryLabel);
-      return enrichResultsWithMatrix(allResults, matrixInfo);
+      return buildResult(enrichResultsWithMatrix(allResults, matrixInfo));
     }
 
     // If no custom categories matched, use environmental swab check with LLM
@@ -809,15 +854,16 @@ export const checksWithOptions = async (
       markdownContent,
     });
     const matrixInfo = buildComplianceResultMatrix(matrix, null);
-    return enrichResultsWithMatrix(rawResults, matrixInfo);
+    return buildResult(enrichResultsWithMatrix(rawResults, matrixInfo));
   }
 
   // Run standard checks for non-environmental samples
-  const standardResults = await checks(textObjects);
+  // IMPORTANT: Use effectiveTextObjects (may be OCR-extracted) instead of original textObjects
+  const standardResults = await checks(effectiveTextObjects);
 
   // If standard checks returned results, use them
   if (standardResults.length > 0) {
-    return standardResults;
+    return buildResult(standardResults);
   }
 
   // If fallbackToCustom is enabled and standard checks failed, try custom categories
@@ -845,12 +891,12 @@ export const checksWithOptions = async (
           matrix,
           `custom:${customCategory.name}`
         );
-        return enrichResultsWithMatrix(rawResults, matrixInfo);
+        return buildResult(enrichResultsWithMatrix(rawResults, matrixInfo));
       }
     }
   }
 
-  return [];
+  return buildResult([]);
 };
 
 /**

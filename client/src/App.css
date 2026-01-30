@@ -2064,6 +2064,38 @@ body {
   background: var(--bg-secondary);
 }
 
+.extraction-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.extraction-error-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-ocr {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.reprocess-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--accent-primary);
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
 /* Spinning animation for refresh */
 .spinning {
   animation: spin 1s linear infinite;
@@ -2102,4 +2134,19 @@ body {
   .extraction-file-info .file-name {
     font-size: 0.8rem;
   }
+}
+
+
+/* Spinning animation for refresh icon */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
 }

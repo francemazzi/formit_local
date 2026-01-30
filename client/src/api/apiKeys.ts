@@ -78,3 +78,40 @@ export const envSetupApi = {
   },
 };
 
+// ========================================
+// Update Types
+// ========================================
+
+export interface UpdateCheckResponse {
+  hasUpdates: boolean;
+  currentCommit: string;
+  remoteCommit: string;
+  behindBy: number;
+}
+
+export interface UpdateResponse {
+  success: boolean;
+  message: string;
+  details?: {
+    gitOutput?: string;
+    hasChanges: boolean;
+    restartScheduled: boolean;
+  };
+}
+
+// ========================================
+// Update API
+// ========================================
+
+export const updateApi = {
+  check: async (): Promise<UpdateCheckResponse> => {
+    const response = await api.get<UpdateCheckResponse>("/update/check");
+    return response.data;
+  },
+
+  update: async (): Promise<UpdateResponse> => {
+    const response = await api.post<UpdateResponse>("/update");
+    return response.data;
+  },
+};
+

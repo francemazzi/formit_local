@@ -79,33 +79,40 @@ const processSinglePdf = async (
     tempFilePath = await saveTempFile(file.buffer, file.filename);
 
     const textObjects = await extractTextFromPdf(tempFilePath);
-    
+
     // Extract matrix and analyses separately to save them in database
     const matrix = await extractMatrixFromText(textObjects);
     const analyses = await extractAnalysesFromText(textObjects);
-    
+
     // Use checksWithOptions with fallbackToCustom to enable custom category matching
     // for samples that don't fit standard CEIRSA categories (e.g., environmental swabs)
     // Pass pdfPath to enable GPT-4 Vision OCR fallback for corrupted text
-    const results = await checksWithOptions(textObjects, {
+    const checkResult = await checksWithOptions(textObjects, {
       fallbackToCustom: true,
       pdfPath: tempFilePath,
     });
 
-    // Save extracted data to database
+    // Use effective data from checksWithOptions (OCR data if fallback was triggered)
+    const effectiveTextObjects = checkResult.effectiveTextObjects;
+    const effectiveMatrix = checkResult.effectiveMatrix ?? matrix;
+    const effectiveAnalyses = checkResult.effectiveAnalyses.length > 0
+      ? checkResult.effectiveAnalyses
+      : analyses;
+
+    // Save extracted data to database with effective data (OCR if used)
     await saveExtractionToDatabase({
       fileName: file.filename,
-      textObjects,
-      matrix,
-      analyses,
-      results,
+      textObjects: effectiveTextObjects,
+      matrix: effectiveMatrix,
+      analyses: effectiveAnalyses,
+      results: checkResult.results,
       success: true,
     });
 
     return {
       fileName: file.filename,
       success: true,
-      results,
+      results: checkResult.results,
     };
   } catch (error) {
     const errorMessage =
@@ -548,6 +555,108 @@ export class ConformityPdfController {
         };
 
         return reply.status(202).send(response);
+      }
+    );
+
+    // Endpoint to reprocess extraction with forced OCR
+    fastify.post<{
+      Params: { id: string };
+      Reply: { jobId: string; message: string } | { error: string };
+    }>(
+      "/conformity-pdf/extractions/:id/reprocess",
+      {
+        schema: {
+          description:
+            "Reprocess an existing extraction using forced OCR. Requires re-uploading the PDF file.",
+          tags: ["Conformity"],
+          summary: "Reprocess extraction with OCR",
+          params: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                description: "Extraction ID to reprocess",
+              },
+            },
+          },
+          response: {
+            202: {
+              description: "Reprocessing job queued",
+              type: "object",
+              properties: {
+                jobId: { type: "string" },
+                message: { type: "string" },
+              },
+            },
+            400: {
+              description: "Bad request",
+              type: "object",
+              properties: {
+                error: { type: "string" },
+              },
+            },
+            404: {
+              description: "Extraction not found",
+              type: "object",
+              properties: {
+                error: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const params = request.params as { id: string };
+        const client = getDatabaseClient();
+
+        // Verify extraction exists
+        const extraction = await client.pdfExtraction.findUnique({
+          where: { id: params.id },
+        });
+
+        if (!extraction) {
+          return reply.status(404).send({
+            error: "Extraction not found",
+          });
+        }
+
+        // Extract file from request
+        const files = await this.extractFiles(request);
+
+        if (files.length === 0) {
+          return reply.status(400).send({
+            error: "Please upload the PDF file to reprocess.",
+          });
+        }
+
+        const pdfFile = files.find(
+          (file) =>
+            file.mimetype === "application/pdf" ||
+            file.filename.toLowerCase().endsWith(".pdf")
+        );
+
+        if (!pdfFile) {
+          return reply.status(400).send({
+            error: "No valid PDF file found. Please upload a PDF file.",
+          });
+        }
+
+        // Save file and create job with forceOcr
+        const fileId = randomUUID();
+        const tempFilePath = await saveTempFile(pdfFile.buffer, pdfFile.filename);
+
+        const job = await pdfProcessingQueue.addJob({
+          fileId,
+          fileName: extraction.fileName,
+          filePath: tempFilePath,
+          forceOcr: true,
+          existingExtractionId: params.id,
+        });
+
+        return reply.status(202).send({
+          jobId: job.id!,
+          message: "Reprocessing with OCR queued. Use /conformity-pdf/jobs/:jobId to check status.",
+        });
       }
     );
   }

@@ -195,5 +195,30 @@ export const conformityApi = {
 
     return response.data;
   },
+
+  /**
+   * Reprocess an existing extraction using forced OCR.
+   * Requires re-uploading the PDF file.
+   * Returns a job ID that can be used to track processing status.
+   */
+  reprocessWithOcr: async (
+    extractionId: string,
+    file: File
+  ): Promise<{ jobId: string; message: string }> => {
+    const formData = new FormData();
+    formData.append("files", file);
+
+    const response = await axios.post<{ jobId: string; message: string }>(
+      `${API_BASE_URL}/conformity-pdf/extractions/${extractionId}/reprocess`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  },
 };
 
