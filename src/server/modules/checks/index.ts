@@ -221,6 +221,167 @@ const isEnvironmentalSample = (sampleType: SampleType): boolean => {
   return sampleType === "environmental_swab" || sampleType === "personnel_swab";
 };
 
+/**
+ * Checks analyses that were not covered by CEIRSA using Tavily search.
+ * Used for parameters like Pseudomonas that may not have CEIRSA limits.
+ */
+const checkUncheckedAnalysesWithTavily = async (
+  analyses: Analyses[],
+  markdownContent: string,
+  productName: string
+): Promise<RawComplianceResult[]> => {
+  if (analyses.length === 0) return [];
+
+  console.log(
+    `[checks.tavily] Checking ${analyses.length} unchecked analyses with Tavily`
+  );
+
+  // Search Tavily for regulatory context for these specific parameters
+  const paramNames = analyses.map((a) => a.parameter).join(", ");
+  const tavilyResult = await searchRegulatoryContext(
+    analyses,
+    `limiti microbiologici ${productName} ${paramNames} criteri igiene processo`
+  );
+
+  const analysesJson = JSON.stringify(analyses, null, 2);
+
+  // Extract only the parameter names we need to check
+  const parameterNames = analyses.map((a) => a.parameter);
+
+  const prompt = `Sei un esperto di sicurezza alimentare e normativa italiana/europea.
+
+PRODOTTO: ${productName}
+
+ANALISI DA VALUTARE (SOLO questi parametri specifici, gli altri sono già stati controllati):
+${analysesJson}
+
+CONTESTO NORMATIVO (da fonti esterne):
+${
+  tavilyResult.contextText ||
+  "Nessun contesto normativo specifico trovato. Usa la tua conoscenza delle buone pratiche igieniche."
+}
+
+CONTESTO DOCUMENTO (estratto):
+${markdownContent.substring(0, 800)}
+
+COMPITO:
+Valuta ESCLUSIVAMENTE i ${analyses.length} parametri elencati sopra:
+${parameterNames.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+Per parametri come Pseudomonas, Coliformi, CBT, Enterobacteriaceae:
+- Se esistono limiti normativi specifici, applicali
+- Se non esistono limiti normativi ma sono indicatori igienici, valuta secondo buone pratiche HACCP
+- Per conta batterica generica, valori < 10 o < 100 UFC/g sono generalmente accettabili
+
+FORMATO RISPOSTA (JSON array con ESATTAMENTE ${analyses.length} elementi):
+[
+  {
+    "name": "Nome parametro ESATTO come nell'elenco sopra",
+    "value": "Limite o criterio applicato",
+    "isCheck": true/false,
+    "description": "Spiegazione della valutazione",
+    "sources": [
+      {
+        "id": "fonte-id",
+        "title": "Titolo fonte",
+        "url": null,
+        "excerpt": "Estratto o riferimento"
+      }
+    ]
+  }
+]
+
+REGOLE CRITICHE:
+- Restituisci ESATTAMENTE ${analyses.length} risultati, uno per ogni parametro nell'elenco
+- NON includere altri parametri che non sono nell'elenco (sono già stati controllati da CEIRSA)
+- Per Pseudomonas in prodotti lattiero-caseari freschi, < 10 UFC/g è generalmente accettabile
+- isCheck = true se il risultato è accettabile, false se non accettabile
+
+JSON:`;
+
+  try {
+    const model = new ChatOpenAI({
+      modelName: "gpt-4o-mini",
+      temperature: 0,
+    });
+
+    const response = await model.invoke(prompt);
+    const content = response.content?.toString() ?? "[]";
+
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.log("[checks.tavily] No valid JSON in LLM response");
+      return [];
+    }
+
+    interface TavilyCheckResult {
+      name: string;
+      value: string;
+      isCheck: boolean;
+      description: string;
+      sources?: Array<{
+        id: string;
+        title: string;
+        url: string | null;
+        excerpt: string;
+      }>;
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]) as TavilyCheckResult[];
+    console.log(`[checks.tavily] Parsed ${parsed.length} results`);
+
+    // Filter to only include results for parameters we actually asked about
+    const requestedParamsLower = parameterNames.map((p) => p.toLowerCase());
+    const filteredResults = parsed.filter((item) => {
+      const itemNameLower = item.name.toLowerCase();
+      return requestedParamsLower.some(
+        (reqParam) =>
+          itemNameLower.includes(reqParam) ||
+          reqParam.includes(itemNameLower) ||
+          // Match key parts of parameter names
+          (itemNameLower.includes("pseudomonas") && reqParam.includes("pseudomonas")) ||
+          (itemNameLower.includes("enterobact") && reqParam.includes("enterobact"))
+      );
+    });
+
+    console.log(
+      `[checks.tavily] Filtered to ${filteredResults.length} results (requested: ${parameterNames.join(", ")})`
+    );
+
+    return filteredResults.map((item) => {
+      const llmSources = item.sources || [];
+      const llmSourceIds = new Set(llmSources.map((s) => s.id));
+      const newTavilySources = tavilyResult.sources.filter(
+        (s) => !llmSourceIds.has(s.id)
+      );
+
+      const allSources =
+        llmSources.length > 0
+          ? [...llmSources, ...newTavilySources]
+          : [
+              {
+                id: `hygiene-${item.name.toLowerCase().replace(/\s+/g, "-")}`,
+                title: "Criteri Igiene di Processo",
+                url: null,
+                excerpt: item.description,
+              },
+              ...tavilyResult.sources,
+            ];
+
+      return {
+        name: item.name,
+        value: item.value,
+        isCheck: item.isCheck,
+        description: item.description,
+        sources: allSources,
+      };
+    });
+  } catch (error) {
+    console.error("[checks.tavily] LLM evaluation failed:", error);
+    return [];
+  }
+};
+
 export const checks = async (
   textObjects: ExtractedTextEntry[]
 ): Promise<ComplianceResult[]> => {
@@ -274,6 +435,44 @@ export const checks = async (
       markdownContent
     );
     console.log(`[checks.standard] CEIRSA results: ${rawResults.length}`);
+
+    // Identifica le analisi NON controllate da CEIRSA
+    const checkedParams = new Set(
+      rawResults.map((r) => r.name.toLowerCase())
+    );
+    const uncheckedAnalyses = analyses.filter((a) => {
+      const paramLower = a.parameter.toLowerCase();
+      // Verifica se il parametro è già stato controllato (match parziale)
+      return !Array.from(checkedParams).some(
+        (checked) =>
+          checked.includes(paramLower) ||
+          paramLower.includes(checked) ||
+          // Match per parole chiave comuni
+          (paramLower.includes("enterobact") && checked.includes("enterobact")) ||
+          (paramLower.includes("coli") && checked.includes("coli")) ||
+          (paramLower.includes("stafilococc") && checked.includes("stafilococc")) ||
+          (paramLower.includes("salmonella") && checked.includes("salmonella")) ||
+          (paramLower.includes("listeria") && checked.includes("listeria"))
+      );
+    });
+
+    console.log(
+      `[checks.standard] Unchecked analyses: ${uncheckedAnalyses.length} - ${uncheckedAnalyses.map((a) => a.parameter).join(", ")}`
+    );
+
+    // Se ci sono analisi non controllate, usa Tavily per cercare limiti
+    if (uncheckedAnalyses.length > 0) {
+      const additionalResults = await checkUncheckedAnalysesWithTavily(
+        uncheckedAnalyses,
+        markdownContent,
+        matrix.product || matrix.matrix || "alimento"
+      );
+      console.log(
+        `[checks.standard] Additional results from Tavily: ${additionalResults.length}`
+      );
+      rawResults.push(...additionalResults);
+    }
+
     const matrixInfo = buildComplianceResultMatrix(matrix, ceirsaCategory.name);
     return enrichResultsWithMatrix(rawResults, matrixInfo);
   }
@@ -320,6 +519,42 @@ export const checks = async (
         analyses,
         markdownContent
       );
+      console.log(`[checks.standard] Fallback CEIRSA results: ${rawResults.length}`);
+
+      // Identifica le analisi NON controllate da CEIRSA
+      const checkedParams = new Set(
+        rawResults.map((r) => r.name.toLowerCase())
+      );
+      const uncheckedAnalyses = analyses.filter((a) => {
+        const paramLower = a.parameter.toLowerCase();
+        return !Array.from(checkedParams).some(
+          (checked) =>
+            checked.includes(paramLower) ||
+            paramLower.includes(checked) ||
+            (paramLower.includes("enterobact") && checked.includes("enterobact")) ||
+            (paramLower.includes("coli") && checked.includes("coli")) ||
+            (paramLower.includes("stafilococc") && checked.includes("stafilococc")) ||
+            (paramLower.includes("salmonella") && checked.includes("salmonella")) ||
+            (paramLower.includes("listeria") && checked.includes("listeria"))
+        );
+      });
+
+      console.log(
+        `[checks.standard] Fallback unchecked: ${uncheckedAnalyses.length} - ${uncheckedAnalyses.map((a) => a.parameter).join(", ")}`
+      );
+
+      if (uncheckedAnalyses.length > 0) {
+        const additionalResults = await checkUncheckedAnalysesWithTavily(
+          uncheckedAnalyses,
+          markdownContent,
+          matrix.product || matrix.matrix || "alimento"
+        );
+        console.log(
+          `[checks.standard] Fallback additional results: ${additionalResults.length}`
+        );
+        rawResults.push(...additionalResults);
+      }
+
       const matrixInfo = buildComplianceResultMatrix(
         matrix,
         fallbackCategory.name

@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
-import { X, Save, ExternalLink, Settings as SettingsIcon, RefreshCw, AlertTriangle } from "lucide-react";
-import { apiKeysApi, updateApi, UpdateCheckResponse } from "../api/apiKeys";
+import {
+  X,
+  Save,
+  ExternalLink,
+  Settings as SettingsIcon,
+  RefreshCw,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  apiKeysApi,
+  updateApi,
+  type UpdateCheckResponse,
+} from "../api/apiKeys";
 
 interface SettingsProps {
   onClose: () => void;
@@ -19,7 +30,9 @@ export function Settings({ onClose }: SettingsProps) {
   // Update state
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [updateInfo, setUpdateInfo] = useState<UpdateCheckResponse | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<UpdateCheckResponse | null>(
+    null,
+  );
   const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
 
@@ -44,7 +57,9 @@ export function Settings({ onClose }: SettingsProps) {
         setOpenaiApiKey(config.openaiApiKey);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Errore nel caricamento delle chiavi API");
+      setError(
+        err.response?.data?.error || "Errore nel caricamento delle chiavi API",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +75,9 @@ export function Settings({ onClose }: SettingsProps) {
         setShowUpdateConfirm(true);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Errore nel controllo aggiornamenti");
+      setError(
+        err.response?.data?.message || "Errore nel controllo aggiornamenti",
+      );
     } finally {
       setIsCheckingUpdates(false);
     }
@@ -104,7 +121,9 @@ export function Settings({ onClose }: SettingsProps) {
         onClose();
       }, 1500);
     } catch (err: any) {
-      setError(err.response?.data?.error || "Errore nel salvataggio delle chiavi API");
+      setError(
+        err.response?.data?.error || "Errore nel salvataggio delle chiavi API",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -182,10 +201,20 @@ export function Settings({ onClose }: SettingsProps) {
               type="password"
               value={tavilyApiKey}
               onChange={(e) => setTavilyApiKey(e.target.value)}
-              placeholder={tavilyConfigured ? "Inserisci una nuova chiave per sovrascrivere" : "Inserisci la tua Tavily API Key"}
+              placeholder={
+                tavilyConfigured
+                  ? "Inserisci una nuova chiave per sovrascrivere"
+                  : "Inserisci la tua Tavily API Key"
+              }
               disabled={isLoading || isSaving}
             />
-            <small style={{ color: "var(--text-secondary)", fontSize: "0.75rem", marginTop: "0.25rem" }}>
+            <small
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.75rem",
+                marginTop: "0.25rem",
+              }}
+            >
               Chiave API per l'integrazione con Tavily (ricerca web)
             </small>
           </div>
@@ -226,19 +255,39 @@ export function Settings({ onClose }: SettingsProps) {
               type="password"
               value={openaiApiKey}
               onChange={(e) => setOpenaiApiKey(e.target.value)}
-              placeholder={openaiConfigured ? "Inserisci una nuova chiave per sovrascrivere" : "Inserisci la tua OpenAI API Key"}
+              placeholder={
+                openaiConfigured
+                  ? "Inserisci una nuova chiave per sovrascrivere"
+                  : "Inserisci la tua OpenAI API Key"
+              }
               disabled={isLoading || isSaving}
             />
-            <small style={{ color: "var(--text-secondary)", fontSize: "0.75rem", marginTop: "0.25rem" }}>
-              Chiave API per l'integrazione con OpenAI (elaborazione linguaggio naturale)
+            <small
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.75rem",
+                marginTop: "0.25rem",
+              }}
+            >
+              Chiave API per l'integrazione con OpenAI (elaborazione linguaggio
+              naturale)
             </small>
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose} disabled={isSaving}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onClose}
+              disabled={isSaving}
+            >
               Annulla
             </button>
-            <button type="submit" className="btn-primary" disabled={isLoading || isSaving}>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={isLoading || isSaving}
+            >
               <Save size={16} />
               {isSaving ? "Salvataggio..." : "Salva"}
             </button>
@@ -253,7 +302,14 @@ export function Settings({ onClose }: SettingsProps) {
             borderTop: "1px solid var(--border-primary)",
           }}
         >
-          <h3 style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <h3
+            style={{
+              marginBottom: "1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
             <RefreshCw size={18} />
             Aggiornamento Applicazione
           </h3>
@@ -300,19 +356,50 @@ export function Settings({ onClose }: SettingsProps) {
                 marginBottom: "1rem",
               }}
             >
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
-                <AlertTriangle size={20} style={{ color: "#fbbf24", flexShrink: 0, marginTop: "2px" }} />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "0.75rem",
+                }}
+              >
+                <AlertTriangle
+                  size={20}
+                  style={{ color: "#fbbf24", flexShrink: 0, marginTop: "2px" }}
+                />
                 <div>
-                  <strong style={{ color: "#fbbf24" }}>Aggiornamento disponibile</strong>
-                  <p style={{ margin: "0.5rem 0", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+                  <strong style={{ color: "#fbbf24" }}>
+                    Aggiornamento disponibile
+                  </strong>
+                  <p
+                    style={{
+                      margin: "0.5rem 0",
+                      color: "var(--text-secondary)",
+                      fontSize: "0.875rem",
+                    }}
+                  >
                     Sono disponibili {updateInfo.behindBy} nuovi commit.
                     <br />
-                    Versione attuale: <code>{updateInfo.currentCommit}</code> → Nuova versione: <code>{updateInfo.remoteCommit}</code>
+                    Versione attuale: <code>{updateInfo.currentCommit}</code> →
+                    Nuova versione: <code>{updateInfo.remoteCommit}</code>
                   </p>
-                  <p style={{ margin: "0.5rem 0", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-                    L'applicazione verrà riavviata automaticamente. Confermi l'aggiornamento?
+                  <p
+                    style={{
+                      margin: "0.5rem 0",
+                      color: "var(--text-secondary)",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    L'applicazione verrà riavviata automaticamente. Confermi
+                    l'aggiornamento?
                   </p>
-                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0.5rem",
+                      marginTop: "0.75rem",
+                    }}
+                  >
                     <button
                       type="button"
                       className="btn-primary"
@@ -320,7 +407,9 @@ export function Settings({ onClose }: SettingsProps) {
                       disabled={isUpdating}
                       style={{ fontSize: "0.875rem" }}
                     >
-                      {isUpdating ? "Aggiornamento..." : "Conferma Aggiornamento"}
+                      {isUpdating
+                        ? "Aggiornamento..."
+                        : "Conferma Aggiornamento"}
                     </button>
                     <button
                       type="button"
@@ -345,17 +434,29 @@ export function Settings({ onClose }: SettingsProps) {
               disabled={isCheckingUpdates || isUpdating}
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
-              <RefreshCw size={16} className={isCheckingUpdates ? "spinning" : ""} />
-              {isCheckingUpdates ? "Controllo in corso..." : "Controlla Aggiornamenti"}
+              <RefreshCw
+                size={16}
+                className={isCheckingUpdates ? "spinning" : ""}
+              />
+              {isCheckingUpdates
+                ? "Controllo in corso..."
+                : "Controlla Aggiornamenti"}
             </button>
           )}
 
-          <small style={{ display: "block", marginTop: "0.5rem", color: "var(--text-secondary)", fontSize: "0.75rem" }}>
-            Scarica gli aggiornamenti da GitHub (origin/main) e riavvia l'applicazione.
+          <small
+            style={{
+              display: "block",
+              marginTop: "0.5rem",
+              color: "var(--text-secondary)",
+              fontSize: "0.75rem",
+            }}
+          >
+            Scarica gli aggiornamenti da GitHub (origin/main) e riavvia
+            l'applicazione.
           </small>
         </div>
       </div>
     </div>
   );
 }
-

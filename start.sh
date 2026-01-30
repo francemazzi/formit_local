@@ -171,8 +171,61 @@ fi
 
 echo -e "${GREEN}✓ Docker è in esecuzione${NC}"
 
+# Verifica aggiornamenti da GitHub
+check_for_updates() {
+    echo -e "${YELLOW}Controllo aggiornamenti da GitHub...${NC}"
+
+    # Fetch latest from remote
+    git fetch origin main --quiet 2>/dev/null || {
+        echo -e "${YELLOW}⚠ Impossibile contattare GitHub, continuo con versione locale${NC}"
+        return 1
+    }
+
+    # Get local and remote commit hashes
+    LOCAL_HASH=$(git rev-parse HEAD 2>/dev/null)
+    REMOTE_HASH=$(git rev-parse origin/main 2>/dev/null)
+
+    if [ -z "$LOCAL_HASH" ] || [ -z "$REMOTE_HASH" ]; then
+        echo -e "${YELLOW}⚠ Impossibile verificare versione, continuo...${NC}"
+        return 1
+    fi
+
+    if [ "$LOCAL_HASH" != "$REMOTE_HASH" ]; then
+        echo -e "${YELLOW}⚠ Nuova versione disponibile!${NC}"
+        echo -e "${YELLOW}  Locale:  ${LOCAL_HASH:0:7}${NC}"
+        echo -e "${YELLOW}  Remoto:  ${REMOTE_HASH:0:7}${NC}"
+        return 0  # Update available
+    else
+        echo -e "${GREEN}✓ Già all'ultima versione (${LOCAL_HASH:0:7})${NC}"
+        return 1  # No update needed
+    fi
+}
+
+# Funzione per applicare aggiornamenti
+apply_updates() {
+    echo -e "${YELLOW}[1/4] Arresto del servizio in corso...${NC}"
+    docker compose down 2>/dev/null || echo -e "${YELLOW}Nessun servizio attivo${NC}"
+
+    echo -e "${YELLOW}[2/4] Passaggio al branch main...${NC}"
+    git checkout main
+
+    echo -e "${YELLOW}[3/4] Applicazione aggiornamenti...${NC}"
+    git reset --hard origin/main
+
+    echo -e "${GREEN}✓ Aggiornamento completato${NC}"
+    echo -e "${GREEN}Ultimo commit:${NC}"
+    git log -1 --oneline
+}
+
+# Controlla e applica aggiornamenti se disponibili
+if check_for_updates; then
+    echo
+    apply_updates
+    echo
+fi
+
 # Avvia il progetto
-echo -e "${GREEN}Avvio di Formit con Docker Compose...${NC}"
+echo -e "${YELLOW}[4/4] Avvio di Formit con Docker Compose...${NC}"
 docker compose up -d --build
 
 echo -e "${GREEN}✓ Formit avviato con successo!${NC}"

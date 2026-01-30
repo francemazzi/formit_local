@@ -35,6 +35,37 @@ if ! docker info &> /dev/null; then
     exit 1
 fi
 
+# Verifica aggiornamenti da GitHub
+echo -e "${YELLOW}Controllo aggiornamenti da GitHub...${NC}"
+git fetch origin main --quiet
+
+# Get local and remote commit hashes
+LOCAL_HASH=$(git rev-parse HEAD 2>/dev/null)
+REMOTE_HASH=$(git rev-parse origin/main 2>/dev/null)
+
+if [ -n "$LOCAL_HASH" ] && [ -n "$REMOTE_HASH" ]; then
+    if [ "$LOCAL_HASH" = "$REMOTE_HASH" ]; then
+        echo -e "${GREEN}✓ Già all'ultima versione (${LOCAL_HASH:0:7})${NC}"
+        echo
+        echo -e "${YELLOW}Vuoi riavviare comunque il servizio? (s/n)${NC}"
+        read -r RESTART_ANYWAY
+        if [ "$RESTART_ANYWAY" != "s" ] && [ "$RESTART_ANYWAY" != "S" ]; then
+            echo -e "${GREEN}Nessun aggiornamento necessario.${NC}"
+            exit 0
+        fi
+        echo -e "${YELLOW}Riavvio del servizio...${NC}"
+        docker compose down 2>/dev/null || true
+        docker compose up -d --build
+        echo -e "${GREEN}✓ Servizio riavviato${NC}"
+        exit 0
+    fi
+
+    echo -e "${YELLOW}Nuova versione disponibile!${NC}"
+    echo -e "${YELLOW}  Locale:  ${LOCAL_HASH:0:7}${NC}"
+    echo -e "${YELLOW}  Remoto:  ${REMOTE_HASH:0:7}${NC}"
+    echo
+fi
+
 echo -e "${YELLOW}[1/5] Arresto del servizio in corso...${NC}"
 docker compose down || echo -e "${YELLOW}Nessun servizio attivo da fermare, continuo...${NC}"
 

@@ -38,7 +38,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Docker e' in esecuzione
-goto start_app
+goto check_updates
 
 :install_docker
 echo.
@@ -75,9 +75,75 @@ echo.
 pause
 exit /b 1
 
+:check_updates
+echo.
+echo Controllo aggiornamenti da GitHub...
+
+REM Fetch latest from remote
+git fetch origin main >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Impossibile contattare GitHub, continuo con versione locale...
+    goto start_app
+)
+
+REM Get local and remote commit hashes
+for /f "tokens=*" %%i in ('git rev-parse HEAD 2^>nul') do set LOCAL_HASH=%%i
+for /f "tokens=*" %%i in ('git rev-parse origin/main 2^>nul') do set REMOTE_HASH=%%i
+
+if "%LOCAL_HASH%"=="" (
+    echo Impossibile verificare versione locale, continuo...
+    goto start_app
+)
+
+if "%REMOTE_HASH%"=="" (
+    echo Impossibile verificare versione remota, continuo...
+    goto start_app
+)
+
+if "%LOCAL_HASH%"=="%REMOTE_HASH%" (
+    echo Gia' all'ultima versione.
+    goto start_app
+)
+
+echo.
+echo ========================================
+echo   Nuova versione disponibile!
+echo   Locale:  %LOCAL_HASH:~0,7%
+echo   Remoto:  %REMOTE_HASH:~0,7%
+echo ========================================
+echo.
+
+echo [1/4] Arresto del servizio in corso...
+docker compose down >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Nessun servizio attivo da fermare, continuo...
+)
+
+echo [2/4] Passaggio al branch main...
+git checkout main
+if %errorlevel% neq 0 (
+    echo Errore durante il checkout del branch main.
+    pause
+    exit /b 1
+)
+
+echo [3/4] Applicazione degli aggiornamenti...
+git reset --hard origin/main
+if %errorlevel% neq 0 (
+    echo Errore durante l'aggiornamento.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Aggiornamento completato!
+echo Ultimo commit:
+git log -1 --oneline
+echo.
+
 :start_app
 echo.
-echo Avvio di Formit con Docker Compose...
+echo [4/4] Avvio di Formit con Docker Compose...
 docker compose up -d --build
 
 if %errorlevel% equ 0 (
