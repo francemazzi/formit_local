@@ -1,8 +1,9 @@
 import { CustomCheckParameter } from "@prisma/client";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
-import { ChatOpenAI } from "@langchain/openai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 import { customCheckService, CategoryWithParameters } from "../../custom-check.service";
+import { createLLM } from "../../utils/llm-factory";
 import { Analyses } from "../extract_analyses_from_text";
 import { RawComplianceResult } from "./index";
 import { customCheckPromptTemplate } from "../../prompts/custom_check.prompt";
@@ -263,10 +264,12 @@ const findMatchingParameter = (
 const promptTemplate = customCheckPromptTemplate;
 
 const defaultParser = new JsonOutputParser<RawComplianceResult[]>();
-const defaultModel = new ChatOpenAI({
-  modelName: "gpt-4o-mini",
-  temperature: 0,
-});
+
+// Get model lazily to respect current provider settings
+const getDefaultModel = async () => {
+  const { model } = await createLLM({ capability: "text", temperature: 0 });
+  return model;
+};
 
 const evaluateWithLLM = async (input: CustomCheckInput): Promise<RawComplianceResult[]> => {
   const decision = decideCompliance({
@@ -308,7 +311,8 @@ const evaluateWithLLM = async (input: CustomCheckInput): Promise<RawComplianceRe
   });
 
   try {
-    const response = await defaultModel.invoke(prompt);
+    const model = await getDefaultModel();
+    const response = await model.invoke(prompt);
     const rawContent = response.content?.toString() ?? "";
     const parsed = await defaultParser.parse(rawContent);
     return Array.isArray(parsed) ? parsed : parsed ? [parsed] : [];

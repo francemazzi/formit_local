@@ -5,6 +5,7 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   FileText,
   ExternalLink,
   Info,
@@ -18,6 +19,8 @@ import type {
 interface ResultsDisplayProps {
   response: ConformityPdfResponse;
   onReset: () => void;
+  /** When viewing a saved extraction, use e.g. "Torna alla lista" instead of "Nuova Analisi" */
+  resetButtonLabel?: string;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -36,17 +39,17 @@ function ComplianceResultCard({ result }: { result: ComplianceResult }) {
   };
 
   const getStatusIcon = () => {
-    if (result.isCheck === true) return <CheckCircle2 size={24} className="icon-pass" />;
-    if (result.isCheck === false) return <XCircle size={24} className="icon-fail" />;
+    if (result.isCheck === true)
+      return <CheckCircle2 size={24} className="icon-pass" />;
+    if (result.isCheck === false)
+      return <XCircle size={24} className="icon-fail" />;
     return <AlertCircle size={24} className="icon-pending" />; // null = da confermare
   };
 
   return (
     <div className={`compliance-result ${getStatusClass()}`}>
       <div className="result-header" onClick={() => setIsExpanded(!isExpanded)}>
-        <div className="result-status">
-          {getStatusIcon()}
-        </div>
+        <div className="result-status">{getStatusIcon()}</div>
         <div className="result-main">
           <h4>{result.name}</h4>
           <div className="result-meta">
@@ -86,7 +89,8 @@ function ComplianceResultCard({ result }: { result: ComplianceResult }) {
               <div className="matrix-item">
                 <span className="label">Categoria:</span>
                 <span className="value">
-                  {CATEGORY_LABELS[result.matrix.category] || result.matrix.category}
+                  {CATEGORY_LABELS[result.matrix.category] ||
+                    result.matrix.category}
                 </span>
               </div>
               <div className="matrix-item">
@@ -129,13 +133,20 @@ function FileResultCard({ fileResult }: { fileResult: PdfCheckResult }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const passCount = fileResult.results.filter((r) => r.isCheck === true).length;
-  const failCount = fileResult.results.filter((r) => r.isCheck === false).length;
-  const pendingCount = fileResult.results.filter((r) => r.isCheck === null).length;
+  const failCount = fileResult.results.filter(
+    (r) => r.isCheck === false,
+  ).length;
+  const pendingCount = fileResult.results.filter(
+    (r) => r.isCheck === null,
+  ).length;
   const totalChecks = fileResult.results.length;
 
   return (
     <div className={`file-result-card ${!fileResult.success ? "error" : ""}`}>
-      <div className="file-result-header" onClick={() => setIsExpanded(!isExpanded)}>
+      <div
+        className="file-result-header"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="file-info">
           <FileText size={24} />
           <div>
@@ -174,8 +185,8 @@ function FileResultCard({ fileResult }: { fileResult: PdfCheckResult }) {
             <div className="no-results">
               <AlertCircle size={24} />
               <p>
-                Nessuna verifica applicabile. Il documento potrebbe non rientrare nelle
-                categorie CEIRSA o bevande supportate.
+                Nessuna verifica applicabile. Il documento potrebbe non
+                rientrare nelle categorie CEIRSA o bevande supportate.
               </p>
             </div>
           ) : (
@@ -189,20 +200,24 @@ function FileResultCard({ fileResult }: { fileResult: PdfCheckResult }) {
   );
 }
 
-export function ResultsDisplay({ response, onReset }: ResultsDisplayProps) {
+export function ResultsDisplay({
+  response,
+  onReset,
+  resetButtonLabel = "Nuova Analisi",
+}: ResultsDisplayProps) {
   const results = response.results || [];
-  
+
   const totalPass = results.reduce(
     (sum, file) => sum + file.results.filter((r) => r.isCheck === true).length,
-    0
+    0,
   );
   const totalFail = results.reduce(
     (sum, file) => sum + file.results.filter((r) => r.isCheck === false).length,
-    0
+    0,
   );
   const totalPending = results.reduce(
     (sum, file) => sum + file.results.filter((r) => r.isCheck === null).length,
-    0
+    0,
   );
   const totalChecks = totalPass + totalFail + totalPending;
 
@@ -235,8 +250,16 @@ export function ResultsDisplay({ response, onReset }: ResultsDisplayProps) {
           )}
         </div>
 
-        <button className="btn-secondary" onClick={onReset}>
-          Nuova Analisi
+        <button
+          className={
+            resetButtonLabel === "Nuova Analisi"
+              ? "btn-secondary"
+              : "btn-primary results-back-btn"
+          }
+          onClick={onReset}
+        >
+          {resetButtonLabel !== "Nuova Analisi" && <ChevronLeft size={18} />}
+          {resetButtonLabel}
         </button>
       </div>
 
@@ -249,4 +272,3 @@ export function ResultsDisplay({ response, onReset }: ResultsDisplayProps) {
     </div>
   );
 }
-

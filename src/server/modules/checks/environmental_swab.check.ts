@@ -1,15 +1,17 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { Analyses } from "../extract_analyses_from_text";
 import { MatrixExtractionResult } from "../extract_matrix_from_text";
 import { RawComplianceResult, Source, searchRegulatoryContext } from "./index";
 import { environmentalSwabCheckPrompt } from "../../prompts/environmental_swab_check.prompt";
+import { createLLM } from "../../utils/llm-factory";
 
 const defaultParser = new JsonOutputParser<RawComplianceResult[]>();
-const defaultModel = new ChatOpenAI({
-  modelName: "gpt-4o-mini",
-  temperature: 0,
-});
+
+// Get model lazily to respect current provider settings
+const getModel = async () => {
+  const { model } = await createLLM({ capability: "text", temperature: 0 });
+  return model;
+};
 
 export interface EnvironmentalSwabCheckInput {
   matrix: MatrixExtractionResult;
@@ -72,7 +74,8 @@ export const environmentalSwabComplianceCheck = async (
       formatInstructions,
     });
 
-    const response = await defaultModel.invoke(prompt);
+    const model = await getModel();
+    const response = await model.invoke(prompt);
     const rawContent = response.content?.toString() ?? "";
 
     // Parse JSON from response

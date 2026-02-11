@@ -1,9 +1,23 @@
 import * as fs from "node:fs/promises";
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
+import {
+  BedrockRuntimeClient,
+  ConverseCommand,
+} from "@aws-sdk/client-bedrock-runtime";
+import {
+  getVisionProvider,
+  type OpenAIVisionConfig,
+  type AnthropicVisionConfig,
+  type BedrockVisionConfig,
+} from "../utils/llm-factory";
 
 /**
- * OCR fallback using GPT-4 Vision for PDF files with corrupted text.
- * Reads PDF as base64 and sends directly to GPT-4o for OCR.
+ * OCR fallback using GPT-4 Vision or Claude Vision for PDF files with corrupted text.
+ * All providers now support sending PDFs directly:
+ * - OpenAI: Reads PDF as base64 and sends to GPT-4o
+ * - Anthropic: Sends PDF via document type to Claude
+ * - Bedrock: Sends PDF via document type to Claude on AWS
  */
 
 interface OcrResult {
@@ -51,33 +65,17 @@ export const cleanCorruptedText = (text: string): string => {
   // Remove patterns like "A A A Al l l li i i im m m me e e en n n nt t t to o o o"
   // by keeping only unique consecutive characters
   let cleaned = text;
-  
+
   // Pattern: single char repeated with spaces -> keep just one
   cleaned = cleaned.replace(/(\w)(\s\1)+/g, "$1");
-  
+
   // Multiple spaces to single space
   cleaned = cleaned.replace(/\s{2,}/g, " ");
-  
+
   return cleaned.trim();
 };
 
-/**
- * Uses GPT-4o to OCR a PDF file directly.
- * GPT-4o can read PDFs natively when passed as base64.
- */
-export const ocrPdfWithVision = async (
-  pdfPath: string
-): Promise<OcrResult[]> => {
-  console.log(`[OCR] Reading PDF file: ${pdfPath}`);
-  
-  const pdfBuffer = await fs.readFile(pdfPath);
-  const base64Pdf = pdfBuffer.toString("base64");
-  
-  console.log(`[OCR] PDF size: ${(pdfBuffer.length / 1024).toFixed(1)} KB`);
-  
-  const openai = new OpenAI();
-  
-  const prompt = `Sei un esperto OCR per documenti di laboratorio di analisi microbiologiche, chimiche e allergeni.
+const OCR_PROMPT = `Sei un esperto OCR per documenti di laboratorio di analisi microbiologiche, chimiche e allergeni.
 
 COMPITO CRITICO:
 Estrai TUTTO il testo da questo documento PDF. È FONDAMENTALE che tu estragga OGNI SINGOLA RIGA della tabella dei risultati senza omettere NULLA.
@@ -115,15 +113,32 @@ REGOLE CRITICHE:
 5. Se ci sono più tabelle, estrai tutte
 6. Non riassumere, non aggregare - ogni riga della tabella deve essere una riga nel tuo output`;
 
+
+/**
+ * OCR with OpenAI GPT-4o - can read PDFs directly
+ */
+const ocrWithOpenAI = async (
+  pdfPath: string,
+  config: OpenAIVisionConfig
+): Promise<OcrResult[]> => {
+  console.log(`[OCR] Using OpenAI GPT-4o for OCR`);
+
+  const pdfBuffer = await fs.readFile(pdfPath);
+  const base64Pdf = pdfBuffer.toString("base64");
+
+  console.log(`[OCR] PDF size: ${(pdfBuffer.length / 1024).toFixed(1)} KB`);
+
+  const openai = new OpenAI({ apiKey: config.apiKey });
+
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: config.model,
       max_tokens: 4096,
       messages: [
         {
           role: "user",
           content: [
-            { type: "text", text: prompt },
+            { type: "text", text: OCR_PROMPT },
             {
               type: "file",
               file: {
@@ -138,12 +153,137 @@ REGOLE CRITICHE:
 
     const extractedText = response.choices[0]?.message?.content ?? "";
     console.log(`[OCR] GPT-4o extracted ${extractedText.length} chars`);
-    
+
     return [{ pageNumber: 1, text: extractedText }];
   } catch (error) {
     console.error("[OCR] GPT-4o OCR failed:", error);
     throw error;
   }
+};
+
+/**
+ * OCR with Anthropic Claude API (direct) - sends PDF directly via document type
+ * Anthropic API now supports PDFs natively via the "document" content type.
+ */
+const ocrWithAnthropic = async (
+  pdfPath: string,
+  config: AnthropicVisionConfig
+): Promise<OcrResult[]> => {
+  console.log(`[OCR] Using Claude (Anthropic API) for OCR - sending PDF directly`);
+
+  const pdfBuffer = await fs.readFile(pdfPath);
+  const base64Pdf = pdfBuffer.toString("base64");
+
+  console.log(`[OCR] PDF size: ${(pdfBuffer.length / 1024).toFixed(1)} KB`);
+
+  const anthropic = new Anthropic({ apiKey: config.apiKey });
+
+  try {
+    const response = await anthropic.messages.create({
+      model: config.model,
+      max_tokens: 4096,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: OCR_PROMPT },
+            {
+              type: "document",
+              source: {
+                type: "base64",
+                media_type: "application/pdf",
+                data: base64Pdf,
+              },
+            } as Anthropic.DocumentBlockParam,
+          ],
+        },
+      ],
+    });
+
+    const text =
+      response.content[0]?.type === "text" ? response.content[0].text : "";
+
+    console.log(`[OCR] Claude extracted ${text.length} chars from PDF`);
+
+    return [{ pageNumber: 1, text }];
+  } catch (error) {
+    console.error("[OCR] Anthropic OCR failed:", error);
+    throw error;
+  }
+};
+
+/**
+ * OCR with AWS Bedrock Claude - sends PDF directly via document type
+ * AWS Bedrock Converse API supports PDF documents natively.
+ */
+const ocrWithBedrock = async (
+  pdfPath: string,
+  config: BedrockVisionConfig
+): Promise<OcrResult[]> => {
+  console.log(`[OCR] Using Claude (Bedrock) for OCR - sending PDF directly`);
+
+  const pdfBuffer = await fs.readFile(pdfPath);
+
+  console.log(`[OCR] PDF size: ${(pdfBuffer.length / 1024).toFixed(1)} KB`);
+
+  const client = new BedrockRuntimeClient({
+    region: config.region,
+    credentials: config.credentials,
+  });
+
+  try {
+    const command = new ConverseCommand({
+      modelId: config.modelId,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { text: OCR_PROMPT },
+            {
+              document: {
+                format: "pdf",
+                name: "document",
+                source: { bytes: pdfBuffer },
+              },
+            },
+          ],
+        },
+      ],
+      inferenceConfig: { maxTokens: 4096 },
+    });
+
+    const response = await client.send(command);
+    const text = response.output?.message?.content?.[0]?.text ?? "";
+
+    console.log(`[OCR] Bedrock Claude extracted ${text.length} chars from PDF`);
+
+    return [{ pageNumber: 1, text }];
+  } catch (error) {
+    console.error("[OCR] Bedrock OCR failed:", error);
+    throw error;
+  }
+};
+
+/**
+ * Uses the configured vision provider (OpenAI, Anthropic, or Bedrock) to OCR a PDF file.
+ * All providers now support reading PDFs directly via their respective document APIs.
+ */
+export const ocrPdfWithVision = async (
+  pdfPath: string
+): Promise<OcrResult[]> => {
+  console.log(`[OCR] Reading PDF file: ${pdfPath}`);
+
+  const { provider, config } = await getVisionProvider();
+
+  if (provider === "openai") {
+    return ocrWithOpenAI(pdfPath, config as OpenAIVisionConfig);
+  }
+
+  if (provider === "anthropic") {
+    return ocrWithAnthropic(pdfPath, config as AnthropicVisionConfig);
+  }
+
+  return ocrWithBedrock(pdfPath, config as BedrockVisionConfig);
 };
 
 /**

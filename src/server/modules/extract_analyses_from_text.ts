@@ -1,8 +1,9 @@
 import { JsonOutputParser } from "@langchain/core/output_parsers";
-import { ChatOpenAI } from "@langchain/openai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 import { extractAnalysesPrompt } from "../prompts/extract_analyses_from_text";
 import { LangChainMessageUtils } from "../utils/langchain_message.utils";
+import { createLLM } from "../utils/llm-factory";
 
 import { ExtractedTextEntry } from "./extract_text_from_pdf";
 
@@ -24,139 +25,92 @@ type RawAnalysisRecord = {
   method?: string;
 };
 
-interface AnalysesExtractionDependencies {
-  model: ChatOpenAI;
-}
-
 const analysesParser = new JsonOutputParser<RawAnalysisRecord[]>();
 
 const promptContent = `${
   extractAnalysesPrompt.prompt
 }${analysesParser.getFormatInstructions()}`;
 
-const defaultDependencies: AnalysesExtractionDependencies = {
-  model: new ChatOpenAI({
-    model: "gpt-4o-mini",
-    temperature: 0,
-  }),
-};
+// Lazy-loaded model instance
+let cachedModel: BaseChatModel | null = null;
 
-interface AnalysesExtractionService {
-  extract(textObjects: ExtractedTextEntry[]): Promise<Analyses[]>;
+async function getModel(): Promise<BaseChatModel> {
+  // Always get a fresh model to respect current provider settings
+  const { model } = await createLLM({ capability: "text", temperature: 0 });
+  return model;
 }
 
-const createAnalysesExtractionService = (
-  dependencies: AnalysesExtractionDependencies = defaultDependencies
-): AnalysesExtractionService => {
-  const composeMarkdownPayload = (
-    textObjects: ExtractedTextEntry[]
-  ): string => {
-    return textObjects
-      .slice()
-      .sort((left, right) => left.letter_number - right.letter_number)
-      .map((entry) => entry.text_extracted?.trim())
-      .filter((value): value is string => Boolean(value))
-      .join("\n\n")
-      .trim();
-  };
+const composeMarkdownPayload = (textObjects: ExtractedTextEntry[]): string => {
+  return textObjects
+    .slice()
+    .sort((left, right) => left.letter_number - right.letter_number)
+    .map((entry) => entry.text_extracted?.trim())
+    .filter((value): value is string => Boolean(value))
+    .join("\n\n")
+    .trim();
+};
 
-  const normalizeField = (value: unknown): string | undefined => {
-    if (typeof value !== "string") {
-      return undefined;
-    }
+const normalizeField = (value: unknown): string | undefined => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
 
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : undefined;
-  };
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+};
 
-  const normalizeRecord = (
-    record: RawAnalysisRecord | unknown
-  ): Analyses | null => {
-    if (!record || typeof record !== "object") {
-      return null;
-    }
+const normalizeRecord = (
+  record: RawAnalysisRecord | unknown
+): Analyses | null => {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
 
-    const typedRecord = record as RawAnalysisRecord;
+  const typedRecord = record as RawAnalysisRecord;
 
-    const parameter = normalizeField(
-      typedRecord.Parametro ?? typedRecord.parameter
-    );
-    const result = normalizeField(typedRecord.Risultato ?? typedRecord.result);
-    const umResult = normalizeField(
-      typedRecord["U.M."] ?? typedRecord.um_result
-    );
-    const method = normalizeField(typedRecord.Metodo ?? typedRecord.method);
+  const parameter = normalizeField(
+    typedRecord.Parametro ?? typedRecord.parameter
+  );
+  const result = normalizeField(typedRecord.Risultato ?? typedRecord.result);
+  const umResult = normalizeField(
+    typedRecord["U.M."] ?? typedRecord.um_result
+  );
+  const method = normalizeField(typedRecord.Metodo ?? typedRecord.method);
 
-    if (!parameter && !result && !umResult && !method) {
-      return null;
-    }
-
-    return {
-      parameter: parameter ?? "",
-      result: result ?? "",
-      um_result: umResult ?? "",
-      method: method ?? "",
-    };
-  };
-
-  const normalizeResponse = (response: unknown): Analyses[] => {
-    if (!Array.isArray(response)) {
-      return [];
-    }
-
-    return response
-      .map((item) => normalizeRecord(item))
-      .filter((item): item is Analyses => Boolean(item));
-  };
+  if (!parameter && !result && !umResult && !method) {
+    return null;
+  }
 
   return {
-    async extract(textObjects: ExtractedTextEntry[]): Promise<Analyses[]> {
-      if (!Array.isArray(textObjects) || textObjects.length === 0) {
-        console.log(`[extractAnalyses] No text objects provided`);
-        return [];
-      }
-
-      const markdownContent = composeMarkdownPayload(textObjects);
-
-      if (!markdownContent) {
-        console.log(`[extractAnalyses] Empty markdown content`);
-        return [];
-      }
-
-      console.log(`[extractAnalyses] Processing ${textObjects.length} text entries, ${markdownContent.length} chars`);
-      console.log(`[extractAnalyses] Content preview: ${markdownContent.substring(0, 1000)}...`);
-
-      try {
-        const analyses = await generateAnalyses(
-          markdownContent,
-          dependencies.model
-        );
-        console.log(`[extractAnalyses] Raw analyses count: ${analyses?.length ?? 0}`);
-        const normalized = normalizeResponse(analyses);
-        console.log(`[extractAnalyses] Normalized analyses count: ${normalized.length}`);
-        return normalized;
-      } catch (error) {
-        console.error(`[extractAnalyses] Error:`, error);
-        throw new Error("Failed to extract analyses from text", {
-          cause: error instanceof Error ? error : undefined,
-        });
-      }
-    },
+    parameter: parameter ?? "",
+    result: result ?? "",
+    um_result: umResult ?? "",
+    method: method ?? "",
   };
+};
+
+const normalizeResponse = (response: unknown): Analyses[] => {
+  if (!Array.isArray(response)) {
+    return [];
+  }
+
+  return response
+    .map((item) => normalizeRecord(item))
+    .filter((item): item is Analyses => Boolean(item));
 };
 
 const generateAnalyses = async (
-  markdownContent: string,
-  model = defaultDependencies.model
+  markdownContent: string
 ): Promise<RawAnalysisRecord[]> => {
   const prompt = buildPrompt(markdownContent);
   console.log(`[extractAnalyses] Prompt length: ${prompt.length} chars`);
-  
+
   try {
+    const model = await getModel();
     const response = await model.invoke(prompt);
     const resolvedContent = LangChainMessageUtils.extractTextContent(response);
     console.log(`[extractAnalyses] LLM response: ${resolvedContent.substring(0, 500)}...`);
-    
+
     const parsed = await analysesParser.parse(resolvedContent);
     console.log(`[extractAnalyses] Parsed records: ${parsed?.length ?? 0}`);
     return parsed;
@@ -174,10 +128,38 @@ const buildPrompt = (markdownContent: string): string => {
   return `${promptContent}\n${markdownContent}`;
 };
 
-const analysesExtractionService = createAnalysesExtractionService();
-
-export const extractAnalysesFromText = (
+export const extractAnalysesFromText = async (
   textObjects: ExtractedTextEntry[]
 ): Promise<Analyses[]> => {
-  return analysesExtractionService.extract(textObjects);
+  if (!Array.isArray(textObjects) || textObjects.length === 0) {
+    console.log(`[extractAnalyses] No text objects provided`);
+    return [];
+  }
+
+  const markdownContent = composeMarkdownPayload(textObjects);
+
+  if (!markdownContent) {
+    console.log(`[extractAnalyses] Empty markdown content`);
+    return [];
+  }
+
+  console.log(
+    `[extractAnalyses] Processing ${textObjects.length} text entries, ${markdownContent.length} chars`
+  );
+  console.log(
+    `[extractAnalyses] Content preview: ${markdownContent.substring(0, 1000)}...`
+  );
+
+  try {
+    const analyses = await generateAnalyses(markdownContent);
+    console.log(`[extractAnalyses] Raw analyses count: ${analyses?.length ?? 0}`);
+    const normalized = normalizeResponse(analyses);
+    console.log(`[extractAnalyses] Normalized analyses count: ${normalized.length}`);
+    return normalized;
+  } catch (error) {
+    console.error(`[extractAnalyses] Error:`, error);
+    throw new Error("Failed to extract analyses from text", {
+      cause: error instanceof Error ? error : undefined,
+    });
+  }
 };

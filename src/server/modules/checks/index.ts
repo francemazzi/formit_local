@@ -1,5 +1,5 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { ExtractedTextEntry } from "../extract_text_from_pdf";
+import { createLLM } from "../../utils/llm-factory";
 import {
   extractAnalysesFromText,
   Analyses,
@@ -89,8 +89,8 @@ const findCeirsaCategoryWithLLM = async (
   const prompt = buildCeirsaCategoryMatchingPrompt(matrix, categoryNames);
 
   try {
-    const matcherModel = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+    const { model: matcherModel } = await createLLM({
+      capability: "text",
       temperature: 0,
     });
 
@@ -300,8 +300,8 @@ REGOLE CRITICHE:
 JSON:`;
 
   try {
-    const model = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+    const { model } = await createLLM({
+      capability: "text",
       temperature: 0,
     });
 
@@ -806,8 +806,8 @@ const applyUniversalFoodSafetyChecks = async (
   );
 
   try {
-    const model = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+    const { model } = await createLLM({
+      capability: "text",
       temperature: 0,
     });
 

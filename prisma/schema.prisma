@@ -129,14 +129,32 @@ model PdfExtraction {
 // API Keys Configuration
 // ========================================
 
+// AI Provider selection
+enum AiProvider {
+  OPENAI
+  ANTHROPIC_CLAUDE   // Direct Anthropic API (console.anthropic.com)
+  BEDROCK_CLAUDE     // AWS Bedrock
+}
+
 // Singleton model for storing API keys
 // Only one record should exist in this table
 model ApiKey {
   id          String   @id @default("singleton")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // API keys for external services
   tavilyApiKey  String?
   openaiApiKey  String?
+
+  // Anthropic API (direct) configuration
+  claudeApiKey       String?
+
+  // AWS Bedrock configuration
+  awsAccessKeyId     String?
+  awsSecretAccessKey String?
+  awsRegion          String?
+
+  // Provider selection (default to OpenAI for backward compatibility)
+  activeProvider     AiProvider @default(OPENAI)
 }

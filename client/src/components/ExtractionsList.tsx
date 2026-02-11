@@ -6,6 +6,7 @@ import {
   XCircle,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   ChevronRight,
   RefreshCw,
   Database,
@@ -14,10 +15,14 @@ import {
   Building2,
   RotateCw,
   Upload,
+  Table,
 } from "lucide-react";
 import { conformityApi, type PdfExtraction } from "../api/conformityPdf";
 import { ResultsDisplay } from "./ResultsDisplay";
+import { ExtractionsTableView } from "./ExtractionsTableView";
 import type { ConformityPdfResponse } from "../api/conformityPdf";
+
+type ExtractionsViewMode = "folder" | "table";
 
 interface ExtractionsListProps {
   onSelectExtraction?: (extraction: PdfExtraction) => void;
@@ -37,10 +42,10 @@ interface FolderStructure {
 function extractCompanyName(fileName: string): string {
   // Remove .pdf extension
   const nameWithoutExt = fileName.replace(/\.pdf$/i, "");
-  
+
   // Split by underscore
   const parts = nameWithoutExt.split("_");
-  
+
   if (parts.length >= 4) {
     // Pattern: ID_DATE_Description_Company_Date
     // Try to find company name (usually the second-to-last part or contains common business suffixes)
@@ -61,9 +66,20 @@ function extractCompanyName(fileName: string): string {
       }
     }
   }
-  
+
   // Fallback: return "Sconosciuta" (Unknown)
   return "Azienda non specificata";
+}
+
+/**
+ * Shortens filename for display: max 5 initial + 5 final characters (excluding .pdf).
+ * e.g. "documento_lungo_nome.pdf" -> "docum...nome.pdf"
+ */
+function shortenFileName(fileName: string): string {
+  const base = fileName.replace(/\.pdf$/i, "");
+  const ext = fileName.match(/\.pdf$/i) ? ".pdf" : "";
+  if (base.length <= 10) return fileName;
+  return base.slice(0, 5) + "..." + base.slice(-5) + ext;
 }
 
 /**
@@ -83,22 +99,22 @@ function formatDateKey(dateString: string): string {
  */
 function groupExtractions(extractions: PdfExtraction[]): FolderStructure {
   const structure: FolderStructure = {};
-  
+
   extractions.forEach((extraction) => {
     const dateKey = formatDateKey(extraction.createdAt);
     const companyName = extractCompanyName(extraction.fileName);
-    
+
     if (!structure[dateKey]) {
       structure[dateKey] = {};
     }
-    
+
     if (!structure[dateKey][companyName]) {
       structure[dateKey][companyName] = [];
     }
-    
+
     structure[dateKey][companyName].push(extraction);
   });
-  
+
   return structure;
 }
 
@@ -119,14 +135,22 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
   const [extractions, setExtractions] = useState<PdfExtraction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedExtraction, setSelectedExtraction] = useState<PdfExtraction | null>(null);
+  const [selectedExtraction, setSelectedExtraction] =
+    useState<PdfExtraction | null>(null);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
-  const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(new Set());
-  const [expandedExtractions, setExpandedExtractions] = useState<Set<string>>(new Set());
+  const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(
+    new Set(),
+  );
+  const [expandedExtractions, setExpandedExtractions] = useState<Set<string>>(
+    new Set(),
+  );
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
   const [reprocessMessage, setReprocessMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [pendingReprocessId, setPendingReprocessId] = useState<string | null>(null);
+  const [pendingReprocessId, setPendingReprocessId] = useState<string | null>(
+    null,
+  );
+  const [viewMode, setViewMode] = useState<ExtractionsViewMode>("folder");
 
   const loadExtractions = async () => {
     try {
@@ -134,7 +158,7 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
       setError(null);
       const response = await conformityApi.getExtractions(50, 0);
       setExtractions(response.extractions);
-      
+
       // Auto-expand the most recent date
       if (response.extractions.length > 0) {
         const grouped = groupExtractions(response.extractions);
@@ -156,8 +180,14 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
   }, []);
 
   // Memoized folder structure
-  const folderStructure = useMemo(() => groupExtractions(extractions), [extractions]);
-  const sortedDates = useMemo(() => sortDatesDescending(Object.keys(folderStructure)), [folderStructure]);
+  const folderStructure = useMemo(
+    () => groupExtractions(extractions),
+    [extractions],
+  );
+  const sortedDates = useMemo(
+    () => sortDatesDescending(Object.keys(folderStructure)),
+    [folderStructure],
+  );
 
   const toggleDate = (date: string) => {
     const newExpanded = new Set(expandedDates);
@@ -201,7 +231,9 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file || !pendingReprocessId) {
       setPendingReprocessId(null);
@@ -211,8 +243,13 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
     try {
       setReprocessingId(pendingReprocessId);
       setReprocessMessage(null);
-      const result = await conformityApi.reprocessWithOcr(pendingReprocessId, file);
-      setReprocessMessage(`Rielaborazione avviata (Job ID: ${result.jobId}). Aggiorna la lista tra qualche secondo.`);
+      const result = await conformityApi.reprocessWithOcr(
+        pendingReprocessId,
+        file,
+      );
+      setReprocessMessage(
+        `Rielaborazione avviata (Job ID: ${result.jobId}). Aggiorna la lista tra qualche secondo.`,
+      );
 
       // Reload extractions after a delay
       setTimeout(() => {
@@ -256,22 +293,26 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
     const companies = folderStructure[date];
     let totalExtractions = 0;
     let totalCompanies = 0;
-    
+
     Object.values(companies).forEach((extractions) => {
       totalCompanies++;
       totalExtractions += extractions.length;
     });
-    
+
     return { totalExtractions, totalCompanies };
   };
 
   // Count totals for a company
   const getCompanyStats = (extractions: PdfExtraction[]) => {
     const passCount = extractions.reduce((acc, ext) => {
-      return acc + (ext.extractedData.results?.filter((r) => r.isCheck).length || 0);
+      return (
+        acc + (ext.extractedData.results?.filter((r) => r.isCheck).length || 0)
+      );
     }, 0);
     const failCount = extractions.reduce((acc, ext) => {
-      return acc + (ext.extractedData.results?.filter((r) => !r.isCheck).length || 0);
+      return (
+        acc + (ext.extractedData.results?.filter((r) => !r.isCheck).length || 0)
+      );
     }, 0);
     return { passCount, failCount, total: extractions.length };
   };
@@ -294,14 +335,37 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
     const data = selectedExtraction.extractedData;
 
     return (
-      <div className="extractions-list">
-        <div className="extraction-header">
+      <div className="extractions-list extraction-detail-view">
+        <header className="extraction-detail-sticky-bar">
+          <nav className="extraction-breadcrumb" aria-label="Breadcrumb">
+            <button
+              type="button"
+              className="breadcrumb-link"
+              onClick={() => setSelectedExtraction(null)}
+            >
+              <Database size={18} />
+              Estrazioni Salvate ({extractions.length})
+            </button>
+            <ChevronRight size={18} className="breadcrumb-sep" aria-hidden />
+            <span
+              className="breadcrumb-current"
+              title={selectedExtraction.fileName}
+            >
+              {selectedExtraction.fileName.length > 50
+                ? `${selectedExtraction.fileName.slice(0, 47)}...`
+                : selectedExtraction.fileName}
+            </span>
+          </nav>
           <button
-            className="btn-secondary"
+            type="button"
+            className="btn-primary btn-back-to-list"
             onClick={() => setSelectedExtraction(null)}
           >
-            ← Torna alla lista
+            <ChevronLeft size={18} />
+            Torna all'elenco
           </button>
+        </header>
+        <div className="extraction-header extraction-detail-header">
           <h2>{selectedExtraction.fileName}</h2>
           <span className="extraction-date">
             <Calendar size={16} />
@@ -313,7 +377,7 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
         {selectedExtraction.success && (
           <div className="extraction-details-section">
             <h3>📊 Dati di Estrazione</h3>
-            
+
             {data.matrix && (
               <div className="extraction-info-card">
                 <h4>Informazioni Matrice</h4>
@@ -345,7 +409,9 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
                   {data.matrix.ceirsa_category && (
                     <div className="info-item">
                       <span className="label">Categoria CEIRSA:</span>
-                      <span className="value">{data.matrix.ceirsa_category}</span>
+                      <span className="value">
+                        {data.matrix.ceirsa_category}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -369,7 +435,9 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
                       {data.analyses.map((analysis, idx) => (
                         <tr key={idx}>
                           <td>{analysis.parameter}</td>
-                          <td><strong>{analysis.result}</strong></td>
+                          <td>
+                            <strong>{analysis.result}</strong>
+                          </td>
                           <td>{analysis.um_result}</td>
                           <td>{analysis.method}</td>
                         </tr>
@@ -386,7 +454,9 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
                 <div className="info-grid">
                   <div className="info-item">
                     <span className="label">Data Estrazione:</span>
-                    <span className="value">{formatDateTime(data.metadata.extractedAt)}</span>
+                    <span className="value">
+                      {formatDateTime(data.metadata.extractedAt)}
+                    </span>
                   </div>
                   <div className="info-item">
                     <span className="label">Totale Analisi:</span>
@@ -405,6 +475,7 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
         <ResultsDisplay
           response={response}
           onReset={() => setSelectedExtraction(null)}
+          resetButtonLabel="Torna all'elenco"
         />
       </div>
     );
@@ -469,213 +540,373 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
         </button>
       </div>
 
-      <div className="folder-tree">
-        {sortedDates.map((date) => {
-          const isDateExpanded = expandedDates.has(date);
-          const dateStats = getDateStats(date);
-          const companies = folderStructure[date];
-          const sortedCompanies = Object.keys(companies).sort();
+      <div className="view-mode-toggle">
+        <button
+          className={`toggle-btn ${viewMode === "folder" ? "active" : ""}`}
+          onClick={() => setViewMode("folder")}
+        >
+          <Folder size={18} />
+          Vista Cartelle
+        </button>
+        <button
+          className={`toggle-btn ${viewMode === "table" ? "active" : ""}`}
+          onClick={() => setViewMode("table")}
+        >
+          <Table size={18} />
+          Vista Tabella
+        </button>
+      </div>
 
-          return (
-            <div key={date} className="folder-date">
-              <div
-                className="folder-date-header"
-                onClick={() => toggleDate(date)}
-              >
-                <span className="folder-icon">
-                  {isDateExpanded ? <FolderOpen size={20} /> : <Folder size={20} />}
-                </span>
-                <span className="folder-chevron">
-                  {isDateExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                </span>
-                <Calendar size={16} className="folder-type-icon" />
-                <span className="folder-name">{date}</span>
-                <span className="folder-stats">
-                  <span className="stat-badge companies">
-                    <Building2 size={12} />
-                    {dateStats.totalCompanies}
+      {viewMode === "table" ? (
+        <ExtractionsTableView
+          extractions={extractions}
+          onSelectExtraction={handleSelectExtraction}
+        />
+      ) : (
+        <div className="folder-tree">
+          {sortedDates.map((date) => {
+            const isDateExpanded = expandedDates.has(date);
+            const dateStats = getDateStats(date);
+            const companies = folderStructure[date];
+            const sortedCompanies = Object.keys(companies).sort();
+
+            return (
+              <div key={date} className="folder-date">
+                <div
+                  className="folder-date-header"
+                  onClick={() => toggleDate(date)}
+                >
+                  <span className="folder-icon">
+                    {isDateExpanded ? (
+                      <FolderOpen size={20} />
+                    ) : (
+                      <Folder size={20} />
+                    )}
                   </span>
-                  <span className="stat-badge files">
-                    <FileText size={12} />
-                    {dateStats.totalExtractions}
+                  <span className="folder-chevron">
+                    {isDateExpanded ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
                   </span>
-                </span>
-              </div>
+                  <Calendar size={16} className="folder-type-icon" />
+                  <span className="folder-name">{date}</span>
+                  <span className="folder-stats">
+                    <span className="stat-badge companies">
+                      <Building2 size={12} />
+                      {dateStats.totalCompanies}
+                    </span>
+                    <span className="stat-badge files">
+                      <FileText size={12} />
+                      {dateStats.totalExtractions}
+                    </span>
+                  </span>
+                </div>
 
-              {isDateExpanded && (
-                <div className="folder-date-content">
-                  {sortedCompanies.map((company) => {
-                    const companyKey = `${date}/${company}`;
-                    const isCompanyExpanded = expandedCompanies.has(companyKey);
-                    const companyExtractions = companies[company];
-                    const companyStats = getCompanyStats(companyExtractions);
+                {isDateExpanded && (
+                  <div className="folder-date-content">
+                    {sortedCompanies.map((company) => {
+                      const companyKey = `${date}/${company}`;
+                      const isCompanyExpanded =
+                        expandedCompanies.has(companyKey);
+                      const companyExtractions = companies[company];
+                      const companyStats = getCompanyStats(companyExtractions);
 
-                    return (
-                      <div key={companyKey} className="folder-company">
-                        <div
-                          className="folder-company-header"
-                          onClick={() => toggleCompany(companyKey)}
-                        >
-                          <span className="folder-icon">
-                            {isCompanyExpanded ? <FolderOpen size={18} /> : <Folder size={18} />}
-                          </span>
-                          <span className="folder-chevron">
-                            {isCompanyExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          </span>
-                          <Building2 size={14} className="folder-type-icon company" />
-                          <span className="folder-name company-name">{company}</span>
-                          <span className="folder-stats">
-                            <span className="stat-badge files">
-                              <FileText size={12} />
-                              {companyStats.total}
+                      return (
+                        <div key={companyKey} className="folder-company">
+                          <div
+                            className="folder-company-header"
+                            onClick={() => toggleCompany(companyKey)}
+                          >
+                            <span className="folder-icon">
+                              {isCompanyExpanded ? (
+                                <FolderOpen size={18} />
+                              ) : (
+                                <Folder size={18} />
+                              )}
                             </span>
-                            {companyStats.passCount > 0 && (
-                              <span className="stat-badge pass">
-                                <CheckCircle2 size={12} />
-                                {companyStats.passCount}
+                            <span className="folder-chevron">
+                              {isCompanyExpanded ? (
+                                <ChevronDown size={14} />
+                              ) : (
+                                <ChevronRight size={14} />
+                              )}
+                            </span>
+                            <Building2
+                              size={14}
+                              className="folder-type-icon company"
+                            />
+                            <span className="folder-name company-name">
+                              {company}
+                            </span>
+                            <span className="folder-stats">
+                              <span className="stat-badge files">
+                                <FileText size={12} />
+                                {companyStats.total}
                               </span>
-                            )}
-                            {companyStats.failCount > 0 && (
-                              <span className="stat-badge fail">
-                                <XCircle size={12} />
-                                {companyStats.failCount}
-                              </span>
-                            )}
-                          </span>
-                        </div>
+                              {companyStats.passCount > 0 && (
+                                <span className="stat-badge pass">
+                                  <CheckCircle2 size={12} />
+                                  {companyStats.passCount}
+                                </span>
+                              )}
+                              {companyStats.failCount > 0 && (
+                                <span className="stat-badge fail">
+                                  <XCircle size={12} />
+                                  {companyStats.failCount}
+                                </span>
+                              )}
+                            </span>
+                          </div>
 
-                        {isCompanyExpanded && (
-                          <div className="folder-company-content">
-                            {companyExtractions.map((extraction) => {
-                              const isExtractionExpanded = expandedExtractions.has(extraction.id);
-                              const data = extraction.extractedData;
-                              const passCount = data.results?.filter((r) => r.isCheck).length || 0;
-                              const failCount = data.results?.filter((r) => !r.isCheck).length || 0;
+                          {isCompanyExpanded && (
+                            <div className="folder-company-content">
+                              {companyExtractions.map((extraction) => {
+                                const isExtractionExpanded =
+                                  expandedExtractions.has(extraction.id);
+                                const data = extraction.extractedData;
+                                const passCount =
+                                  data.results?.filter((r) => r.isCheck)
+                                    .length || 0;
+                                const failCount =
+                                  data.results?.filter((r) => !r.isCheck)
+                                    .length || 0;
 
-                              return (
-                                <div
-                                  key={extraction.id}
-                                  className={`extraction-file ${extraction.success ? "success" : "error"}`}
-                                >
+                                return (
                                   <div
-                                    className="extraction-file-header"
-                                    onClick={() => toggleExtraction(extraction.id)}
+                                    key={extraction.id}
+                                    className={`extraction-file ${extraction.success ? "success" : "error"}`}
                                   >
-                                    <FileText size={16} className="file-icon" />
-                                    <div className="extraction-file-info">
-                                      <span className="file-name">{extraction.fileName}</span>
-                                      <span className="file-time">{formatTime(extraction.createdAt)}</span>
-                                    </div>
-                                    <div className="extraction-file-stats">
-                                      {extraction.success && (
-                                        <>
-                                          <span className="stat-badge mini pass">
-                                            <CheckCircle2 size={10} />
-                                            {passCount}
-                                          </span>
-                                          <span className="stat-badge mini fail">
-                                            <XCircle size={10} />
-                                            {failCount}
-                                          </span>
-                                        </>
-                                      )}
-                                      {!extraction.success && (
-                                        <span className="stat-badge mini error">
-                                          <XCircle size={10} />
-                                          Errore
+                                    <div
+                                      className="extraction-file-header"
+                                      onClick={() =>
+                                        toggleExtraction(extraction.id)
+                                      }
+                                    >
+                                      <FileText
+                                        size={16}
+                                        className="file-icon"
+                                      />
+                                      <div className="extraction-file-info">
+                                        <span
+                                          className="file-name"
+                                          title={extraction.fileName}
+                                        >
+                                          {shortenFileName(extraction.fileName)}
                                         </span>
-                                      )}
+                                        <span className="file-time">
+                                          {formatTime(extraction.createdAt)}
+                                        </span>
+                                      </div>
+                                      <div className="extraction-file-stats">
+                                        {extraction.success && (
+                                          <>
+                                            <span className="stat-badge mini pass">
+                                              <CheckCircle2 size={10} />
+                                              {passCount}
+                                            </span>
+                                            <span className="stat-badge mini fail">
+                                              <XCircle size={10} />
+                                              {failCount}
+                                            </span>
+                                          </>
+                                        )}
+                                        {!extraction.success && (
+                                          <span className="stat-badge mini error">
+                                            <XCircle size={10} />
+                                            Errore
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="folder-chevron">
+                                        {isExtractionExpanded ? (
+                                          <ChevronUp size={14} />
+                                        ) : (
+                                          <ChevronDown size={14} />
+                                        )}
+                                      </span>
                                     </div>
-                                    <span className="folder-chevron">
-                                      {isExtractionExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                                    </span>
-                                  </div>
 
-                                  {isExtractionExpanded && (
-                                    <div className="extraction-file-details">
-                                      {extraction.success ? (
-                                        <>
-                                          {data.matrix && (
-                                            <div className="extraction-section">
-                                              <h4>Matrice</h4>
-                                              <div className="extraction-matrix">
-                                                <div className="matrix-item">
-                                                  <span className="label">Matrice:</span>
-                                                  <span className="value">{data.matrix.matrix}</span>
-                                                </div>
-                                                {data.matrix.product && (
+                                    {isExtractionExpanded && (
+                                      <div className="extraction-file-details">
+                                        {extraction.success ? (
+                                          <>
+                                            {data.matrix && (
+                                              <div className="extraction-section">
+                                                <h4>Matrice</h4>
+                                                <div className="extraction-matrix">
                                                   <div className="matrix-item">
-                                                    <span className="label">Prodotto:</span>
-                                                    <span className="value">{data.matrix.product}</span>
-                                                  </div>
-                                                )}
-                                                {data.matrix.ceirsa_category && (
-                                                  <div className="matrix-item">
-                                                    <span className="label">Categoria CEIRSA:</span>
-                                                    <span className="value">{data.matrix.ceirsa_category}</span>
-                                                  </div>
-                                                )}
-                                                <div className="matrix-item">
-                                                  <span className="label">Tipo:</span>
-                                                  <span className="value">{data.matrix.sampleType}</span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          )}
-
-                                          {data.analyses && data.analyses.length > 0 && (
-                                            <div className="extraction-section">
-                                              <h4>Analisi Estratte ({data.analyses.length})</h4>
-                                              <div className="extraction-analyses">
-                                                {data.analyses.slice(0, 3).map((analysis, idx) => (
-                                                  <div key={idx} className="analysis-item">
-                                                    <span className="analysis-param">{analysis.parameter}</span>
-                                                    <span className="analysis-result">
-                                                      {analysis.result} {analysis.um_result}
+                                                    <span className="label">
+                                                      Matrice:
+                                                    </span>
+                                                    <span className="value">
+                                                      {data.matrix.matrix}
                                                     </span>
                                                   </div>
-                                                ))}
-                                                {data.analyses.length > 3 && (
-                                                  <div className="analysis-more">
-                                                    +{data.analyses.length - 3} altre analisi
+                                                  {data.matrix.product && (
+                                                    <div className="matrix-item">
+                                                      <span className="label">
+                                                        Prodotto:
+                                                      </span>
+                                                      <span className="value">
+                                                        {data.matrix.product}
+                                                      </span>
+                                                    </div>
+                                                  )}
+                                                  {data.matrix
+                                                    .ceirsa_category && (
+                                                    <div className="matrix-item">
+                                                      <span className="label">
+                                                        Categoria CEIRSA:
+                                                      </span>
+                                                      <span className="value">
+                                                        {
+                                                          data.matrix
+                                                            .ceirsa_category
+                                                        }
+                                                      </span>
+                                                    </div>
+                                                  )}
+                                                  <div className="matrix-item">
+                                                    <span className="label">
+                                                      Tipo:
+                                                    </span>
+                                                    <span className="value">
+                                                      {data.matrix.sampleType}
+                                                    </span>
                                                   </div>
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {data.analyses &&
+                                              data.analyses.length > 0 && (
+                                                <div className="extraction-section">
+                                                  <h4>
+                                                    Analisi Estratte (
+                                                    {data.analyses.length})
+                                                  </h4>
+                                                  <div className="extraction-analyses">
+                                                    {data.analyses
+                                                      .slice(0, 3)
+                                                      .map((analysis, idx) => (
+                                                        <div
+                                                          key={idx}
+                                                          className="analysis-item"
+                                                        >
+                                                          <span className="analysis-param">
+                                                            {analysis.parameter}
+                                                          </span>
+                                                          <span className="analysis-result">
+                                                            {analysis.result}{" "}
+                                                            {analysis.um_result}
+                                                          </span>
+                                                        </div>
+                                                      ))}
+                                                    {data.analyses.length >
+                                                      3 && (
+                                                      <div className="analysis-more">
+                                                        +
+                                                        {data.analyses.length -
+                                                          3}{" "}
+                                                        altre analisi
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              )}
+
+                                            {data.results &&
+                                              data.results.length > 0 && (
+                                                <div className="extraction-section">
+                                                  <h4>
+                                                    Risultati Conformità (
+                                                    {data.results.length})
+                                                  </h4>
+                                                  <div className="extraction-results-summary">
+                                                    <span className="summary-stat pass">
+                                                      <CheckCircle2 size={14} />
+                                                      {passCount} conformi
+                                                    </span>
+                                                    <span className="summary-stat fail">
+                                                      <XCircle size={14} />
+                                                      {failCount} non conformi
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              )}
+
+                                            <div className="extraction-actions">
+                                              <button
+                                                className="btn-primary"
+                                                onClick={() =>
+                                                  handleSelectExtraction(
+                                                    extraction,
+                                                  )
+                                                }
+                                              >
+                                                Visualizza Dettagli Completi
+                                              </button>
+                                              <button
+                                                className="btn-secondary btn-ocr"
+                                                onClick={() =>
+                                                  handleReprocessClick(
+                                                    extraction.id,
+                                                  )
+                                                }
+                                                disabled={
+                                                  reprocessingId ===
+                                                  extraction.id
+                                                }
+                                                title="Ricarica il PDF e rielabora con OCR forzato"
+                                              >
+                                                {reprocessingId ===
+                                                extraction.id ? (
+                                                  <>
+                                                    <RotateCw
+                                                      size={14}
+                                                      className="spinning"
+                                                    />
+                                                    Elaborazione...
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <Upload size={14} />
+                                                    Ripeti con OCR
+                                                  </>
                                                 )}
-                                              </div>
+                                              </button>
                                             </div>
-                                          )}
-
-                                          {data.results && data.results.length > 0 && (
-                                            <div className="extraction-section">
-                                              <h4>Risultati Conformità ({data.results.length})</h4>
-                                              <div className="extraction-results-summary">
-                                                <span className="summary-stat pass">
-                                                  <CheckCircle2 size={14} />
-                                                  {passCount} conformi
-                                                </span>
-                                                <span className="summary-stat fail">
-                                                  <XCircle size={14} />
-                                                  {failCount} non conformi
-                                                </span>
-                                              </div>
+                                          </>
+                                        ) : (
+                                          <div className="extraction-error-section">
+                                            <div className="extraction-error">
+                                              <XCircle size={20} />
+                                              <p>
+                                                {extraction.error ||
+                                                  "Errore durante l'estrazione"}
+                                              </p>
                                             </div>
-                                          )}
-
-                                          <div className="extraction-actions">
-                                            <button
-                                              className="btn-primary"
-                                              onClick={() => handleSelectExtraction(extraction)}
-                                            >
-                                              Visualizza Dettagli Completi
-                                            </button>
                                             <button
                                               className="btn-secondary btn-ocr"
-                                              onClick={() => handleReprocessClick(extraction.id)}
-                                              disabled={reprocessingId === extraction.id}
+                                              onClick={() =>
+                                                handleReprocessClick(
+                                                  extraction.id,
+                                                )
+                                              }
+                                              disabled={
+                                                reprocessingId === extraction.id
+                                              }
                                               title="Ricarica il PDF e rielabora con OCR forzato"
                                             >
-                                              {reprocessingId === extraction.id ? (
+                                              {reprocessingId ===
+                                              extraction.id ? (
                                                 <>
-                                                  <RotateCw size={14} className="spinning" />
+                                                  <RotateCw
+                                                    size={14}
+                                                    className="spinning"
+                                                  />
                                                   Elaborazione...
                                                 </>
                                               ) : (
@@ -686,49 +917,24 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
                                               )}
                                             </button>
                                           </div>
-                                        </>
-                                      ) : (
-                                        <div className="extraction-error-section">
-                                          <div className="extraction-error">
-                                            <XCircle size={20} />
-                                            <p>{extraction.error || "Errore durante l'estrazione"}</p>
-                                          </div>
-                                          <button
-                                            className="btn-secondary btn-ocr"
-                                            onClick={() => handleReprocessClick(extraction.id)}
-                                            disabled={reprocessingId === extraction.id}
-                                            title="Ricarica il PDF e rielabora con OCR forzato"
-                                          >
-                                            {reprocessingId === extraction.id ? (
-                                              <>
-                                                <RotateCw size={14} className="spinning" />
-                                                Elaborazione...
-                                              </>
-                                            ) : (
-                                              <>
-                                                <Upload size={14} />
-                                                Ripeti con OCR
-                                              </>
-                                            )}
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

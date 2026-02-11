@@ -1,8 +1,9 @@
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { ChatOpenAI } from "@langchain/openai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 import { RawComplianceResult } from ".";
+import { createLLM } from "../../utils/llm-factory";
 import { beverageCheckPromptTemplate } from "../../prompts/beverage_check.prompt";
 import { getTavilyApiKey } from "../../utils/api-keys.utils";
 
@@ -130,20 +131,16 @@ class RegulatoryPromptBuilder implements BeveragePromptBuilder {
 }
 
 class OpenAIBeverageComplianceModel implements ComplianceModel {
-  private readonly model: ChatOpenAI;
   private readonly parser: JsonOutputParser<RawComplianceResult[]>;
 
-  constructor(
-    model: ChatOpenAI,
-    parser: JsonOutputParser<RawComplianceResult[]>
-  ) {
-    this.model = model;
+  constructor(parser: JsonOutputParser<RawComplianceResult[]>) {
     this.parser = parser;
   }
 
   async evaluate(prompt: string): Promise<RawComplianceResult[]> {
     try {
-      const response = await this.model.invoke(prompt);
+      const { model } = await createLLM({ capability: "text", temperature: 0 });
+      const response = await model.invoke(prompt);
       const rawContent = response.content?.toString() ?? "";
       const parsed = await this.parser.parse(rawContent);
       return Array.isArray(parsed) ? parsed : parsed ? [parsed] : [];
@@ -189,13 +186,7 @@ const defaultPromptBuilder = new RegulatoryPromptBuilder(
   beverageCheckPromptTemplate,
   defaultParser.getFormatInstructions()
 );
-const defaultComplianceModel = new OpenAIBeverageComplianceModel(
-  new ChatOpenAI({
-    modelName: "gpt-4o-mini",
-    temperature: 0,
-  }),
-  defaultParser
-);
+const defaultComplianceModel = new OpenAIBeverageComplianceModel(defaultParser);
 const defaultSearchProvider = new TavilyLawSearchProvider();
 const defaultService = new BeverageCheckService(
   defaultSearchProvider,

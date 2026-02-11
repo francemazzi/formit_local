@@ -43,11 +43,14 @@
     "vitest": "^4.0.9"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.1",
+    "@aws-sdk/client-bedrock-runtime": "^3.982.0",
     "@fastify/cors": "^10.0.2",
     "@fastify/multipart": "^9.0.3",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.2",
     "@langchain/anthropic": "^1.0.1",
+    "@langchain/aws": "^1.2.2",
     "@langchain/community": "^1.0.4",
     "@langchain/core": "^1.0.5",
     "@langchain/openai": "^1.1.1",

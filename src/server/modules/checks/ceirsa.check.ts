@@ -1,11 +1,12 @@
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { ChatOpenAI } from "@langchain/openai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 import {
   getCeirsaCategories,
   type CeirsaCategory,
 } from "../ceirsa_categorizer";
+import { createLLM } from "../../utils/llm-factory";
 import { MatrixExtractionResult } from "../extract_matrix_from_text";
 import { Analyses } from "../extract_analyses_from_text";
 import { RawComplianceResult } from "./index";
@@ -138,8 +139,8 @@ const decideComplianceWithLLM = async (
   }
 
   try {
-    const decisionModel = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+    const { model: decisionModel } = await createLLM({
+      capability: "text",
       temperature: 0,
     });
 
@@ -231,8 +232,8 @@ const checkParameterEquivalenceWithLLM = async (
   }
 
   try {
-    const matcherModel = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+    const { model: matcherModel } = await createLLM({
+      capability: "text",
       temperature: 0,
     });
 
@@ -359,7 +360,7 @@ const buildPrompt = async (
 
 const evaluateCompliance = async (
   prompt: string,
-  model: ChatOpenAI,
+  model: BaseChatModel,
   parser: JsonOutputParser<RawComplianceResult[]>
 ): Promise<RawComplianceResult[]> => {
   try {
@@ -377,7 +378,7 @@ const checkCompliance = async (
   input: CeirsaCheckInput,
   template: PromptTemplate,
   formatInstructions: string,
-  model: ChatOpenAI,
+  model: BaseChatModel,
   parser: JsonOutputParser<RawComplianceResult[]>
 ): Promise<RawComplianceResult[]> => {
   const prompt = await buildPrompt(input, template, formatInstructions);
@@ -434,10 +435,12 @@ const checkCompliance = async (
 const promptTemplate = ceirsaCompliancePromptTemplate;
 
 const defaultParser = new JsonOutputParser<RawComplianceResult[]>();
-const defaultModel = new ChatOpenAI({
-  modelName: "gpt-4o-mini",
-  temperature: 0,
-});
+
+// Get model lazily to respect current provider settings
+const getDefaultModel = async () => {
+  const { model } = await createLLM({ capability: "text", temperature: 0 });
+  return model;
+};
 
 /**
  * Finds the matching CEIRSA parameter for an analysis parameter.
@@ -514,11 +517,12 @@ export const ceirsaComplianceCheck = async (
         markdownContent,
       };
 
+      const model = await getDefaultModel();
       const complianceResults = await checkCompliance(
         input,
         promptTemplate,
         formatInstructions,
-        defaultModel,
+        model,
         defaultParser
       );
       results.push(...complianceResults);

@@ -1,7 +1,8 @@
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { ChatOpenAI } from "@langchain/openai";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { LangChainMessageUtils } from "../utils/langchain_message.utils";
+import { createLLM } from "../utils/llm-factory";
 
 import {
   extractMatrixPrompt,
@@ -62,7 +63,6 @@ interface PromptBuilder {
 }
 
 interface MatrixExtractionDependencies {
-  model: ChatOpenAI;
   categoryRepository: CategoryRepository;
   promptBuilder: PromptBuilder;
   parser: JsonOutputParser<RawMatrixExtractionResult>;
@@ -287,12 +287,6 @@ const inferMatrixFromContent = async (
   categories: string[]
 ): Promise<MatrixExtractionResult> => {
   try {
-    const { getOpenAIApiKey } = await import("../utils/api-keys.utils.js");
-    const openAIApiKey = await getOpenAIApiKey();
-    if (!openAIApiKey) {
-      throw new Error("OpenAI API key is required. Please configure it in Settings.");
-    }
-
     const categoriesBlock =
       categories.length > 0
         ? categories.map((cat, index) => `${index + 1}. ${cat}`).join("\n    ")
@@ -303,13 +297,8 @@ const inferMatrixFromContent = async (
       markdownContent,
     });
 
-    const inferenceModel = new ChatOpenAI({
-      openAIApiKey,
-      modelName: "gpt-4o-mini",
-      temperature: 0.1,
-    });
-
-    const response = await inferenceModel.invoke(promptContent);
+    const { model } = await createLLM({ capability: "text", temperature: 0.1 });
+    const response = await model.invoke(promptContent);
     const resolvedContent = LangChainMessageUtils.extractTextContent(response);
     const cleanedResponse = cleanJsonResponse(resolvedContent);
     const parsedInfo = JSON.parse(cleanedResponse) as RawMatrixExtractionResult;
@@ -320,59 +309,40 @@ const inferMatrixFromContent = async (
   }
 };
 
-const createMatrixExtractionService = (
-  dependencies: MatrixExtractionDependencies
-) => {
-  const extract = async (
-    textObjects: ExtractedTextEntry[]
-  ): Promise<MatrixExtractionResult> => {
-    if (!Array.isArray(textObjects) || textObjects.length === 0) {
-      return buildDefaultMatrixResult();
-    }
-
-    const markdownContent = composeMarkdownPayload(textObjects);
-
-    if (!markdownContent) {
-      return buildDefaultMatrixResult();
-    }
-
-    const categories = await dependencies.categoryRepository.getCategories();
-
-    try {
-      const prompt = await dependencies.promptBuilder.build(
-        markdownContent,
-        categories
-      );
-      const response = await dependencies.model.invoke(prompt);
-      const resolvedContent =
-        LangChainMessageUtils.extractTextContent(response);
-      const parsed = await dependencies.parser.parse(resolvedContent);
-      return normalizeResponse(parsed, categories);
-    } catch (error) {
-      const failure = error instanceof Error ? error.message : "Unknown error";
-      console.warn(`Matrix extraction failed: ${failure}`);
-      return inferMatrixFromContent(markdownContent, categories);
-    }
-  };
-
-  return { extract };
-};
-
 const defaultDependencies: MatrixExtractionDependencies = {
-  model: new ChatOpenAI({
-    model: "gpt-4o-mini",
-    temperature: 0.1,
-  }),
   categoryRepository: createCeirsaCategoryRepository(),
   promptBuilder: createMatrixPromptBuilder(matrixPromptTemplate),
   parser: matrixParser,
 };
 
-const matrixExtractionService =
-  createMatrixExtractionService(defaultDependencies);
-
-export const extractMatrixFromText = (
+export const extractMatrixFromText = async (
   textObjects: ExtractedTextEntry[]
 ): Promise<MatrixExtractionResult> => {
-  return matrixExtractionService.extract(textObjects);
+  if (!Array.isArray(textObjects) || textObjects.length === 0) {
+    return buildDefaultMatrixResult();
+  }
+
+  const markdownContent = composeMarkdownPayload(textObjects);
+
+  if (!markdownContent) {
+    return buildDefaultMatrixResult();
+  }
+
+  const categories = await defaultDependencies.categoryRepository.getCategories();
+
+  try {
+    const prompt = await defaultDependencies.promptBuilder.build(
+      markdownContent,
+      categories
+    );
+    const { model } = await createLLM({ capability: "text", temperature: 0.1 });
+    const response = await model.invoke(prompt);
+    const resolvedContent = LangChainMessageUtils.extractTextContent(response);
+    const parsed = await defaultDependencies.parser.parse(resolvedContent);
+    return normalizeResponse(parsed, categories);
+  } catch (error) {
+    const failure = error instanceof Error ? error.message : "Unknown error";
+    console.warn(`Matrix extraction failed: ${failure}`);
+    return inferMatrixFromContent(markdownContent, categories);
+  }
 };

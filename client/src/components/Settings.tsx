@@ -6,11 +6,15 @@ import {
   Settings as SettingsIcon,
   RefreshCw,
   AlertTriangle,
+  Cpu,
+  Check,
 } from "lucide-react";
 import {
   apiKeysApi,
   updateApi,
   type UpdateCheckResponse,
+  type AiProvider,
+  type ProviderInfo,
 } from "../api/apiKeys";
 
 interface SettingsProps {
@@ -27,6 +31,18 @@ export function Settings({ onClose }: SettingsProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Provider state
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+  const [activeProvider, setActiveProvider] = useState<AiProvider>("OPENAI");
+  const [claudeApiKey, setClaudeApiKey] = useState("");
+  const [claudeConfigured, setClaudeConfigured] = useState(false);
+  const [awsAccessKeyId, setAwsAccessKeyId] = useState("");
+  const [awsSecretAccessKey, setAwsSecretAccessKey] = useState("");
+  const [awsRegion, setAwsRegion] = useState("us-east-1");
+  const [awsConfigured, setAwsConfigured] = useState(false);
+  const [isSavingProvider, setIsSavingProvider] = useState(false);
+  const [providerSuccess, setProviderSuccess] = useState(false);
+
   // Update state
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -38,6 +54,7 @@ export function Settings({ onClose }: SettingsProps) {
 
   useEffect(() => {
     loadApiKeys();
+    loadProviders();
   }, []);
 
   const loadApiKeys = async () => {
@@ -48,6 +65,9 @@ export function Settings({ onClose }: SettingsProps) {
       // Check if keys are configured (even if masked)
       setTavilyConfigured(!!config.tavilyApiKey);
       setOpenaiConfigured(!!config.openaiApiKey);
+      setClaudeConfigured(!!config.claudeApiKey);
+      setAwsConfigured(!!config.awsAccessKeyId);
+      setActiveProvider(config.activeProvider);
       // If keys are masked (contain ****), don't populate the fields
       // Otherwise, populate with the actual keys
       if (config.tavilyApiKey && !config.tavilyApiKey.startsWith("****")) {
@@ -56,12 +76,91 @@ export function Settings({ onClose }: SettingsProps) {
       if (config.openaiApiKey && !config.openaiApiKey.startsWith("****")) {
         setOpenaiApiKey(config.openaiApiKey);
       }
+      if (config.awsRegion) {
+        setAwsRegion(config.awsRegion);
+      }
     } catch (err: any) {
       setError(
         err.response?.data?.error || "Errore nel caricamento delle chiavi API",
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadProviders = async () => {
+    try {
+      const response = await apiKeysApi.getProviders();
+      setProviders(response.providers);
+      setActiveProvider(response.activeProvider);
+    } catch (err: any) {
+      console.error("Failed to load providers:", err);
+    }
+  };
+
+  const handleProviderChange = async (provider: AiProvider) => {
+    setIsSavingProvider(true);
+    setError(null);
+    setProviderSuccess(false);
+    try {
+      await apiKeysApi.setActiveProvider(provider);
+      setActiveProvider(provider);
+      setProviderSuccess(true);
+      await loadProviders();
+      setTimeout(() => setProviderSuccess(false), 2000);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Errore nel cambio provider");
+    } finally {
+      setIsSavingProvider(false);
+    }
+  };
+
+  const handleSaveClaudeKey = async () => {
+    if (!claudeApiKey.trim()) return;
+    setIsSavingProvider(true);
+    setError(null);
+    try {
+      await apiKeysApi.updateClaudeApiKey({
+        claudeApiKey: claudeApiKey.trim(),
+      });
+      setClaudeConfigured(true);
+      setClaudeApiKey("");
+      await loadProviders();
+      setProviderSuccess(true);
+      setTimeout(() => setProviderSuccess(false), 2000);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.error ||
+          "Errore nel salvataggio della chiave Claude",
+      );
+    } finally {
+      setIsSavingProvider(false);
+    }
+  };
+
+  const handleSaveAwsCredentials = async () => {
+    if (!awsAccessKeyId.trim() || !awsSecretAccessKey.trim()) return;
+    setIsSavingProvider(true);
+    setError(null);
+    try {
+      await apiKeysApi.updateAwsCredentials({
+        awsAccessKeyId: awsAccessKeyId.trim(),
+        awsSecretAccessKey: awsSecretAccessKey.trim(),
+        awsRegion: awsRegion.trim() || "us-east-1",
+      });
+      setAwsConfigured(true);
+      setAwsAccessKeyId("");
+      setAwsSecretAccessKey("");
+      await loadProviders();
+      setProviderSuccess(true);
+      setTimeout(() => setProviderSuccess(false), 2000);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.error ||
+          "Errore nel salvataggio delle credenziali AWS",
+      );
+    } finally {
+      setIsSavingProvider(false);
     }
   };
 
@@ -293,6 +392,228 @@ export function Settings({ onClose }: SettingsProps) {
             </button>
           </div>
         </form>
+
+        {/* AI Provider Section */}
+        <div
+          style={{
+            marginTop: "1.5rem",
+            paddingTop: "1.5rem",
+            borderTop: "1px solid var(--border-primary)",
+          }}
+        >
+          <h3
+            style={{
+              marginBottom: "1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <Cpu size={18} />
+            Provider AI
+          </h3>
+
+          {providerSuccess && (
+            <div
+              style={{
+                background: "rgba(34, 197, 94, 0.1)",
+                border: "1px solid #22c55e",
+                borderRadius: "var(--border-radius-sm)",
+                padding: "0.75rem 1rem",
+                marginBottom: "1rem",
+                color: "#22c55e",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <Check size={16} />
+              Provider configurato con successo!
+            </div>
+          )}
+
+          <div style={{ marginBottom: "1rem" }}>
+            <small
+              style={{
+                color: "var(--text-secondary)",
+                display: "block",
+                marginBottom: "0.75rem",
+              }}
+            >
+              Seleziona il provider AI da utilizzare per OCR ed elaborazione
+              testi
+            </small>
+
+            {providers.map((provider) => (
+              <label
+                key={provider.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                  padding: "0.75rem",
+                  marginBottom: "0.5rem",
+                  border: `1px solid ${activeProvider === provider.id ? "var(--accent-primary)" : "var(--border-primary)"}`,
+                  borderRadius: "var(--border-radius-sm)",
+                  cursor: provider.configured ? "pointer" : "not-allowed",
+                  opacity: provider.configured ? 1 : 0.6,
+                  background:
+                    activeProvider === provider.id
+                      ? "rgba(59, 130, 246, 0.1)"
+                      : "transparent",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="provider"
+                  value={provider.id}
+                  checked={activeProvider === provider.id}
+                  onChange={() =>
+                    provider.configured && handleProviderChange(provider.id)
+                  }
+                  disabled={!provider.configured || isSavingProvider}
+                  style={{ margin: 0 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 500 }}>{provider.name}</div>
+                  <small style={{ color: "var(--text-secondary)" }}>
+                    {provider.configured ? (
+                      <span style={{ color: "var(--color-satisfactory)" }}>
+                        ✓ Configurato
+                      </span>
+                    ) : (
+                      <span>
+                        Non configurato - aggiungi le credenziali sotto
+                      </span>
+                    )}
+                  </small>
+                </div>
+              </label>
+            ))}
+          </div>
+
+          {/* Claude (Anthropic) Configuration */}
+          <div className="settings-credentials-section">
+            <div className="settings-credentials-header">
+              <h4>Claude (Anthropic API)</h4>
+              {claudeConfigured && (
+                <span className="badge-configured">✓ Configurato</span>
+              )}
+              <a
+                href="https://console.anthropic.com/settings/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ottieni chiave
+                <ExternalLink size={12} />
+              </a>
+            </div>
+            <div className="settings-input-row">
+              <input
+                type="password"
+                className="settings-credential-input"
+                value={claudeApiKey}
+                onChange={(e) => setClaudeApiKey(e.target.value)}
+                placeholder={
+                  claudeConfigured
+                    ? "Inserisci nuova chiave per sovrascrivere"
+                    : "sk-ant-..."
+                }
+                disabled={isSavingProvider}
+              />
+              <button
+                type="button"
+                className="btn-secondary btn-save-credential"
+                onClick={handleSaveClaudeKey}
+                disabled={!claudeApiKey.trim() || isSavingProvider}
+                title="Salva chiave"
+              >
+                <Save size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* AWS Bedrock Configuration */}
+          <div className="settings-credentials-section">
+            <div className="settings-credentials-header">
+              <h4>Claude (AWS Bedrock)</h4>
+              {awsConfigured && (
+                <span className="badge-configured">✓ Configurato</span>
+              )}
+              <a
+                href="https://console.aws.amazon.com/bedrock"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                AWS Console
+                <ExternalLink size={12} />
+              </a>
+            </div>
+            <div className="settings-field-group">
+              <label
+                className="settings-field-label"
+                htmlFor="aws-access-key-id"
+              >
+                AWS Access Key ID
+              </label>
+              <input
+                id="aws-access-key-id"
+                type="password"
+                className="settings-credential-input"
+                value={awsAccessKeyId}
+                onChange={(e) => setAwsAccessKeyId(e.target.value)}
+                placeholder="Inserisci Access Key ID"
+                disabled={isSavingProvider}
+              />
+            </div>
+            <div className="settings-field-group">
+              <label className="settings-field-label" htmlFor="aws-secret-key">
+                AWS Secret Access Key
+              </label>
+              <input
+                id="aws-secret-key"
+                type="password"
+                className="settings-credential-input"
+                value={awsSecretAccessKey}
+                onChange={(e) => setAwsSecretAccessKey(e.target.value)}
+                placeholder="Inserisci Secret Access Key"
+                disabled={isSavingProvider}
+              />
+            </div>
+            <div className="settings-field-group">
+              <label className="settings-field-label" htmlFor="aws-region">
+                Regione
+              </label>
+              <div className="settings-input-row">
+                <input
+                  id="aws-region"
+                  type="text"
+                  className="settings-credential-input"
+                  value={awsRegion}
+                  onChange={(e) => setAwsRegion(e.target.value)}
+                  placeholder="us-east-1"
+                  disabled={isSavingProvider}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary btn-save-credential"
+                  onClick={handleSaveAwsCredentials}
+                  disabled={
+                    !awsAccessKeyId.trim() ||
+                    !awsSecretAccessKey.trim() ||
+                    isSavingProvider
+                  }
+                  title="Salva credenziali AWS"
+                >
+                  <Save size={16} />
+                </button>
+              </div>
+            </div>
+            <p className="settings-credentials-hint">
+              Richiede accesso a Claude su AWS Bedrock nella regione specificata
+            </p>
+          </div>
+        </div>
 
         {/* Update Section */}
         <div

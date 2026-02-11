@@ -14,14 +14,43 @@ const api = axios.create({
 // API Keys Types
 // ========================================
 
+export type AiProvider = "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE";
+
 export interface ApiKeysConfig {
   tavilyApiKey: string | null;
   openaiApiKey: string | null;
+  claudeApiKey: string | null;
+  awsAccessKeyId: string | null;
+  awsSecretAccessKey: string | null;
+  awsRegion: string | null;
+  activeProvider: AiProvider;
+}
+
+export interface UpdateClaudeApiKeyInput {
+  claudeApiKey?: string | null;
 }
 
 export interface UpdateApiKeysInput {
   tavilyApiKey?: string | null;
   openaiApiKey?: string | null;
+}
+
+export interface UpdateAwsCredentialsInput {
+  awsAccessKeyId?: string | null;
+  awsSecretAccessKey?: string | null;
+  awsRegion?: string | null;
+}
+
+export interface ProviderInfo {
+  id: AiProvider;
+  name: string;
+  configured: boolean;
+  active: boolean;
+}
+
+export interface ProvidersResponse {
+  providers: ProviderInfo[];
+  activeProvider: AiProvider;
 }
 
 // ========================================
@@ -36,6 +65,42 @@ export const apiKeysApi = {
 
   update: async (data: UpdateApiKeysInput): Promise<ApiKeysConfig> => {
     const response = await api.put<ApiKeysConfig>("/api-keys", data);
+    return response.data;
+  },
+
+  getProviders: async (): Promise<ProvidersResponse> => {
+    const response = await api.get<ProvidersResponse>("/api-keys/providers");
+    return response.data;
+  },
+
+  setActiveProvider: async (
+    provider: AiProvider
+  ): Promise<{ success: boolean; activeProvider: AiProvider }> => {
+    const response = await api.put<{
+      success: boolean;
+      activeProvider: AiProvider;
+    }>("/api-keys/provider", { provider });
+    return response.data;
+  },
+
+  updateAwsCredentials: async (
+    data: UpdateAwsCredentialsInput
+  ): Promise<{ success: boolean; awsAccessKeyId: string | null; awsRegion: string | null }> => {
+    const response = await api.put<{
+      success: boolean;
+      awsAccessKeyId: string | null;
+      awsRegion: string | null;
+    }>("/api-keys/aws", data);
+    return response.data;
+  },
+
+  updateClaudeApiKey: async (
+    data: UpdateClaudeApiKeyInput
+  ): Promise<{ success: boolean; claudeApiKey: string | null }> => {
+    const response = await api.put<{
+      success: boolean;
+      claudeApiKey: string | null;
+    }>("/api-keys/claude", data);
     return response.data;
   },
 };

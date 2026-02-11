@@ -4,7 +4,7 @@ import { join } from "path";
 
 interface EnvSetupBody {
   openaiApiKey: string;
-  tavilyApiKey: string;
+  tavilyApiKey?: string;  // optional - Tavily is not required
 }
 
 interface EnvStatus {
@@ -44,11 +44,14 @@ export class EnvSetupController {
     return env;
   }
 
-  private createEnvContent(openaiApiKey: string, tavilyApiKey: string): string {
-    return `DATABASE_URL="file:./dev.db"
+  private createEnvContent(openaiApiKey: string, tavilyApiKey?: string): string {
+    let content = `DATABASE_URL="file:./dev.db"
 OPENAI_API_KEY=${openaiApiKey}
-TAVILY_API_KEY=${tavilyApiKey}
 `;
+    if (tavilyApiKey) {
+      content += `TAVILY_API_KEY=${tavilyApiKey}\n`;
+    }
+    return content;
   }
 
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
@@ -98,7 +101,8 @@ TAVILY_API_KEY=${tavilyApiKey}
             hasOpenaiKey,
             hasTavilyKey,
             hasDatabaseUrl,
-            isConfigured: hasOpenaiKey && hasTavilyKey && hasDatabaseUrl,
+            // Tavily is optional - only require OpenAI key and database URL
+            isConfigured: hasOpenaiKey && hasDatabaseUrl,
           };
 
           return reply.send(status);
@@ -119,10 +123,10 @@ TAVILY_API_KEY=${tavilyApiKey}
           summary: "Setup environment configuration",
           body: {
             type: "object",
-            required: ["openaiApiKey", "tavilyApiKey"],
+            required: ["openaiApiKey"],  // tavilyApiKey is optional
             properties: {
               openaiApiKey: { type: "string", description: "OpenAI API Key" },
-              tavilyApiKey: { type: "string", description: "Tavily API Key" },
+              tavilyApiKey: { type: "string", description: "Tavily API Key (optional)" },
             },
           },
           response: {
@@ -147,24 +151,24 @@ TAVILY_API_KEY=${tavilyApiKey}
       async (request: FastifyRequest<{ Body: EnvSetupBody }>, reply: FastifyReply) => {
         const { openaiApiKey, tavilyApiKey } = request.body;
 
-        // Validate input
+        // Validate input - only OpenAI key is required, Tavily is optional
         if (!openaiApiKey || openaiApiKey.trim().length === 0) {
           return reply.status(400).send({ error: "OpenAI API Key è obbligatoria" });
         }
-
-        if (!tavilyApiKey || tavilyApiKey.trim().length === 0) {
-          return reply.status(400).send({ error: "Tavily API Key è obbligatoria" });
-        }
+        // Tavily API key is optional - no validation required
 
         try {
           const envPath = this.getEnvPath();
-          const content = this.createEnvContent(openaiApiKey.trim(), tavilyApiKey.trim());
+          const trimmedTavilyKey = tavilyApiKey?.trim() || undefined;
+          const content = this.createEnvContent(openaiApiKey.trim(), trimmedTavilyKey);
 
           writeFileSync(envPath, content, "utf-8");
 
           // Also set the environment variables for the current process
           process.env.OPENAI_API_KEY = openaiApiKey.trim();
-          process.env.TAVILY_API_KEY = tavilyApiKey.trim();
+          if (trimmedTavilyKey) {
+            process.env.TAVILY_API_KEY = trimmedTavilyKey;
+          }
           process.env.DATABASE_URL = "file:./dev.db";
 
           return reply.send({
