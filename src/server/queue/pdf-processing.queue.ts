@@ -95,6 +95,10 @@ export class PdfProcessingQueue {
   async close(): Promise<void> {
     await this.queue.close();
   }
+
+  async cleanFailedJobs(limit: number = 1000): Promise<string[]> {
+    return this.queue.clean(0, limit, "failed");
+  }
 }
 
 export const pdfProcessingQueue = new PdfProcessingQueue();

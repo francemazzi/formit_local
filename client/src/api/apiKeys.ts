@@ -164,6 +164,17 @@ export interface UpdateResponse {
   };
 }
 
+export interface CleanupResponse {
+  success: boolean;
+  message: string;
+  details: {
+    failedJobsRemoved: number;
+    cacheEntriesCleared: number;
+    complianceDecisionEntriesCleared: number;
+    parameterMatchEntriesCleared: number;
+  };
+}
+
 // ========================================
 // Update API
 // ========================================
@@ -176,6 +187,11 @@ export const updateApi = {
 
   update: async (): Promise<UpdateResponse> => {
     const response = await api.post<UpdateResponse>("/update");
+    return response.data;
+  },
+
+  cleanup: async (): Promise<CleanupResponse> => {
+    const response = await api.post<CleanupResponse>("/maintenance/cleanup");
     return response.data;
   },
 };

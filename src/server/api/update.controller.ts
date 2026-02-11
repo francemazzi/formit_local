@@ -2,6 +2,8 @@ import { FastifyInstance } from "fastify";
 import { exec, spawn } from "child_process";
 import { promisify } from "util";
 import path from "path";
+import { pdfProcessingQueue } from "../queue/pdf-processing.queue";
+import { clearCeirsaCheckCaches } from "../modules/checks/ceirsa.check";
 
 const execAsync = promisify(exec);
 
@@ -20,6 +22,17 @@ interface UpdateCheckResponse {
   currentCommit: string;
   remoteCommit: string;
   behindBy: number;
+}
+
+interface CleanupResponse {
+  success: boolean;
+  message: string;
+  details: {
+    failedJobsRemoved: number;
+    cacheEntriesCleared: number;
+    complianceDecisionEntriesCleared: number;
+    parameterMatchEntriesCleared: number;
+  };
 }
 
 class UpdateController {
@@ -176,6 +189,66 @@ class UpdateController {
           throw {
             statusCode: 500,
             message: "Errore durante l'aggiornamento: " + error.message,
+          };
+        }
+      }
+    );
+
+    // Cleanup in-memory cache and failed queue jobs
+    fastify.post<{ Reply: CleanupResponse }>(
+      "/maintenance/cleanup",
+      {
+        schema: {
+          description: "Clear application cache and remove failed queue jobs",
+          tags: ["Settings"],
+          summary: "Cleanup cache and failed jobs",
+          response: {
+            200: {
+              type: "object",
+              properties: {
+                success: { type: "boolean" },
+                message: { type: "string" },
+                details: {
+                  type: "object",
+                  properties: {
+                    failedJobsRemoved: { type: "number" },
+                    cacheEntriesCleared: { type: "number" },
+                    complianceDecisionEntriesCleared: { type: "number" },
+                    parameterMatchEntriesCleared: { type: "number" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      async () => {
+        try {
+          const removedFailedJobIds = await pdfProcessingQueue.cleanFailedJobs(
+            10000
+          );
+          const cacheCleanup = clearCeirsaCheckCaches();
+          const cacheEntriesCleared =
+            cacheCleanup.complianceDecisionEntries +
+            cacheCleanup.parameterMatchEntries;
+
+          return {
+            success: true,
+            message:
+              "Pulizia completata: cache applicativa e job falliti rimossi.",
+            details: {
+              failedJobsRemoved: removedFailedJobIds.length,
+              cacheEntriesCleared,
+              complianceDecisionEntriesCleared:
+                cacheCleanup.complianceDecisionEntries,
+              parameterMatchEntriesCleared: cacheCleanup.parameterMatchEntries,
+            },
+          };
+        } catch (error: any) {
+          fastify.log.error("Error during maintenance cleanup:", error);
+          throw {
+            statusCode: 500,
+            message: "Errore durante la pulizia: " + error.message,
           };
         }
       }

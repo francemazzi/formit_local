@@ -51,6 +51,8 @@ export function Settings({ onClose }: SettingsProps) {
   );
   const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
+  const [isCleaning, setIsCleaning] = useState(false);
+  const [cleanupSuccess, setCleanupSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     loadApiKeys();
@@ -201,6 +203,26 @@ export function Settings({ onClose }: SettingsProps) {
       setError(err.response?.data?.message || "Errore durante l'aggiornamento");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleCleanup = async () => {
+    setIsCleaning(true);
+    setError(null);
+    setCleanupSuccess(null);
+
+    try {
+      const result = await updateApi.cleanup();
+      setCleanupSuccess(
+        `${result.message} Job falliti rimossi: ${result.details.failedJobsRemoved}. Cache svuotate: ${result.details.cacheEntriesCleared}.`
+      );
+    } catch (err: unknown) {
+      const maybeError = err as { response?: { data?: { message?: string } } };
+      setError(
+        maybeError.response?.data?.message || "Errore durante la pulizia"
+      );
+    } finally {
+      setIsCleaning(false);
     }
   };
 
@@ -652,6 +674,21 @@ export function Settings({ onClose }: SettingsProps) {
             </div>
           )}
 
+          {cleanupSuccess && (
+            <div
+              style={{
+                background: "rgba(34, 197, 94, 0.1)",
+                border: "1px solid #22c55e",
+                borderRadius: "var(--border-radius-sm)",
+                padding: "0.75rem 1rem",
+                marginBottom: "1rem",
+                color: "#22c55e",
+              }}
+            >
+              {cleanupSuccess}
+            </div>
+          )}
+
           {updateInfo && !updateInfo.hasUpdates && !updateSuccess && (
             <div
               style={{
@@ -765,6 +802,24 @@ export function Settings({ onClose }: SettingsProps) {
             </button>
           )}
 
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={handleCleanup}
+            disabled={isCleaning || isCheckingUpdates || isUpdating}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginTop: "0.75rem",
+            }}
+          >
+            <RefreshCw size={16} className={isCleaning ? "spinning" : ""} />
+            {isCleaning
+              ? "Pulizia in corso..."
+              : "Pulisci cache e job falliti"}
+          </button>
+
           <small
             style={{
               display: "block",
@@ -775,6 +830,17 @@ export function Settings({ onClose }: SettingsProps) {
           >
             Scarica gli aggiornamenti da GitHub (origin/main) e riavvia
             l'applicazione.
+          </small>
+          <small
+            style={{
+              display: "block",
+              marginTop: "0.5rem",
+              color: "var(--text-secondary)",
+              fontSize: "0.75rem",
+            }}
+          >
+            Il comando di pulizia rimuove i job falliti dalla coda e azzera la
+            cache in-memory dei controlli.
           </small>
         </div>
       </div>

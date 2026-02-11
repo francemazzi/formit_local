@@ -532,4 +532,20 @@ export const ceirsaComplianceCheck = async (
   return results;
 };
 
+export const clearCeirsaCheckCaches = (): {
+  complianceDecisionEntries: number;
+  parameterMatchEntries: number;
+} => {
+  const complianceDecisionEntries = complianceDecisionCache.size;
+  const parameterMatchEntries = parameterMatchCache.size;
+
+  complianceDecisionCache.clear();
+  parameterMatchCache.clear();
+
+  return {
+    complianceDecisionEntries,
+    parameterMatchEntries,
+  };
+};
+
 export { createCeirsaCategoryMatcher, createFileSystemCeirsaCategoryProvider };
