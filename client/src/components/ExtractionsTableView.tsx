@@ -44,10 +44,15 @@ interface FlattenedRow {
   matrix_ceirsa_category: string | null;
   matrix_sampleType: string | null;
   matrix_description: string | null;
-  compliance_total: number;
-  compliance_pass: number;
-  compliance_fail: number;
-  compliance_pending: number;
+  // Analysis fields (one row per analysis)
+  analysis_parameter: string | null;
+  analysis_result: string | null;
+  analysis_um_result: string | null;
+  analysis_method: string | null;
+  // Compliance fields for this analysis
+  compliance_value: string | null;
+  compliance_isCheck: string | null;
+  compliance_description: string | null;
   [key: string]: string | number | boolean | null | PdfExtraction | undefined;
 }
 
@@ -95,30 +100,51 @@ const MATRIX_COLUMNS: ColumnDefinition[] = [
   },
 ];
 
+const ANALYSIS_COLUMNS: ColumnDefinition[] = [
+  {
+    key: "analysis_parameter",
+    label: "Parametro",
+    group: "analysis",
+    width: 180,
+  },
+  {
+    key: "analysis_result",
+    label: "Risultato",
+    group: "analysis",
+    width: 120,
+  },
+  {
+    key: "analysis_um_result",
+    label: "U.M.",
+    group: "analysis",
+    width: 80,
+  },
+  {
+    key: "analysis_method",
+    label: "Metodo",
+    group: "analysis",
+    width: 150,
+  },
+];
+
 const COMPLIANCE_COLUMNS: ColumnDefinition[] = [
   {
-    key: "compliance_total",
-    label: "Totale Controlli",
+    key: "compliance_value",
+    label: "Esito",
     group: "compliance",
     width: 120,
   },
   {
-    key: "compliance_pass",
-    label: "Conformi",
-    group: "compliance",
-    width: 100,
-  },
-  {
-    key: "compliance_fail",
-    label: "Non Conformi",
+    key: "compliance_isCheck",
+    label: "Conformità",
     group: "compliance",
     width: 120,
   },
   {
-    key: "compliance_pending",
-    label: "In Sospeso",
+    key: "compliance_description",
+    label: "Dettaglio Conformità",
     group: "compliance",
-    width: 100,
+    width: 250,
   },
 ];
 
@@ -141,86 +167,82 @@ function shortenFileName(fileName: string): string {
   return base.slice(0, 5) + "..." + base.slice(-5) + ext;
 }
 
-function flattenExtractions(extractions: PdfExtraction[]): {
-  rows: FlattenedRow[];
-  analysisColumns: ColumnDefinition[];
-} {
-  // Find max number of analyses
-  const maxAnalyses = Math.max(
-    0,
-    ...extractions.map((e) => e.extractedData.analyses?.length || 0),
-  );
+function flattenExtractions(extractions: PdfExtraction[]): FlattenedRow[] {
+  const rows: FlattenedRow[] = [];
 
-  // Generate analysis columns
-  const analysisColumns: ColumnDefinition[] = [];
-  for (let i = 0; i < maxAnalyses; i++) {
-    analysisColumns.push(
-      {
-        key: `analysis_${i}_parameter`,
-        label: `Analisi ${i + 1} - Parametro`,
-        group: "analysis",
-        width: 180,
-      },
-      {
-        key: `analysis_${i}_result`,
-        label: `Analisi ${i + 1} - Risultato`,
-        group: "analysis",
-        width: 120,
-      },
-      {
-        key: `analysis_${i}_um_result`,
-        label: `Analisi ${i + 1} - U.M.`,
-        group: "analysis",
-        width: 80,
-      },
-      {
-        key: `analysis_${i}_method`,
-        label: `Analisi ${i + 1} - Metodo`,
-        group: "analysis",
-        width: 150,
-      },
-    );
-  }
-
-  // Flatten each extraction
-  const rows: FlattenedRow[] = extractions.map((extraction) => {
+  for (const extraction of extractions) {
     const data = extraction.extractedData;
+    const analyses = data.analyses || [];
     const results = data.results || [];
 
-    const row: FlattenedRow = {
-      id: extraction.id,
-      _original: extraction,
-      fileName: shortenFileName(extraction.fileName),
-      createdAt: formatDateTime(extraction.createdAt),
-      updatedAt: formatDateTime(extraction.updatedAt),
-      success: extraction.success,
-      error: extraction.error,
-      // Matrix
-      matrix_matrix: data.matrix?.matrix || null,
-      matrix_product: data.matrix?.product || null,
-      matrix_category: data.matrix?.category || null,
-      matrix_ceirsa_category: data.matrix?.ceirsa_category || null,
-      matrix_sampleType: data.matrix?.sampleType || null,
-      matrix_description: data.matrix?.description || null,
-      // Compliance
-      compliance_total: results.length,
-      compliance_pass: results.filter((r) => r.isCheck === true).length,
-      compliance_fail: results.filter((r) => r.isCheck === false).length,
-      compliance_pending: results.filter((r) => r.isCheck === null).length,
-    };
+    // If no analyses, still create one row for the extraction
+    if (analyses.length === 0) {
+      rows.push({
+        id: extraction.id,
+        _original: extraction,
+        fileName: shortenFileName(extraction.fileName),
+        createdAt: formatDateTime(extraction.createdAt),
+        updatedAt: formatDateTime(extraction.updatedAt),
+        success: extraction.success,
+        error: extraction.error,
+        matrix_matrix: data.matrix?.matrix || null,
+        matrix_product: data.matrix?.product || null,
+        matrix_category: data.matrix?.category || null,
+        matrix_ceirsa_category: data.matrix?.ceirsa_category || null,
+        matrix_sampleType: data.matrix?.sampleType || null,
+        matrix_description: data.matrix?.description || null,
+        analysis_parameter: null,
+        analysis_result: null,
+        analysis_um_result: null,
+        analysis_method: null,
+        compliance_value: null,
+        compliance_isCheck: null,
+        compliance_description: null,
+      });
+      continue;
+    }
 
-    // Add analysis data
-    data.analyses?.forEach((analysis, idx) => {
-      row[`analysis_${idx}_parameter`] = analysis.parameter;
-      row[`analysis_${idx}_result`] = analysis.result;
-      row[`analysis_${idx}_um_result`] = analysis.um_result;
-      row[`analysis_${idx}_method`] = analysis.method;
-    });
+    // One row per analysis
+    for (let i = 0; i < analyses.length; i++) {
+      const analysis = analyses[i];
+      // Match compliance result by parameter name
+      const complianceResult = results.find(
+        (r) => r.name === analysis.parameter,
+      );
 
-    return row;
-  });
+      rows.push({
+        id: `${extraction.id}_${i}`,
+        _original: extraction,
+        fileName: shortenFileName(extraction.fileName),
+        createdAt: formatDateTime(extraction.createdAt),
+        updatedAt: formatDateTime(extraction.updatedAt),
+        success: extraction.success,
+        error: extraction.error,
+        matrix_matrix: data.matrix?.matrix || null,
+        matrix_product: data.matrix?.product || null,
+        matrix_category: data.matrix?.category || null,
+        matrix_ceirsa_category: data.matrix?.ceirsa_category || null,
+        matrix_sampleType: data.matrix?.sampleType || null,
+        matrix_description: data.matrix?.description || null,
+        analysis_parameter: analysis.parameter,
+        analysis_result: analysis.result,
+        analysis_um_result: analysis.um_result,
+        analysis_method: analysis.method,
+        compliance_value: complianceResult?.value ?? null,
+        compliance_isCheck:
+          complianceResult?.isCheck === true
+            ? "Conforme"
+            : complianceResult?.isCheck === false
+              ? "Non Conforme"
+              : complianceResult?.isCheck === null
+                ? "In Sospeso"
+                : null,
+        compliance_description: complianceResult?.description ?? null,
+      });
+    }
+  }
 
-  return { rows, analysisColumns };
+  return rows;
 }
 
 interface ColumnFilterDropdownProps {
@@ -486,21 +508,21 @@ export function ExtractionsTableView({
   extractions,
   onSelectExtraction,
 }: ExtractionsTableViewProps) {
-  // Flatten data
-  const { rows, analysisColumns } = useMemo(
+  // Flatten data: one row per analysis
+  const rows = useMemo(
     () => flattenExtractions(extractions),
     [extractions],
   );
 
-  // All columns
+  // All columns (fixed, no more dynamic analysis columns)
   const allColumns = useMemo(
     () => [
       ...BASE_COLUMNS,
       ...MATRIX_COLUMNS,
-      ...analysisColumns,
+      ...ANALYSIS_COLUMNS,
       ...COMPLIANCE_COLUMNS,
     ],
-    [analysisColumns],
+    [],
   );
 
   // State
@@ -510,8 +532,8 @@ export function ExtractionsTableView({
     [...BASE_COLUMNS, ...MATRIX_COLUMNS, ...COMPLIANCE_COLUMNS].forEach((col) =>
       defaultVisible.add(col.key),
     );
-    // Show first 4 analysis columns (first analysis)
-    analysisColumns.slice(0, 4).forEach((col) => defaultVisible.add(col.key));
+    // Show all analysis and compliance columns
+    [...ANALYSIS_COLUMNS, ...COMPLIANCE_COLUMNS].forEach((col) => defaultVisible.add(col.key));
     return defaultVisible;
   });
 
@@ -673,7 +695,7 @@ export function ExtractionsTableView({
       <div className="table-toolbar">
         <div className="table-info">
           <span>
-            {filteredAndSortedRows.length} di {rows.length} estrazioni
+            {filteredAndSortedRows.length} di {rows.length} analisi
           </span>
           {columnFilters.size > 0 && (
             <button
