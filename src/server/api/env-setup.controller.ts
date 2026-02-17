@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { existsSync, writeFileSync, readFileSync } from "fs";
 import { join } from "path";
+import { requireAuth } from "../auth/auth.middleware";
 
 interface EnvSetupBody {
   openaiApiKey: string;
@@ -55,6 +56,9 @@ OPENAI_API_KEY=${openaiApiKey}
   }
 
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
+    // All env setup routes require authentication
+    fastify.addHook("preHandler", requireAuth);
+
     // GET /env-status - Check if .env file exists and is configured
     fastify.get(
       "/env-status",

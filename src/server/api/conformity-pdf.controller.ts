@@ -10,6 +10,8 @@ import { extractMatrixFromText, MatrixExtractionResult } from "../modules/extrac
 import { extractAnalysesFromText, Analyses } from "../modules/extract_analyses_from_text";
 import { getDatabaseClient } from "../prisma.client";
 import { pdfProcessingQueue } from "../queue/pdf-processing.queue";
+import { requireAuth } from "../auth/auth.middleware";
+import { canUploadFiles } from "../auth/quota.utils";
 
 interface PdfCheckResult {
   fileName: string;
@@ -190,6 +192,9 @@ const saveExtractionToDatabase = async (
 
 export class ConformityPdfController {
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
+    // All conformity-pdf routes require authentication
+    fastify.addHook("preHandler", requireAuth);
+
     // Endpoint to get all PDF extractions
     fastify.get(
       "/conformity-pdf/extractions",
@@ -248,22 +253,35 @@ export class ConformityPdfController {
         const query = request.query as { limit?: number; offset?: number };
         const limit = Math.min(query.limit || 50, 100); // Max 100
         const offset = query.offset || 0;
+        const isAdmin = request.user!.role === "ADMIN";
+        const userId = request.user!.userId;
 
         const client = getDatabaseClient();
-        
-        // Get raw data from database to ensure JSON is properly retrieved
-        // Note: Prisma $queryRaw with SQLite automatically deserializes JSON columns
-        const rawExtractions = await client.$queryRaw<Array<{
-          id: string;
-          fileName: string;
-          createdAt: Date;
-          updatedAt: Date;
-          success: number;
-          error: string | null;
-          extractedData: any; // Can be string or already parsed object
-        }>>`SELECT * FROM PdfExtraction ORDER BY createdAt DESC LIMIT ${limit} OFFSET ${offset}`;
-        
-        const total = await client.pdfExtraction.count();
+
+        // Filter by userId for non-admin users; admin sees all
+        const rawExtractions = isAdmin
+          ? await client.$queryRaw<Array<{
+              id: string;
+              fileName: string;
+              createdAt: Date;
+              updatedAt: Date;
+              success: number;
+              error: string | null;
+              extractedData: any;
+            }>>`SELECT * FROM PdfExtraction ORDER BY createdAt DESC LIMIT ${limit} OFFSET ${offset}`
+          : await client.$queryRaw<Array<{
+              id: string;
+              fileName: string;
+              createdAt: Date;
+              updatedAt: Date;
+              success: number;
+              error: string | null;
+              extractedData: any;
+            }>>`SELECT * FROM PdfExtraction WHERE userId = ${userId} ORDER BY createdAt DESC LIMIT ${limit} OFFSET ${offset}`;
+
+        const total = isAdmin
+          ? await client.pdfExtraction.count()
+          : await client.pdfExtraction.count({ where: { userId } });
 
         // Parse JSON data from SQLite text field
         const serializedExtractions = rawExtractions.map((extraction) => {
@@ -340,19 +358,30 @@ export class ConformityPdfController {
       },
       async (request: FastifyRequest, reply: FastifyReply) => {
         const params = request.params as { id: string };
+        const isAdmin = request.user!.role === "ADMIN";
+        const userId = request.user!.userId;
         const client = getDatabaseClient();
-        
-        // Get raw data from database to ensure JSON is properly retrieved
-        // Note: Prisma $queryRaw with SQLite automatically deserializes JSON columns
-        const rawExtractions = await client.$queryRaw<Array<{
-          id: string;
-          fileName: string;
-          createdAt: Date;
-          updatedAt: Date;
-          success: number;
-          error: string | null;
-          extractedData: any; // Can be string or already parsed object
-        }>>`SELECT * FROM PdfExtraction WHERE id = ${params.id}`;
+
+        // Get raw data, filter by userId for non-admin users
+        const rawExtractions = isAdmin
+          ? await client.$queryRaw<Array<{
+              id: string;
+              fileName: string;
+              createdAt: Date;
+              updatedAt: Date;
+              success: number;
+              error: string | null;
+              extractedData: any;
+            }>>`SELECT * FROM PdfExtraction WHERE id = ${params.id}`
+          : await client.$queryRaw<Array<{
+              id: string;
+              fileName: string;
+              createdAt: Date;
+              updatedAt: Date;
+              success: number;
+              error: string | null;
+              extractedData: any;
+            }>>`SELECT * FROM PdfExtraction WHERE id = ${params.id} AND userId = ${userId}`;
 
         if (!rawExtractions || rawExtractions.length === 0) {
           return reply.status(404).send({
@@ -512,6 +541,9 @@ export class ConformityPdfController {
         },
       },
       async (request: FastifyRequest, reply: FastifyReply) => {
+        const userId = request.user!.userId;
+        const userPlan = request.user!.plan;
+
         const files = await this.extractFiles(request);
 
         if (files.length === 0) {
@@ -532,19 +564,29 @@ export class ConformityPdfController {
           });
         }
 
+        // Check upload quota before accepting files
+        const quotaCheck = await canUploadFiles(userId, userPlan, pdfFiles.length);
+        if (!quotaCheck.allowed) {
+          return reply.status(429).send({
+            error: `Quota di upload superata. Il piano ${userPlan} consente ${quotaCheck.limit} documenti/settimana. Usati: ${quotaCheck.used}. Rimanenti: ${quotaCheck.remaining}.`,
+            quota: quotaCheck,
+          });
+        }
+
         // Save files and create jobs
         const jobIds: string[] = [];
-        
+
         for (const file of pdfFiles) {
           const fileId = randomUUID();
           const tempFilePath = await saveTempFile(file.buffer, file.filename);
-          
+
           const job = await pdfProcessingQueue.addJob({
             fileId,
             fileName: file.filename,
             filePath: tempFilePath,
+            userId,
           });
-          
+
           jobIds.push(job.id!);
         }
 
@@ -641,6 +683,13 @@ export class ConformityPdfController {
           });
         }
 
+        // Verify ownership for non-admin users
+        if (request.user!.role !== "ADMIN" && extraction.userId !== request.user!.userId) {
+          return reply.status(404).send({
+            error: "Extraction not found",
+          });
+        }
+
         // Save file and create job with forceOcr
         const fileId = randomUUID();
         const tempFilePath = await saveTempFile(pdfFile.buffer, pdfFile.filename);
@@ -651,6 +700,7 @@ export class ConformityPdfController {
           filePath: tempFilePath,
           forceOcr: true,
           existingExtractionId: params.id,
+          userId: request.user!.userId,
         });
 
         return reply.status(202).send({

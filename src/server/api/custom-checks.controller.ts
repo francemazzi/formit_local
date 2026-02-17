@@ -9,6 +9,7 @@ import {
   UpdateParameterInput,
   CategoryWithParameters,
 } from "../custom-check.service";
+import { requireAuth } from "../auth/auth.middleware";
 
 // ========================================
 // Request Body Types
@@ -58,6 +59,9 @@ interface ImportCategoryBody extends CreateCategoryBody {
 
 export class CustomChecksController {
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
+    // All custom checks routes require authentication
+    fastify.addHook("preHandler", requireAuth);
+
     // ========================================
     // Category Routes
     // ========================================

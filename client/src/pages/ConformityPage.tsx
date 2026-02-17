@@ -4,6 +4,7 @@ import { PdfDropZone } from "../components/PdfDropZone";
 import { ResultsDisplay } from "../components/ResultsDisplay";
 import { ExtractionsList } from "../components/ExtractionsList";
 import { ApiKeySetupModal } from "../components/ApiKeySetupModal";
+import { QuotaDisplay } from "../components/QuotaDisplay";
 import {
   conformityApi,
   type ConformityPdfResponse,
@@ -11,6 +12,7 @@ import {
   type PdfCheckResult,
 } from "../api/conformityPdf";
 import { envSetupApi } from "../api/apiKeys";
+import { useAuth } from "../context/AuthContext";
 
 interface ConformityPageProps {
   onNavigateToCustomChecks: () => void;
@@ -23,6 +25,7 @@ export function ConformityPage({
 }: ConformityPageProps) {
   // Suppress unused parameter warning
   void _onNavigateToCustomChecks;
+  const { quota, refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<ConformityPdfResponse | null>(null);
@@ -95,6 +98,8 @@ export function ConformityPage({
 
       if (allCompleted) {
         stopPolling();
+        // Refresh quota after all jobs complete
+        refreshUser();
 
         // Convert job results to ConformityPdfResponse format
         const pdfResults: PdfCheckResult[] = results.jobIds.map((jobId) => {
@@ -267,6 +272,7 @@ export function ConformityPage({
             )}
 
             <div className="upload-section">
+              <QuotaDisplay quota={quota} />
               {hasActiveJobs && results.jobIds && (
                 <div className="processing-status">
                   <Loader2 size={20} className="spinning" />

@@ -4,6 +4,7 @@ import { promisify } from "util";
 import path from "path";
 import { pdfProcessingQueue } from "../queue/pdf-processing.queue";
 import { clearCeirsaCheckCaches } from "../modules/checks/ceirsa.check";
+import { requireAuth, requireAdmin } from "../auth/auth.middleware";
 
 const execAsync = promisify(exec);
 
@@ -44,6 +45,10 @@ class UpdateController {
   }
 
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
+    // All update/maintenance routes require admin access
+    fastify.addHook("preHandler", requireAuth);
+    fastify.addHook("preHandler", requireAdmin);
+
     // Check for available updates
     fastify.get<{ Reply: UpdateCheckResponse }>(
       "/update/check",

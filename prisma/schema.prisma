@@ -10,6 +10,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ========================================
+// Authentication & User Management
+// ========================================
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum UserPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model User {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  email         String   @unique
+  passwordHash  String
+  role          UserRole  @default(USER)
+  plan          UserPlan  @default(FREE)
+
+  refreshTokens RefreshToken[]
+  extractions   PdfExtraction[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  token     String   @unique
+  expiresAt DateTime
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ========================================
+// Job Queue
+// ========================================
+
 enum StatusJob {
   PENDING
   PROCESSING
@@ -117,12 +166,19 @@ model PdfExtraction {
   
   // Messaggio di errore se l'estrazione è fallita
   error       String?
-  
+
+  // Utente che ha caricato il documento (nullable per dati preesistenti)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   // Indice per ricerca rapida per nome file
   @@index([fileName])
-  
+
   // Indice per ordinamento per data
   @@index([createdAt])
+
+  // Indice per filtrare per utente
+  @@index([userId])
 }
 
 // ========================================

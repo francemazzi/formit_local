@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { getDatabaseClient } from "../prisma.client";
 import { isProviderConfigured } from "../utils/api-keys.utils";
 import type { AiProvider } from "@prisma/client";
+import { requireAuth } from "../auth/auth.middleware";
 
 // ========================================
 // Request Body Types
@@ -33,6 +34,9 @@ interface SetActiveProviderBody {
 
 export class ApiKeysController {
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
+    // All API key routes require authentication
+    fastify.addHook("preHandler", requireAuth);
+
     // Mask keys for security (show only last 4 characters)
     const maskKey = (key: string | null): string | null => {
       if (!key || key.length <= 4) return key;

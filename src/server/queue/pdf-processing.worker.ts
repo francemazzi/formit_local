@@ -15,6 +15,7 @@ interface ExtractionData {
   results: ComplianceResult[];
   success: boolean;
   error?: string;
+  userId?: string;
 }
 
 const saveExtractionToDatabase = async (data: ExtractionData): Promise<string | null> => {
@@ -31,6 +32,7 @@ const saveExtractionToDatabase = async (data: ExtractionData): Promise<string | 
         } as any,
         success: data.success,
         error: data.error || null,
+        userId: data.userId || null,
       },
     });
     return extraction.id;
@@ -89,7 +91,7 @@ export class PdfProcessingWorker {
     this.worker = new Worker<PdfProcessingJobData, PdfProcessingJobResult>(
       "pdf-processing",
       async (job: Job<PdfProcessingJobData, PdfProcessingJobResult>) => {
-        const { fileName, filePath, forceOcr, existingExtractionId } = job.data;
+        const { fileName, filePath, forceOcr, existingExtractionId, userId } = job.data;
 
         console.log(`[Worker] Processing PDF: ${fileName} (Job ID: ${job.id})${forceOcr ? " [FORCE OCR]" : ""}`);
 
@@ -150,6 +152,7 @@ export class PdfProcessingWorker {
               analyses: effectiveAnalyses,
               results: checkResult.results,
               success: true,
+              ...(userId && { userId }),
             });
           }
           await job.updateProgress(100);
@@ -178,6 +181,7 @@ export class PdfProcessingWorker {
             results: [],
             success: false,
             error: errorMessage,
+            ...(userId && { userId }),
           });
 
           // Cleanup temp file

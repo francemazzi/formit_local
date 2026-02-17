@@ -19,6 +19,18 @@ export default defineConfig({
         target: "http://localhost:3007",
         changeOrigin: true,
       },
+      "/auth": {
+        target: "http://localhost:3007",
+        changeOrigin: true,
+      },
+      "/admin": {
+        target: "http://localhost:3007",
+        changeOrigin: true,
+      },
+      "/maintenance": {
+        target: "http://localhost:3007",
+        changeOrigin: true,
+      },
     },
   },
 });

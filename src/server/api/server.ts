@@ -3,12 +3,15 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyCors from "@fastify/cors";
+import fastifyCookie from "@fastify/cookie";
 
 import { conformityPdfController } from "./conformity-pdf.controller";
 import { customChecksController } from "./custom-checks.controller";
 import { apiKeysController } from "./api-keys.controller";
 import { envSetupController } from "./env-setup.controller";
 import { updateController } from "./update.controller";
+import { authController } from "./auth.controller";
+import { adminController } from "./admin.controller";
 
 interface ServerConfig {
   port: number;
@@ -37,9 +40,13 @@ const createFastifyInstance = (): FastifyInstance => {
 };
 
 const registerPlugins = async (fastify: FastifyInstance): Promise<void> => {
+  // Cookie support (must be registered before CORS)
+  await fastify.register(fastifyCookie);
+
   // CORS
   await fastify.register(fastifyCors, {
     origin: true,
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   });
@@ -73,6 +80,14 @@ const registerPlugins = async (fastify: FastifyInstance): Promise<void> => {
         },
       ],
       tags: [
+        {
+          name: "Auth",
+          description: "Authentication endpoints (register, login, logout, refresh)",
+        },
+        {
+          name: "Admin",
+          description: "Admin-only endpoints for user management",
+        },
         {
           name: "Conformity",
           description: "PDF compliance checking endpoints",
@@ -156,20 +171,14 @@ const registerRoutes = async (fastify: FastifyInstance): Promise<void> => {
     })
   );
 
-  // Register conformity controller
-  await conformityPdfController.registerRoutes(fastify);
-
-  // Register custom checks controller
-  await customChecksController.registerRoutes(fastify);
-
-  // Register API keys controller
-  await apiKeysController.registerRoutes(fastify);
-
-  // Register env setup controller
-  await envSetupController.registerRoutes(fastify);
-
-  // Register update controller
-  await updateController.registerRoutes(fastify);
+  // Register controllers in isolated scopes so addHook calls don't leak globally
+  await fastify.register(async (scope) => authController.registerRoutes(scope));
+  await fastify.register(async (scope) => adminController.registerRoutes(scope));
+  await fastify.register(async (scope) => conformityPdfController.registerRoutes(scope));
+  await fastify.register(async (scope) => customChecksController.registerRoutes(scope));
+  await fastify.register(async (scope) => apiKeysController.registerRoutes(scope));
+  await fastify.register(async (scope) => envSetupController.registerRoutes(scope));
+  await fastify.register(async (scope) => updateController.registerRoutes(scope));
 };
 
 export class ApiServer {

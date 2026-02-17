@@ -42,6 +42,9 @@ services:
       - DATABASE_URL=file:/app/data/dev.db
       # Redis connection URL (default per Docker network)
       - REDIS_URL=redis://redis:6379
+      # JWT Authentication
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
     volumes:
       # Database persistente
       - formit-data:/app/data

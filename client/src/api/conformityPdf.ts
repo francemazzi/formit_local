@@ -143,6 +143,7 @@ export const conformityApi = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true,
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const progress = Math.round(
@@ -162,7 +163,8 @@ export const conformityApi = {
    */
   getJobStatus: async (jobId: string): Promise<JobStatusResponse> => {
     const response = await axios.get<JobStatusResponse>(
-      `${API_BASE_URL}/conformity-pdf/jobs/${jobId}`
+      `${API_BASE_URL}/conformity-pdf/jobs/${jobId}`,
+      { withCredentials: true }
     );
 
     return response.data;
@@ -179,6 +181,7 @@ export const conformityApi = {
       `${API_BASE_URL}/conformity-pdf/extractions`,
       {
         params: { limit, offset },
+        withCredentials: true,
       }
     );
 
@@ -190,7 +193,8 @@ export const conformityApi = {
    */
   getExtractionById: async (id: string): Promise<PdfExtraction> => {
     const response = await axios.get<PdfExtraction>(
-      `${API_BASE_URL}/conformity-pdf/extractions/${id}`
+      `${API_BASE_URL}/conformity-pdf/extractions/${id}`,
+      { withCredentials: true }
     );
 
     return response.data;
@@ -215,6 +219,7 @@ export const conformityApi = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true,
       }
     );
 

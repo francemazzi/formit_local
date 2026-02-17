@@ -5,3 +5,5 @@ data/
 dataset/ground_truth/
 uploads
 package-lock.json
+prisma/dev.db
+prisma/dev.db-journal

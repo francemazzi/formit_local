@@ -9,6 +9,8 @@ export interface PdfProcessingJobData {
   forceOcr?: boolean;
   /** ID of existing extraction to update (for reprocessing) */
   existingExtractionId?: string;
+  /** ID of the user who uploaded the document */
+  userId?: string;
 }
 
 export interface PdfProcessingJobResult {

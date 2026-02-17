@@ -21,7 +21,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prisma:seed": "prisma db seed"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,8 @@
   },
   "homepage": "https://github.com/francemazzi/formit_local#readme",
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
     "prisma": "^6.19.0",
     "ts-node": "^10.9.2",
@@ -45,6 +48,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
     "@aws-sdk/client-bedrock-runtime": "^3.982.0",
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^10.0.2",
     "@fastify/multipart": "^9.0.3",
     "@fastify/swagger": "^9.4.2",
@@ -57,11 +61,13 @@
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@napi-rs/canvas": "^0.1.82",
     "@prisma/client": "^6.19.0",
+    "bcryptjs": "^3.0.3",
     "bullmq": "^5.66.4",
     "dotenv": "^17.2.3",
     "fastify": "^5.2.1",
     "glob": "^11.0.3",
     "ioredis": "^5.9.0",
+    "jsonwebtoken": "^9.0.3",
     "langchain": "^1.0.4",
     "pdf2pic": "^3.2.0",
     "pdfjs-dist": "^5.4.394",
