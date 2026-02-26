@@ -95,6 +95,7 @@ services:
     environment:
       - WEBHOOK_SECRET=${WEBHOOK_SECRET}
       - REPO_DIR=/repo
+      - PYTHONUNBUFFERED=1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/repo
