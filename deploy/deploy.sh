@@ -3,6 +3,8 @@ set -e
 
 echo "[deploy.sh] Starting deployment at $(date)"
 
+git config --global --add safe.directory /repo
+
 echo "[deploy.sh] Pulling latest code from origin/main..."
 git fetch origin main
 git reset --hard origin/main
