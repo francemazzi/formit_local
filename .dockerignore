@@ -43,3 +43,6 @@ README.md
 # Uploads (montati come volume)
 uploads/
 
+# Deploy webhook (separate build context)
+deploy/
+

@@ -3,8 +3,6 @@ import * as fs from "node:fs";
 import { PdfProcessingJobData, PdfProcessingJobResult } from "./pdf-processing.queue";
 import { checksWithOptions, ComplianceResult } from "../modules/checks";
 import { extractTextFromPdf } from "../modules/extract_text_from_pdf";
-import { extractMatrixFromText } from "../modules/extract_matrix_from_text";
-import { extractAnalysesFromText } from "../modules/extract_analyses_from_text";
 import { getDatabaseClient } from "../prisma.client";
 
 interface ExtractionData {
@@ -16,6 +14,7 @@ interface ExtractionData {
   success: boolean;
   error?: string;
   userId?: string;
+  diagnostics?: any;
 }
 
 const saveExtractionToDatabase = async (data: ExtractionData): Promise<string | null> => {
@@ -29,6 +28,7 @@ const saveExtractionToDatabase = async (data: ExtractionData): Promise<string | 
           matrix: data.matrix,
           analyses: data.analyses,
           results: data.results,
+          ...(data.diagnostics && { diagnostics: data.diagnostics }),
         } as any,
         success: data.success,
         error: data.error || null,
@@ -56,6 +56,7 @@ const updateExtractionInDatabase = async (
           matrix: data.matrix,
           analyses: data.analyses,
           results: data.results,
+          ...(data.diagnostics && { diagnostics: data.diagnostics }),
         } as any,
         success: data.success,
         error: data.error || null,
@@ -103,9 +104,7 @@ export class PdfProcessingWorker {
           const textObjects = await extractTextFromPdf(filePath);
           await job.updateProgress(30);
 
-          // Extract matrix and analyses (these may be replaced by OCR data)
-          const matrix = await extractMatrixFromText(textObjects);
-          const analyses = await extractAnalysesFromText(textObjects);
+          // Matrix and analyses extraction is handled by checksWithOptions
           await job.updateProgress(50);
 
           // Run compliance checks - this may use OCR fallback for corrupted PDFs or when forceOcr is true
@@ -117,12 +116,9 @@ export class PdfProcessingWorker {
           await job.updateProgress(80);
 
           // Use effective data from checksWithOptions (OCR data if fallback was triggered)
-          // This ensures corrupted PDF data is replaced with OCR-extracted data
           const effectiveTextObjects = checkResult.effectiveTextObjects;
-          const effectiveMatrix = checkResult.effectiveMatrix ?? matrix;
-          const effectiveAnalyses = checkResult.effectiveAnalyses.length > 0
-            ? checkResult.effectiveAnalyses
-            : analyses;
+          const effectiveMatrix = checkResult.effectiveMatrix;
+          const effectiveAnalyses = checkResult.effectiveAnalyses;
 
           if (checkResult.usedOcrFallback) {
             console.log(`[Worker] OCR fallback was used for ${fileName} - saving OCR-extracted data`);
@@ -138,6 +134,7 @@ export class PdfProcessingWorker {
               analyses: effectiveAnalyses,
               results: checkResult.results,
               success: true,
+              ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
             });
             if (updated) {
               extractionId = existingExtractionId;
@@ -153,6 +150,7 @@ export class PdfProcessingWorker {
               results: checkResult.results,
               success: true,
               ...(userId && { userId }),
+              ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
             });
           }
           await job.updateProgress(100);
@@ -165,6 +163,7 @@ export class PdfProcessingWorker {
             success: true,
             ...(extractionId && { extractionId }),
             results: checkResult.results,
+            ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
           };
 
           console.log(`[Worker] Successfully processed: ${fileName}`);

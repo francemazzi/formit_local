@@ -29,6 +29,47 @@ import {
 } from "../../prompts/general_check.prompts";
 import { getTavilyApiKey } from "../../utils/api-keys.utils";
 
+/**
+ * Authoritative Italian/EU food safety domains for regulatory searches.
+ * Used by Tavily API's include_domains parameter for prioritized searches.
+ */
+const AUTHORITATIVE_FOOD_SAFETY_DOMAINS: string[] = [
+  "ceirsa.it",
+  "efsa.europa.eu",
+  "salute.gov.it",
+  "eur-lex.europa.eu",
+  "gazzettaufficiale.it",
+  "izsto.it",
+  "izslt.it",
+  "izsam.it",
+  "izsvenezie.it",
+  "iss.it",
+];
+
+/**
+ * Check if a URL belongs to an authoritative food safety domain.
+ */
+const isAuthoritativeSource = (url: string | null): boolean => {
+  if (!url) return false;
+  try {
+    const hostname = new URL(url).hostname;
+    return AUTHORITATIVE_FOOD_SAFETY_DOMAINS.some(
+      (domain) => hostname === domain || hostname.endsWith(`.${domain}`)
+    );
+  } catch {
+    return false;
+  }
+};
+
+export interface TavilySearchOptions {
+  /** If true, first attempt search with authoritative domains only (default: true) */
+  prioritizeAuthoritativeSources?: boolean;
+  /** Additional domains to include (merged with defaults) */
+  additionalDomains?: string[];
+  /** Search depth: "basic" or "advanced" (default: "advanced" for pass 1) */
+  searchDepth?: "basic" | "advanced";
+}
+
 export interface Source {
   id: string;
   title: string;
@@ -66,6 +107,32 @@ export interface RawComplianceResult {
  */
 export interface ComplianceResult extends RawComplianceResult {
   matrix: ComplianceResultMatrix;
+}
+
+/**
+ * Pre-extracted data to avoid redundant LLM calls.
+ * When provided, checks() will use these instead of re-extracting.
+ */
+export interface PreExtractedData {
+  matrix?: MatrixExtractionResult;
+  analyses?: Analyses[];
+}
+
+/**
+ * Diagnostic information about why compliance checks returned empty or partial results.
+ */
+export interface ChecksDiagnostics {
+  matrixDetected: {
+    matrix: string;
+    category: string;
+    sampleType: string;
+    product: string | null;
+  };
+  analysesCount: number;
+  analysesParameters: string[];
+  checkPathsAttempted: string[];
+  usedOcrFallback: boolean;
+  summary: string;
 }
 
 const composeMarkdownPayload = (textObjects: ExtractedTextEntry[]): string => {
@@ -211,6 +278,24 @@ const enrichResultsWithMatrix = (
     ...result,
     matrix: matrixInfo,
   }));
+};
+
+/**
+ * Prepends the CeIRSA status source to all results' sources arrays.
+ * CeIRSA must always appear as the first source in every result.
+ */
+const prependCeirsaSource = (
+  results: RawComplianceResult[],
+  ceirsaSource: Source
+): RawComplianceResult[] => {
+  return results.map((result) => {
+    const existingIds = new Set(result.sources.map((s) => s.id));
+    if (existingIds.has(ceirsaSource.id)) return result;
+    return {
+      ...result,
+      sources: [ceirsaSource, ...result.sources],
+    };
+  });
 };
 
 /**
@@ -383,7 +468,8 @@ JSON:`;
 };
 
 export const checks = async (
-  textObjects: ExtractedTextEntry[]
+  textObjects: ExtractedTextEntry[],
+  preExtracted?: PreExtractedData
 ): Promise<ComplianceResult[]> => {
   const markdownContent = composeMarkdownPayload(textObjects);
 
@@ -391,7 +477,10 @@ export const checks = async (
     return [];
   }
 
-  const matrix = await extractMatrixFromText(textObjects);
+  // Extract matrix and analyses ONCE, reusing pre-extracted data if available
+  const matrix = preExtracted?.matrix ?? await extractMatrixFromText(textObjects);
+  const analyses = preExtracted?.analyses ?? await extractAnalysesFromText(textObjects);
+
   console.log(
     `[checks.standard] Matrix: ${JSON.stringify({
       matrix: matrix.matrix,
@@ -400,32 +489,55 @@ export const checks = async (
       sampleType: matrix.sampleType,
     })}`
   );
+  console.log(`[checks.standard] Analyses count: ${analyses.length}`);
 
-  // CRITICAL CHECK: Environmental/surface swabs cannot use CEIRSA food limits
-  if (isEnvironmentalSample(matrix.sampleType)) {
-    console.log(
-      `[checks.standard] Environmental sample detected (${matrix.sampleType}): ${matrix.matrix}. ` +
-        `CEIRSA food limits (UFC/g) NOT applicable to surface swabs (UFC/cm²). Using environmental swab check.`
-    );
-    const analyses = await extractAnalysesFromText(textObjects);
-    const rawResults = await environmentalSwabComplianceCheck({
-      matrix,
-      analyses,
-      markdownContent,
-    });
-    const matrixInfo = buildComplianceResultMatrix(matrix, null);
-    return enrichResultsWithMatrix(rawResults, matrixInfo);
-  }
-
-  // Prima verifica se rientra in una categoria CEIRSA
+  // SEMPRE: verifica CeIRSA come primo controllo per qualsiasi tipo di campione
   const ceirsaCategory = await ceirsaCheck(matrix);
   console.log(
     `[checks.standard] CEIRSA category: ${ceirsaCategory?.name ?? "none"}`
   );
 
+  // Build CeIRSA status source to include in ALL results
+  const ceirsaStatusSource: Source = ceirsaCategory
+    ? {
+        id: `ceirsa-category-${ceirsaCategory.id}`,
+        title: `CeIRSA - ${ceirsaCategory.name}`,
+        url: null,
+        excerpt: `Categoria CeIRSA trovata: ${ceirsaCategory.name} (ID: ${ceirsaCategory.id}). ${
+          ceirsaCategory.data?.length ?? 0
+        } parametri microbiologici disponibili.`,
+      }
+    : {
+        id: "ceirsa-no-match",
+        title: "CeIRSA - Nessuna corrispondenza",
+        url: null,
+        excerpt: `Nessuna categoria CeIRSA corrispondente trovata per: ${matrix.matrix}${
+          matrix.product ? ` (${matrix.product})` : ""
+        }. I limiti mostrati provengono da altre fonti normative.`,
+      };
+
+  // Environmental/surface swabs: CeIRSA food limits (UFC/g) non applicabili direttamente a UFC/cm²
+  if (isEnvironmentalSample(matrix.sampleType)) {
+    console.log(
+      `[checks.standard] Environmental sample detected (${matrix.sampleType}): ${matrix.matrix}. ` +
+        `Using environmental swab check with CeIRSA status.`
+    );
+    const rawResults = await environmentalSwabComplianceCheck({
+      matrix,
+      analyses,
+      markdownContent,
+      ceirsaCategory,
+      ceirsaStatusSource,
+    });
+    const matrixInfo = buildComplianceResultMatrix(
+      matrix,
+      ceirsaCategory?.name ?? null
+    );
+    return enrichResultsWithMatrix(rawResults, matrixInfo);
+  }
+
   // Se è categorizzata CEIRSA direttamente, usa ceirsaComplianceCheck
   if (ceirsaCategory) {
-    const analyses = await extractAnalysesFromText(textObjects);
     console.log(
       `[checks.standard] Running CEIRSA check with ${analyses.length} analyses`
     );
@@ -442,12 +554,10 @@ export const checks = async (
     );
     const uncheckedAnalyses = analyses.filter((a) => {
       const paramLower = a.parameter.toLowerCase();
-      // Verifica se il parametro è già stato controllato (match parziale)
       return !Array.from(checkedParams).some(
         (checked) =>
           checked.includes(paramLower) ||
           paramLower.includes(checked) ||
-          // Match per parole chiave comuni
           (paramLower.includes("enterobact") && checked.includes("enterobact")) ||
           (paramLower.includes("coli") && checked.includes("coli")) ||
           (paramLower.includes("stafilococc") && checked.includes("stafilococc")) ||
@@ -460,7 +570,6 @@ export const checks = async (
       `[checks.standard] Unchecked analyses: ${uncheckedAnalyses.length} - ${uncheckedAnalyses.map((a) => a.parameter).join(", ")}`
     );
 
-    // Se ci sono analisi non controllate, usa Tavily per cercare limiti
     if (uncheckedAnalyses.length > 0) {
       const additionalResults = await checkUncheckedAnalysesWithTavily(
         uncheckedAnalyses,
@@ -474,13 +583,15 @@ export const checks = async (
     }
 
     const matrixInfo = buildComplianceResultMatrix(matrix, ceirsaCategory.name);
-    return enrichResultsWithMatrix(rawResults, matrixInfo);
+    return enrichResultsWithMatrix(
+      prependCeirsaSource(rawResults, ceirsaStatusSource),
+      matrixInfo
+    );
   }
 
   // Se non rientra in nessuna categoria CEIRSA e la categoria è "beverage", usa beverageCheck
   if (matrix.category === "beverage") {
     console.log(`[checks.standard] Beverage detected`);
-    const analyses = await extractAnalysesFromText(textObjects);
     const rawResults: RawComplianceResult[] = [];
 
     for (const analysis of analyses) {
@@ -497,7 +608,29 @@ export const checks = async (
     }
 
     const matrixInfo = buildComplianceResultMatrix(matrix, null);
-    return enrichResultsWithMatrix(rawResults, matrixInfo);
+    return enrichResultsWithMatrix(
+      prependCeirsaSource(rawResults, ceirsaStatusSource),
+      matrixInfo
+    );
+  }
+
+  // Water samples: apply universal safety checks
+  if (matrix.sampleType === "water") {
+    console.log(`[checks.standard] Water sample detected - applying universal safety checks`);
+    const safetyResults = await applyUniversalFoodSafetyChecks(
+      analyses,
+      markdownContent
+    );
+    if (safetyResults.length > 0) {
+      const matrixInfo = buildComplianceResultMatrix(
+        matrix,
+        "Reg. CE 2073/2005 - Controllo Acque"
+      );
+      return enrichResultsWithMatrix(
+        prependCeirsaSource(safetyResults, ceirsaStatusSource),
+        matrixInfo
+      );
+    }
   }
 
   // Per categoria "food" (solo campioni alimentari diretti), prova a trovare una categoria CEIRSA
@@ -513,7 +646,6 @@ export const checks = async (
     );
 
     if (fallbackCategory) {
-      const analyses = await extractAnalysesFromText(textObjects);
       const rawResults = await ceirsaComplianceCheck(
         fallbackCategory,
         analyses,
@@ -521,7 +653,6 @@ export const checks = async (
       );
       console.log(`[checks.standard] Fallback CEIRSA results: ${rawResults.length}`);
 
-      // Identifica le analisi NON controllate da CEIRSA
       const checkedParams = new Set(
         rawResults.map((r) => r.name.toLowerCase())
       );
@@ -555,21 +686,38 @@ export const checks = async (
         rawResults.push(...additionalResults);
       }
 
+      // Update ceirsaStatusSource with the fallback category info
+      const fallbackCeirsaSource: Source = {
+        id: `ceirsa-category-${fallbackCategory.id}`,
+        title: `CeIRSA - ${fallbackCategory.name}`,
+        url: null,
+        excerpt: `Categoria CeIRSA trovata (fallback per prodotto): ${fallbackCategory.name} (ID: ${fallbackCategory.id}). ${
+          fallbackCategory.data?.length ?? 0
+        } parametri microbiologici disponibili.`,
+      };
+
       const matrixInfo = buildComplianceResultMatrix(
         matrix,
         fallbackCategory.name
       );
-      return enrichResultsWithMatrix(rawResults, matrixInfo);
+      return enrichResultsWithMatrix(
+        prependCeirsaSource(rawResults, fallbackCeirsaSource),
+        matrixInfo
+      );
     }
   }
 
   // FALLBACK: Controlli di sicurezza alimentare universali
   // Anche senza categoria CEIRSA, alcuni patogeni hanno limiti obbligatori per legge (Reg. CE 2073/2005)
-  if (matrix.category === "food" || matrix.sampleType === "food_product") {
+  // Broadened: also applies when category is "other" but analyses exist
+  if (
+    matrix.category === "food" ||
+    matrix.sampleType === "food_product" ||
+    (matrix.category === "other" && analyses.length > 0)
+  ) {
     console.log(
-      `[checks.standard] Applying universal food safety checks (Reg. CE 2073/2005)`
+      `[checks.standard] Applying universal food safety checks (Reg. CE 2073/2005) - category: ${matrix.category}, sampleType: ${matrix.sampleType}`
     );
-    const analyses = await extractAnalysesFromText(textObjects);
     const safetyResults = await applyUniversalFoodSafetyChecks(
       analyses,
       markdownContent
@@ -583,18 +731,20 @@ export const checks = async (
         matrix,
         "Reg. CE 2073/2005 - Sicurezza Alimentare"
       );
-      return enrichResultsWithMatrix(safetyResults, matrixInfo);
+      return enrichResultsWithMatrix(
+        prependCeirsaSource(safetyResults, ceirsaStatusSource),
+        matrixInfo
+      );
     }
   }
 
-  // Se non è stato possibile trovare una categoria, prova con ricerca Tavily generica
-  console.log(
-    `[checks.standard] No matching category found - trying Tavily search as fallback`
-  );
-  const analyses = await extractAnalysesFromText(textObjects);
-
+  // Final fallback: try Tavily search for regulatory context + universal safety check
   if (analyses.length > 0) {
-    // Search with Tavily for general regulatory context
+    console.log(
+      `[checks.standard] Final fallback - trying Tavily search + universal safety check`
+    );
+
+    // Search for regulatory context (optional enrichment)
     const tavilyResult = await searchRegulatoryContext(
       analyses,
       "limiti normativa sicurezza alimentare criteri microbiologici"
@@ -602,23 +752,30 @@ export const checks = async (
 
     if (tavilyResult.sources.length > 0) {
       console.log(
-        `[checks.standard] Found ${tavilyResult.sources.length} regulatory sources via Tavily, applying generic check`
+        `[checks.standard] Found ${tavilyResult.sources.length} regulatory sources via Tavily`
       );
-      const safetyResults = await applyUniversalFoodSafetyChecks(
-        analyses,
-        markdownContent
-      );
+    }
 
-      if (safetyResults.length > 0) {
-        console.log(
-          `[checks.standard] Found ${safetyResults.length} results via Tavily fallback`
-        );
-        const matrixInfo = buildComplianceResultMatrix(
-          matrix,
-          "Ricerca normativa (Tavily)"
-        );
-        return enrichResultsWithMatrix(safetyResults, matrixInfo);
-      }
+    // Always attempt universal safety check if analyses exist, regardless of Tavily
+    const safetyResults = await applyUniversalFoodSafetyChecks(
+      analyses,
+      markdownContent
+    );
+
+    if (safetyResults.length > 0) {
+      console.log(
+        `[checks.standard] Found ${safetyResults.length} results via final fallback`
+      );
+      const matrixInfo = buildComplianceResultMatrix(
+        matrix,
+        tavilyResult.sources.length > 0
+          ? "Ricerca normativa (Tavily)"
+          : "Valutazione sicurezza alimentare generica"
+      );
+      return enrichResultsWithMatrix(
+        prependCeirsaSource(safetyResults, ceirsaStatusSource),
+        matrixInfo
+      );
     }
   }
 
@@ -635,21 +792,179 @@ export interface TavilySearchResult {
 }
 
 /**
+ * Fallback: uses the active LLM (e.g. GPT-4o) to generate regulatory context
+ * when Tavily API key is not available.
+ */
+const searchRegulatoryContextWithLLM = async (
+  analyses: Analyses[],
+  querySuffix: string
+): Promise<TavilySearchResult> => {
+  try {
+    const parameterNames = analyses
+      .map((a) => a.parameter)
+      .slice(0, 5)
+      .join(", ");
+
+    const prompt = `Sei un esperto di sicurezza alimentare e normativa italiana/europea.
+
+Cerca nella tua conoscenza il contesto normativo per i seguenti parametri di analisi:
+Parametri: ${parameterNames}
+Contesto ricerca: ${querySuffix}
+
+Rispondi ESCLUSIVAMENTE in formato JSON valido (senza markdown, senza backtick):
+{
+  "answer": "Sintesi del contesto normativo applicabile (regolamenti, limiti, criteri)",
+  "sources": [
+    {
+      "title": "Nome del regolamento o normativa (es. Reg. CE 2073/2005)",
+      "content": "Contenuto rilevante: limiti specifici, criteri, articoli applicabili"
+    }
+  ]
+}
+
+Includi riferimenti a: Reg. CE 2073/2005, Reg. CE 852/2004, normative HACCP, linee guida regionali italiane, e qualsiasi altro regolamento pertinente ai parametri indicati.`;
+
+    const { model } = await createLLM({
+      capability: "search",
+      temperature: 0,
+    });
+
+    const response = await model.invoke(prompt);
+    const content = response.content?.toString() ?? "{}";
+
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.warn("[checks.llm-fallback] No valid JSON in LLM response");
+      return { contextText: "", sources: [] };
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      answer?: string;
+      sources?: { title?: string; content?: string }[];
+    };
+
+    const structuredSources: Source[] = (parsed.sources ?? [])
+      .map((item, index) => {
+        const sourceContent = item.content?.trim();
+        if (!sourceContent) return null;
+
+        return {
+          id: `llm-source-${index + 1}`,
+          title: item.title || `Fonte normativa ${index + 1}`,
+          url: null as string | null,
+          excerpt: sourceContent.substring(0, 500),
+        };
+      })
+      .filter((item): item is Source => Boolean(item));
+
+    const formattedResults = (parsed.sources ?? [])
+      .map((item, index) => {
+        const sourceContent = item.content?.trim();
+        if (!sourceContent) return null;
+
+        return `[FONTE ${index + 1}]
+Titolo: ${item.title || `Fonte ${index + 1}`}
+URL: N/A (conoscenza modello)
+Contenuto: ${sourceContent}`;
+      })
+      .filter((item): item is string => Boolean(item));
+
+    const answer = parsed.answer
+      ? `CONTESTO NORMATIVO (da LLM):\n${parsed.answer}\n\n`
+      : "";
+    const sources =
+      formattedResults.length > 0
+        ? `FONTI TROVATE:\n${formattedResults.join("\n\n")}`
+        : "";
+
+    const contextText = [answer, sources].filter(Boolean).join("\n\n").trim();
+
+    console.log(
+      `[checks.llm-fallback] LLM search generated ${structuredSources.length} sources for: ${parameterNames}`
+    );
+
+    return { contextText, sources: structuredSources };
+  } catch (error: any) {
+    console.warn(
+      `[checks.llm-fallback] LLM regulatory search failed: ${error.message || error}`
+    );
+    return { contextText: "", sources: [] };
+  }
+};
+
+/**
+ * Parses Tavily API response into structured sources and formatted text.
+ */
+const parseTavilyResponse = (
+  result: {
+    answer?: string;
+    results?: { content?: string; url?: string; title?: string }[];
+  },
+  idPrefix: string = "tavily"
+): { structuredSources: Source[]; contextText: string; answer: string } => {
+  const structuredSources: Source[] = (result.results ?? [])
+    .map((item, index) => {
+      const content = item.content?.trim();
+      if (!content) return null;
+      return {
+        id: `${idPrefix}-source-${index + 1}`,
+        title: item.title || `Fonte normativa ${index + 1}`,
+        url: item.url || null,
+        excerpt: content.substring(0, 500),
+      };
+    })
+    .filter((item): item is Source => Boolean(item));
+
+  const formattedResults = (result.results ?? [])
+    .map((item, index) => {
+      const content = item.content?.trim();
+      if (!content) return null;
+      return `[FONTE ${index + 1}]
+Titolo: ${item.title || `Fonte ${index + 1}`}
+URL: ${item.url || "N/A"}
+Contenuto: ${content}`;
+    })
+    .filter((item): item is string => Boolean(item));
+
+  const answer = result.answer
+    ? `RISPOSTA TAVILY:\n${result.answer}\n\n`
+    : "";
+  const sourcesText =
+    formattedResults.length > 0
+      ? `FONTI TROVATE:\n${formattedResults.join("\n\n")}`
+      : "";
+  const contextText = [answer, sourcesText].filter(Boolean).join("\n\n").trim();
+
+  return { structuredSources, contextText, answer: result.answer ?? "" };
+};
+
+/**
  * Searches Tavily for regulatory context and returns both formatted text and structured sources.
+ * Uses a two-pass strategy: first searches authoritative Italian/EU food safety domains,
+ * then falls back to a broader search if insufficient results are found.
+ * Falls back to LLM-based search when Tavily API key is not configured.
  *
  * @param analyses - Array of analyses to search for
  * @param querySuffix - Additional terms to add to the search query (e.g., "limiti superfici HACCP")
+ * @param options - Optional search configuration
  * @returns Object with context text and structured sources
  */
 export const searchRegulatoryContext = async (
   analyses: Analyses[],
-  querySuffix: string = "limiti sicurezza alimentare normativa"
+  querySuffix: string = "limiti sicurezza alimentare normativa",
+  options: TavilySearchOptions = {}
 ): Promise<TavilySearchResult> => {
   const apiKey = await getTavilyApiKey();
   if (!apiKey) {
-    console.log("[checks] No Tavily API key, skipping regulatory search");
-    return { contextText: "", sources: [] };
+    console.log("[checks] No Tavily API key, falling back to LLM regulatory search");
+    return searchRegulatoryContextWithLLM(analyses, querySuffix);
   }
+
+  const {
+    prioritizeAuthoritativeSources = true,
+    additionalDomains = [],
+    searchDepth = "advanced",
+  } = options;
 
   try {
     const parameterNames = analyses
@@ -658,87 +973,149 @@ export const searchRegulatoryContext = async (
       .join(", ");
 
     const query = `${parameterNames} ${querySuffix}`;
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    };
 
-    // Create AbortController with longer timeout (30 seconds)
+    // Create AbortController with 30 seconds timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const response = await fetch("https://api.tavily.com/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          query,
-          max_results: 5,
-          include_answer: true,
-        }),
-        signal: controller.signal,
-      });
+      let allSources: Source[] = [];
+      let finalAnswer = "";
+
+      // PASS 1: Search authoritative domains first
+      if (prioritizeAuthoritativeSources) {
+        const domainsToInclude = [
+          ...AUTHORITATIVE_FOOD_SAFETY_DOMAINS,
+          ...additionalDomains,
+        ];
+
+        console.log(
+          `[checks] Tavily pass 1: searching ${domainsToInclude.length} authoritative domains for: ${query}`
+        );
+
+        const pass1Response = await fetch("https://api.tavily.com/search", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            query,
+            max_results: 5,
+            include_answer: true,
+            include_domains: domainsToInclude,
+            search_depth: searchDepth,
+          }),
+          signal: controller.signal,
+        });
+
+        if (pass1Response.ok) {
+          const pass1Result = (await pass1Response.json()) as {
+            answer?: string;
+            results?: { content?: string; url?: string; title?: string }[];
+          };
+          const parsed = parseTavilyResponse(pass1Result, "tavily-auth");
+          allSources = parsed.structuredSources;
+          finalAnswer = parsed.answer;
+
+          console.log(
+            `[checks] Tavily pass 1: found ${allSources.length} authoritative sources`
+          );
+        } else {
+          console.warn(
+            `[checks] Tavily pass 1 error: ${pass1Response.status} ${pass1Response.statusText}`
+          );
+        }
+      }
+
+      // PASS 2: Broader search if pass 1 returned < 2 results
+      if (allSources.length < 2) {
+        console.log(
+          `[checks] Tavily pass 2: broadening search (pass 1 had ${allSources.length} results)`
+        );
+
+        const pass2Response = await fetch("https://api.tavily.com/search", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            query,
+            max_results: 5,
+            include_answer: !finalAnswer,
+            search_depth: "basic",
+          }),
+          signal: controller.signal,
+        });
+
+        if (pass2Response.ok) {
+          const pass2Result = (await pass2Response.json()) as {
+            answer?: string;
+            results?: { content?: string; url?: string; title?: string }[];
+          };
+          const parsed = parseTavilyResponse(pass2Result, "tavily");
+
+          // Merge results, deduplicating by URL
+          const existingUrls = new Set(
+            allSources.map((s) => s.url).filter(Boolean)
+          );
+          for (const source of parsed.structuredSources) {
+            if (!source.url || !existingUrls.has(source.url)) {
+              allSources.push(source);
+              if (source.url) existingUrls.add(source.url);
+            }
+          }
+
+          if (!finalAnswer && parsed.answer) {
+            finalAnswer = parsed.answer;
+          }
+
+          console.log(
+            `[checks] Tavily pass 2: total sources after merge: ${allSources.length}`
+          );
+        } else {
+          console.warn(
+            `[checks] Tavily pass 2 error: ${pass2Response.status}`
+          );
+        }
+      }
 
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        console.warn(
-          `[checks] Tavily API returned error: ${response.status} ${response.statusText}`
-        );
-        return { contextText: "", sources: [] };
-      }
+      // Sort: authoritative sources first
+      allSources.sort((a, b) => {
+        const aAuth = isAuthoritativeSource(a.url);
+        const bAuth = isAuthoritativeSource(b.url);
+        if (aAuth && !bAuth) return -1;
+        if (!aAuth && bAuth) return 1;
+        return 0;
+      });
 
-      const result = (await response.json()) as {
-        answer?: string;
-        results?: {
-          content?: string;
-          url?: string;
-          title?: string;
-        }[];
-      };
-
-      // Build structured sources
-      const structuredSources: Source[] = (result.results ?? [])
-        .map((item, index) => {
-          const content = item.content?.trim();
-          if (!content) return null;
-
-          return {
-            id: `tavily-source-${index + 1}`,
-            title: item.title || `Fonte normativa ${index + 1}`,
-            url: item.url || null,
-            excerpt: content.substring(0, 500), // Limit excerpt length
-          };
-        })
-        .filter((item): item is Source => Boolean(item));
-
-      // Build formatted text for LLM context
-      const formattedResults = (result.results ?? [])
-        .map((item, index) => {
-          const content = item.content?.trim();
-          if (!content) return null;
-
+      // Build final context text from merged sources
+      const formattedResults = allSources
+        .map((source, index) => {
           return `[FONTE ${index + 1}]
-Titolo: ${item.title || `Fonte ${index + 1}`}
-URL: ${item.url || "N/A"}
-Contenuto: ${content}`;
-        })
-        .filter((item): item is string => Boolean(item));
+Titolo: ${source.title}
+URL: ${source.url || "N/A"}
+Contenuto: ${source.excerpt}`;
+        });
 
-      const answer = result.answer
-        ? `RISPOSTA TAVILY:\n${result.answer}\n\n`
+      const answerText = finalAnswer
+        ? `RISPOSTA TAVILY:\n${finalAnswer}\n\n`
         : "";
-      const sources =
+      const sourcesText =
         formattedResults.length > 0
           ? `FONTI TROVATE:\n${formattedResults.join("\n\n")}`
           : "";
-
-      const contextText = [answer, sources].filter(Boolean).join("\n\n").trim();
+      const contextText = [answerText, sourcesText]
+        .filter(Boolean)
+        .join("\n\n")
+        .trim();
 
       console.log(
-        `[checks] Tavily search found ${structuredSources.length} sources for query: ${query}`
+        `[checks] Tavily search found ${allSources.length} total sources for query: ${query}`
       );
 
-      return { contextText, sources: structuredSources };
+      return { contextText, sources: allSources };
     } catch (fetchError: any) {
       clearTimeout(timeoutId);
 
@@ -915,6 +1292,8 @@ export interface ChecksWithOptionsResult {
   effectiveAnalyses: Analyses[];
   /** Whether OCR fallback was used */
   usedOcrFallback: boolean;
+  /** Diagnostic information, especially useful when results are empty */
+  diagnostics?: ChecksDiagnostics;
 }
 
 /**
@@ -1027,6 +1406,30 @@ export const checksWithOptions = async (
     }
   }
 
+  // SEMPRE: verifica CeIRSA come primo controllo per qualsiasi tipo di campione
+  const optionsCeirsaCategory = await ceirsaCheck(matrix);
+  console.log(
+    `[checks.options] CEIRSA category: ${optionsCeirsaCategory?.name ?? "none"}`
+  );
+
+  const optionsCeirsaStatusSource: Source = optionsCeirsaCategory
+    ? {
+        id: `ceirsa-category-${optionsCeirsaCategory.id}`,
+        title: `CeIRSA - ${optionsCeirsaCategory.name}`,
+        url: null,
+        excerpt: `Categoria CeIRSA trovata: ${optionsCeirsaCategory.name} (ID: ${optionsCeirsaCategory.id}). ${
+          optionsCeirsaCategory.data?.length ?? 0
+        } parametri microbiologici disponibili.`,
+      }
+    : {
+        id: "ceirsa-no-match",
+        title: "CeIRSA - Nessuna corrispondenza",
+        url: null,
+        excerpt: `Nessuna categoria CeIRSA corrispondente trovata per: ${matrix.matrix}${
+          matrix.product ? ` (${matrix.product})` : ""
+        }. I limiti mostrati provengono da altre fonti normative.`,
+      };
+
   // SPECIAL HANDLING: Environmental/surface swabs should use custom categories
   // CEIRSA limits (UFC/g) are NOT applicable to surface swabs (UFC/cm²)
   if (isEnvironmentalSample(matrix.sampleType) && options.fallbackToCustom) {
@@ -1076,7 +1479,12 @@ export const checksWithOptions = async (
           ? `custom:${matchedCategories.join(", ")}`
           : `custom:${matchedCategories[0]}`;
       const matrixInfo = buildComplianceResultMatrix(matrix, categoryLabel);
-      return buildResult(enrichResultsWithMatrix(allResults, matrixInfo));
+      return buildResult(
+        enrichResultsWithMatrix(
+          prependCeirsaSource(allResults, optionsCeirsaStatusSource),
+          matrixInfo
+        )
+      );
     }
 
     // If no custom categories matched, use environmental swab check with LLM
@@ -1087,14 +1495,23 @@ export const checksWithOptions = async (
       matrix,
       analyses,
       markdownContent,
+      ceirsaCategory: optionsCeirsaCategory,
+      ceirsaStatusSource: optionsCeirsaStatusSource,
     });
-    const matrixInfo = buildComplianceResultMatrix(matrix, null);
+    const matrixInfo = buildComplianceResultMatrix(
+      matrix,
+      optionsCeirsaCategory?.name ?? null
+    );
     return buildResult(enrichResultsWithMatrix(rawResults, matrixInfo));
   }
 
+  // Track which check paths were attempted (for diagnostics)
+  const checkPaths: string[] = [];
+
   // Run standard checks for non-environmental samples
-  // IMPORTANT: Use effectiveTextObjects (may be OCR-extracted) instead of original textObjects
-  const standardResults = await checks(effectiveTextObjects);
+  // IMPORTANT: Pass pre-extracted matrix/analyses to avoid redundant LLM calls
+  const standardResults = await checks(effectiveTextObjects, { matrix, analyses });
+  checkPaths.push(`standard_checks: ${standardResults.length} results`);
 
   // If standard checks returned results, use them
   if (standardResults.length > 0) {
@@ -1105,11 +1522,11 @@ export const checksWithOptions = async (
   if (options.fallbackToCustom) {
     const allCustomCategories = await customCheckService.getAllCategories();
 
-    // Try to find a matching custom category based on sample type
     const matchingSampleType = mapMatrixToCustomSampleType(matrix);
     const matchingCategories = allCustomCategories.filter(
       (cat) => cat.sampleType === matchingSampleType
     );
+    checkPaths.push(`custom_fallback: tried ${matchingCategories.length} categories for ${matchingSampleType}`);
 
     for (const customCategory of matchingCategories) {
       console.log(
@@ -1131,7 +1548,26 @@ export const checksWithOptions = async (
     }
   }
 
-  return buildResult([]);
+  // Build diagnostics for empty results
+  const diagnostics: ChecksDiagnostics = {
+    matrixDetected: {
+      matrix: matrix.matrix,
+      category: matrix.category,
+      sampleType: matrix.sampleType,
+      product: matrix.product,
+    },
+    analysesCount: analyses.length,
+    analysesParameters: analyses.map((a) => a.parameter),
+    checkPathsAttempted: checkPaths,
+    usedOcrFallback,
+    summary: analyses.length === 0
+      ? "Nessuna analisi estratta dal PDF. Il documento potrebbe non contenere dati di analisi di laboratorio."
+      : `Estratte ${analyses.length} analisi ma nessun criterio di conformità corrisponde. Matrice classificata come category="${matrix.category}", sampleType="${matrix.sampleType}".`,
+  };
+
+  console.log(`[checks] Empty results diagnostics:`, JSON.stringify(diagnostics, null, 2));
+
+  return { ...buildResult([]), diagnostics };
 };
 
 /**

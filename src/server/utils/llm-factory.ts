@@ -4,7 +4,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatBedrockConverse } from "@langchain/aws";
 import { getApiKeys, type ApiKeyConfig } from "./api-keys.utils.js";
 
-export type LLMCapability = "text" | "vision";
+export type LLMCapability = "text" | "vision" | "search";
 
 export interface LLMConfig {
   capability: LLMCapability;
@@ -23,14 +23,17 @@ const MODEL_MAPPING = {
   openai: {
     text: "gpt-4o-mini",
     vision: "gpt-4o",
+    search: "gpt-4o",
   },
   anthropic: {
     text: "claude-sonnet-4-20250514",
     vision: "claude-sonnet-4-20250514",
+    search: "claude-sonnet-4-20250514",
   },
   bedrock: {
     text: "anthropic.claude-sonnet-4-20250514-v1:0",
     vision: "anthropic.claude-sonnet-4-20250514-v1:0",
+    search: "anthropic.claude-sonnet-4-20250514-v1:0",
   },
 } as const;
 

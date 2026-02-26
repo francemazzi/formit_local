@@ -2,10 +2,9 @@ import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
-import { RawComplianceResult } from ".";
+import { RawComplianceResult, searchRegulatoryContext } from ".";
 import { createLLM } from "../../utils/llm-factory";
 import { beverageCheckPromptTemplate } from "../../prompts/beverage_check.prompt";
-import { getTavilyApiKey } from "../../utils/api-keys.utils";
 
 export interface BeverageRawComplianceResult {
   ragResults: RawComplianceResult[];
@@ -35,74 +34,17 @@ interface BeveragePromptBuilder {
 
 class TavilyLawSearchProvider implements LawSearchProvider {
   async searchLawContext(input: BeverageCheckInput): Promise<string> {
-    const apiKey = await getTavilyApiKey();
-    if (!apiKey) {
-      return "";
-    }
+    const analyses = [
+      {
+        parameter: input.parameter,
+        result: input.value,
+        um_result: input.unit || null,
+      },
+    ];
 
-    try {
-      const query = [
-        input.parameter,
-        input.beverageType,
-        "limiti normativi acqua Italia Europa bevande",
-      ]
-        .filter(Boolean)
-        .join(" ");
-
-      const response = await fetch("https://api.tavily.com/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          query,
-          max_results: 5,
-          include_answer: true,
-        }),
-      });
-
-      if (!response.ok) {
-        return "";
-      }
-
-      const result = (await response.json()) as {
-        answer?: string;
-        results?: {
-          content?: string;
-          url?: string;
-          title?: string;
-        }[];
-      };
-
-      const formattedResults = (result.results ?? [])
-        .map((item, index) => {
-          const content = item.content?.trim();
-          if (!content) return null;
-
-          const url = item.url || null;
-          const title = item.title || `Fonte ${index + 1}`;
-
-          return `[FONTE ${index + 1}]
-Titolo: ${title}
-URL: ${url || "N/A"}
-Contenuto: ${content}`;
-        })
-        .filter((item): item is string => Boolean(item));
-
-      const answer = result.answer
-        ? `RISPOSTA TAVILY:\n${result.answer}\n\n`
-        : "";
-      const sources =
-        formattedResults.length > 0
-          ? `FONTI TROVATE:\n${formattedResults.join("\n\n")}`
-          : "";
-
-      return [answer, sources].filter(Boolean).join("\n\n").trim();
-    } catch (error) {
-      console.warn("Tavily search failed:", error);
-      return "";
-    }
+    const querySuffix = `${input.beverageType} limiti normativi acqua Italia Europa bevande`;
+    const result = await searchRegulatoryContext(analyses as any, querySuffix);
+    return result.contextText;
   }
 }
 

@@ -491,6 +491,7 @@ export class ConformityPdfController {
               success: jobState.result.success,
               results: jobState.result.results || [],
               ...(jobState.result.error && { error: jobState.result.error }),
+              ...(jobState.result.diagnostics && { diagnostics: jobState.result.diagnostics }),
             },
           }),
           ...(jobState.error && { error: jobState.error }),

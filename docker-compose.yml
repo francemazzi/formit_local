@@ -86,6 +86,25 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  deploy-webhook:
+    build:
+      context: ./deploy
+      dockerfile: Dockerfile
+    container_name: formit-deploy-webhook
+    restart: unless-stopped
+    environment:
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - REPO_DIR=/repo
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/repo
+    working_dir: /repo
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   formit-data:
     driver: local

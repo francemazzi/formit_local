@@ -4,6 +4,7 @@ import { MatrixExtractionResult } from "../extract_matrix_from_text";
 import { RawComplianceResult, Source, searchRegulatoryContext } from "./index";
 import { environmentalSwabCheckPrompt } from "../../prompts/environmental_swab_check.prompt";
 import { createLLM } from "../../utils/llm-factory";
+import { CeirsaCategory } from "../ceirsa_categorizer";
 
 const defaultParser = new JsonOutputParser<RawComplianceResult[]>();
 
@@ -17,6 +18,10 @@ export interface EnvironmentalSwabCheckInput {
   matrix: MatrixExtractionResult;
   analyses: Analyses[];
   markdownContent: string;
+  /** CeIRSA category if found (may have incompatible units for swabs) */
+  ceirsaCategory?: CeirsaCategory | null;
+  /** Pre-built CeIRSA status source to include in all results */
+  ceirsaStatusSource?: Source;
 }
 
 /**
@@ -31,7 +36,7 @@ export interface EnvironmentalSwabCheckInput {
 export const environmentalSwabComplianceCheck = async (
   input: EnvironmentalSwabCheckInput
 ): Promise<RawComplianceResult[]> => {
-  const { matrix, analyses, markdownContent } = input;
+  const { matrix, analyses, markdownContent, ceirsaCategory, ceirsaStatusSource } = input;
 
   if (!analyses || analyses.length === 0) {
     console.log(`[environmental_swab.check] No analyses extracted from PDF`);
@@ -41,15 +46,42 @@ export const environmentalSwabComplianceCheck = async (
   console.log(
     `[environmental_swab.check] Checking ${analyses.length} analyses for environmental swab: ${matrix.matrix}`
   );
+  console.log(
+    `[environmental_swab.check] CeIRSA category: ${ceirsaCategory?.name ?? "nessuna corrispondenza"}`
+  );
 
   // Search for regulatory context with Tavily
   const parameterNames = analyses.map((a) => a.parameter).join(", ");
   const tavilyQuery = `${parameterNames} limiti tamponi ambientali superfici attrezzature HACCP igiene processi alimentari normativa`;
   const tavilyResult = await searchRegulatoryContext(analyses, tavilyQuery);
-  
+
   console.log(
     `[environmental_swab.check] Tavily search found ${tavilyResult.sources.length} regulatory sources`
   );
+
+  // Build base sources: CeIRSA status FIRST, then other sources
+  const buildBaseSources = (): Source[] => {
+    const sources: Source[] = [];
+
+    // CeIRSA always first
+    if (ceirsaStatusSource) {
+      sources.push(ceirsaStatusSource);
+    }
+
+    // Unit warning
+    sources.push({
+      id: "environmental-swab-warning",
+      title: "Avviso: Unità di misura non comparabili",
+      url: null,
+      excerpt:
+        "UFC/cm² (superfici) ≠ UFC/g (alimenti). I limiti CeIRSA per alimenti non sono direttamente applicabili ai tamponi ambientali.",
+    });
+
+    // Tavily sources
+    sources.push(...tavilyResult.sources);
+
+    return sources;
+  };
 
   const analysesJson = JSON.stringify(analyses, null, 2);
   const formatInstructions = defaultParser.getFormatInstructions();
@@ -84,18 +116,8 @@ export const environmentalSwabComplianceCheck = async (
       console.log(
         `[environmental_swab.check] No valid JSON in LLM response, creating default warning`
       );
-      // Fallback: create default warning for each analysis with Tavily sources
-      const baseSources: Source[] = [
-        {
-          id: "environmental-swab-warning",
-          title: "Avviso: Unità di misura non comparabili",
-          url: null,
-          excerpt:
-            "UFC/cm² (superfici) ≠ UFC/g (alimenti). Necessari limiti specifici per superfici.",
-        },
-        ...tavilyResult.sources,
-      ];
-      
+      const baseSources = buildBaseSources();
+
       return analyses.map((analysis) => {
         const resultValue = analysis.um_result
           ? `${analysis.result} ${analysis.um_result}`
@@ -103,7 +125,7 @@ export const environmentalSwabComplianceCheck = async (
         return {
           name: analysis.parameter,
           value: "Limite non specificato per superfici",
-          isCheck: null, // Da confermare - nessun limite chiaro trovato
+          isCheck: null,
           description:
             `Risultato: ${resultValue}. ` +
             `I limiti CEIRSA per alimenti (UFC/g) NON sono applicabili ai tamponi ambientali (UFC/cm²). ` +
@@ -116,25 +138,11 @@ export const environmentalSwabComplianceCheck = async (
 
     const parsed = JSON.parse(jsonMatch[0]) as RawComplianceResult[];
 
-    // Ensure all analyses have a result and merge Tavily sources
-    const analysisParamNames = new Set(
-      analyses.map((a) => a.parameter.toLowerCase().trim())
-    );
     const resultParamNames = new Set(
       parsed.map((r) => r.name.toLowerCase().trim())
     );
 
-    // Base sources: warning + Tavily sources
-    const baseSources: Source[] = [
-      {
-        id: "environmental-swab-warning",
-        title: "Avviso: Unità di misura non comparabili",
-        url: null,
-        excerpt:
-          "UFC/cm² (superfici) ≠ UFC/g (alimenti). Necessari limiti specifici per superfici.",
-      },
-      ...tavilyResult.sources,
-    ];
+    const baseSources = buildBaseSources();
 
     // Add missing analyses with default warning
     for (const analysis of analyses) {
@@ -146,7 +154,7 @@ export const environmentalSwabComplianceCheck = async (
         parsed.push({
           name: analysis.parameter,
           value: "Limite non specificato per superfici",
-          isCheck: null, // Da confermare - nessun limite chiaro trovato
+          isCheck: null,
           description:
             `Risultato: ${resultValue}. ` +
             `I limiti CEIRSA per alimenti (UFC/g) NON sono applicabili ai tamponi ambientali (UFC/cm²). ` +
@@ -155,14 +163,14 @@ export const environmentalSwabComplianceCheck = async (
           sources: baseSources,
         });
       } else {
-        // Merge Tavily sources with existing sources (avoid duplicates)
+        // Prepend CeIRSA + base sources to existing result sources
         const existingResult = parsed.find(
           (r) => r.name.toLowerCase().trim() === normalizedName
         );
         if (existingResult) {
           const existingSourceIds = new Set(existingResult.sources.map(s => s.id));
-          const newTavilySources = tavilyResult.sources.filter(s => !existingSourceIds.has(s.id));
-          existingResult.sources = [...existingResult.sources, ...newTavilySources];
+          const newSources = baseSources.filter(s => !existingSourceIds.has(s.id));
+          existingResult.sources = [...newSources, ...existingResult.sources];
         }
       }
     }
@@ -176,18 +184,8 @@ export const environmentalSwabComplianceCheck = async (
       `[environmental_swab.check] LLM evaluation failed:`,
       error
     );
-    // Fallback: create default warning for each analysis with Tavily sources
-    const baseSources: Source[] = [
-      {
-        id: "environmental-swab-warning",
-        title: "Avviso: Unità di misura non comparabili",
-        url: null,
-        excerpt:
-          "UFC/cm² (superfici) ≠ UFC/g (alimenti). Necessari limiti specifici per superfici.",
-      },
-      ...tavilyResult.sources,
-    ];
-    
+    const baseSources = buildBaseSources();
+
     return analyses.map((analysis) => {
       const resultValue = analysis.um_result
         ? `${analysis.result} ${analysis.um_result}`
@@ -195,7 +193,7 @@ export const environmentalSwabComplianceCheck = async (
       return {
         name: analysis.parameter,
         value: "Limite non specificato per superfici",
-        isCheck: null, // Da confermare - errore durante valutazione
+        isCheck: null,
         description:
           `Risultato: ${resultValue}. ` +
           `I limiti CEIRSA per alimenti (UFC/g) NON sono applicabili ai tamponi ambientali (UFC/cm²). ` +

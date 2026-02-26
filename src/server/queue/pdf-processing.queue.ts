@@ -19,6 +19,7 @@ export interface PdfProcessingJobResult {
   extractionId?: string;
   results?: any[];
   error?: string;
+  diagnostics?: any;
 }
 
 export class PdfProcessingQueue {
