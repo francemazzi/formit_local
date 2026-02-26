@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 
-import { checksWithOptions, ComplianceResult } from "../modules/checks";
+import { checksWithOptions, checks, ComplianceResult } from "../modules/checks";
 import { extractTextFromPdf, ExtractedTextEntry } from "../modules/extract_text_from_pdf";
 import { extractMatrixFromText, MatrixExtractionResult } from "../modules/extract_matrix_from_text";
 import { extractAnalysesFromText, Analyses } from "../modules/extract_analyses_from_text";
@@ -263,6 +263,8 @@ export class ConformityPdfController {
           ? await client.$queryRaw<Array<{
               id: string;
               fileName: string;
+              companyName: string | null;
+              pdfStoragePath: string | null;
               createdAt: Date;
               updatedAt: Date;
               success: number;
@@ -272,6 +274,8 @@ export class ConformityPdfController {
           : await client.$queryRaw<Array<{
               id: string;
               fileName: string;
+              companyName: string | null;
+              pdfStoragePath: string | null;
               createdAt: Date;
               updatedAt: Date;
               success: number;
@@ -287,25 +291,22 @@ export class ConformityPdfController {
         const serializedExtractions = rawExtractions.map((extraction) => {
           let extractedData = {};
           try {
-            // Prisma with $queryRaw already deserializes JSON fields as objects
-            // If it's already an object, use it directly. If it's a string, parse it.
             if (typeof extraction.extractedData === 'string') {
               extractedData = JSON.parse(extraction.extractedData);
             } else if (extraction.extractedData && typeof extraction.extractedData === 'object' && !Array.isArray(extraction.extractedData)) {
-              // Already an object, use it directly
               extractedData = extraction.extractedData;
             }
           } catch (error) {
             console.error(`[ERROR] Failed to parse extractedData for ${extraction.fileName}:`, error);
           }
-          
-          // SQLite stores booleans as integers (0/1)
-          // Convert to boolean: any truthy number becomes true
+
           const success = Boolean(extraction.success);
-          
+
           return {
             id: extraction.id,
             fileName: extraction.fileName,
+            companyName: extraction.companyName || null,
+            hasPdf: Boolean(extraction.pdfStoragePath),
             createdAt: new Date(extraction.createdAt).toISOString(),
             updatedAt: new Date(extraction.updatedAt).toISOString(),
             success,
@@ -367,6 +368,8 @@ export class ConformityPdfController {
           ? await client.$queryRaw<Array<{
               id: string;
               fileName: string;
+              companyName: string | null;
+              pdfStoragePath: string | null;
               createdAt: Date;
               updatedAt: Date;
               success: number;
@@ -376,6 +379,8 @@ export class ConformityPdfController {
           : await client.$queryRaw<Array<{
               id: string;
               fileName: string;
+              companyName: string | null;
+              pdfStoragePath: string | null;
               createdAt: Date;
               updatedAt: Date;
               success: number;
@@ -390,28 +395,25 @@ export class ConformityPdfController {
         }
 
         const extraction = rawExtractions[0]!;
-        
+
         let extractedData = {};
         try {
-          // Prisma with $queryRaw already deserializes JSON fields as objects
-          // If it's already an object, use it directly. If it's a string, parse it.
           if (typeof extraction.extractedData === 'string') {
             extractedData = JSON.parse(extraction.extractedData);
           } else if (extraction.extractedData && typeof extraction.extractedData === 'object' && !Array.isArray(extraction.extractedData)) {
-            // Already an object, use it directly
             extractedData = extraction.extractedData;
           }
         } catch (error) {
           console.error(`[ERROR] Failed to parse extractedData for ${extraction.fileName}:`, error);
         }
-        
-        // SQLite stores booleans as integers (0/1)
-        // Convert to boolean: any truthy number becomes true
+
         const success = Boolean(extraction.success);
-        
+
         const serializedExtraction = {
           id: extraction.id,
           fileName: extraction.fileName,
+          companyName: extraction.companyName || null,
+          hasPdf: Boolean(extraction.pdfStoragePath),
           createdAt: new Date(extraction.createdAt).toISOString(),
           updatedAt: new Date(extraction.updatedAt).toISOString(),
           success,
@@ -708,6 +710,253 @@ export class ConformityPdfController {
           jobId: job.id!,
           message: "Reprocessing with OCR queued. Use /conformity-pdf/jobs/:jobId to check status.",
         });
+      }
+    );
+
+    // Endpoint to update extraction metadata
+    fastify.patch(
+      "/conformity-pdf/extractions/:id",
+      {
+        schema: {
+          description: "Update extraction metadata (company name, file name, extracted data)",
+          tags: ["Conformity"],
+          summary: "Update extraction metadata",
+          params: {
+            type: "object",
+            properties: {
+              id: { type: "string", description: "Extraction ID" },
+            },
+          },
+          body: {
+            type: "object",
+            properties: {
+              companyName: { type: "string" },
+              fileName: { type: "string" },
+              extractedData: {
+                type: "object",
+                properties: {
+                  matrix: { type: "object", additionalProperties: true },
+                  analyses: { type: "array" },
+                },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const params = request.params as { id: string };
+        const body = request.body as {
+          companyName?: string;
+          fileName?: string;
+          extractedData?: {
+            matrix?: any;
+            analyses?: any[];
+          };
+        };
+        const isAdmin = request.user!.role === "ADMIN";
+        const userId = request.user!.userId;
+        const client = getDatabaseClient();
+
+        const extraction = await client.pdfExtraction.findUnique({
+          where: { id: params.id },
+        });
+
+        if (!extraction) {
+          return reply.status(404).send({ error: "Extraction not found" });
+        }
+
+        if (!isAdmin && extraction.userId !== userId) {
+          return reply.status(404).send({ error: "Extraction not found" });
+        }
+
+        // Build update data
+        const updateData: any = {};
+        if (body.companyName !== undefined) updateData.companyName = body.companyName;
+        if (body.fileName !== undefined) updateData.fileName = body.fileName;
+
+        // Deep-merge extractedData if provided
+        if (body.extractedData) {
+          let existingData: any = {};
+          try {
+            existingData = typeof extraction.extractedData === 'string'
+              ? JSON.parse(extraction.extractedData as string)
+              : extraction.extractedData;
+          } catch { /* use empty */ }
+
+          if (body.extractedData.matrix) {
+            existingData.matrix = { ...existingData.matrix, ...body.extractedData.matrix };
+          }
+          if (body.extractedData.analyses) {
+            existingData.analyses = body.extractedData.analyses;
+          }
+
+          updateData.extractedData = existingData;
+        }
+
+        const updated = await client.pdfExtraction.update({
+          where: { id: params.id },
+          data: updateData,
+        });
+
+        // Serialize response
+        let extractedData = {};
+        try {
+          extractedData = typeof updated.extractedData === 'string'
+            ? JSON.parse(updated.extractedData as string)
+            : updated.extractedData as any;
+        } catch { /* use empty */ }
+
+        return reply.status(200).send({
+          id: updated.id,
+          fileName: updated.fileName,
+          companyName: updated.companyName || null,
+          hasPdf: Boolean(updated.pdfStoragePath),
+          createdAt: updated.createdAt.toISOString(),
+          updatedAt: updated.updatedAt.toISOString(),
+          success: updated.success,
+          error: updated.error,
+          extractedData,
+        });
+      }
+    );
+
+    // Endpoint to re-run compliance checks on (optionally edited) data
+    fastify.post(
+      "/conformity-pdf/extractions/:id/recheck",
+      {
+        schema: {
+          description: "Re-run compliance checks on stored or edited analyses data without re-extracting from PDF",
+          tags: ["Conformity"],
+          summary: "Re-run compliance checks",
+          params: {
+            type: "object",
+            properties: {
+              id: { type: "string", description: "Extraction ID" },
+            },
+          },
+          body: {
+            type: "object",
+            properties: {
+              analyses: { type: "array", description: "Override analyses data" },
+              matrix: { type: "object", additionalProperties: true, description: "Override matrix data" },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const params = request.params as { id: string };
+        const body = request.body as {
+          analyses?: Analyses[];
+          matrix?: MatrixExtractionResult;
+        };
+        const isAdmin = request.user!.role === "ADMIN";
+        const userId = request.user!.userId;
+        const client = getDatabaseClient();
+
+        const extraction = await client.pdfExtraction.findUnique({
+          where: { id: params.id },
+        });
+
+        if (!extraction) {
+          return reply.status(404).send({ error: "Extraction not found" });
+        }
+
+        if (!isAdmin && extraction.userId !== userId) {
+          return reply.status(404).send({ error: "Extraction not found" });
+        }
+
+        let existingData: any = {};
+        try {
+          existingData = typeof extraction.extractedData === 'string'
+            ? JSON.parse(extraction.extractedData as string)
+            : extraction.extractedData;
+        } catch { /* use empty */ }
+
+        const textObjects = existingData.textObjects || [];
+        const matrix = body.matrix ?? existingData.matrix;
+        const analyses = body.analyses ?? existingData.analyses ?? [];
+
+        if (!matrix) {
+          return reply.status(400).send({ error: "No matrix data available. Cannot run compliance checks." });
+        }
+
+        // Re-run compliance checks using the pre-extracted data interface
+        const results = await checks(textObjects, { matrix, analyses });
+
+        // Update the extraction record with new results (and edited data if provided)
+        const updatedExtractedData = {
+          ...existingData,
+          ...(body.matrix && { matrix }),
+          ...(body.analyses && { analyses }),
+          results,
+          metadata: {
+            ...existingData.metadata,
+            lastRecheckedAt: new Date().toISOString(),
+            totalResults: results.length,
+          },
+        };
+
+        await client.pdfExtraction.update({
+          where: { id: params.id },
+          data: { extractedData: updatedExtractedData as any },
+        });
+
+        return reply.status(200).send({
+          id: extraction.id,
+          results,
+          analyses,
+          matrix,
+        });
+      }
+    );
+
+    // Endpoint to serve stored PDF file
+    fastify.get(
+      "/conformity-pdf/extractions/:id/pdf",
+      {
+        schema: {
+          description: "Serve the stored PDF file for an extraction",
+          tags: ["Conformity"],
+          summary: "Get extraction PDF file",
+          params: {
+            type: "object",
+            properties: {
+              id: { type: "string", description: "Extraction ID" },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const params = request.params as { id: string };
+        const isAdmin = request.user!.role === "ADMIN";
+        const userId = request.user!.userId;
+        const client = getDatabaseClient();
+
+        const extraction = await client.pdfExtraction.findUnique({
+          where: { id: params.id },
+        });
+
+        if (!extraction) {
+          return reply.status(404).send({ error: "Extraction not found" });
+        }
+
+        if (!isAdmin && extraction.userId !== userId) {
+          return reply.status(404).send({ error: "Extraction not found" });
+        }
+
+        if (!extraction.pdfStoragePath) {
+          return reply.status(404).send({ error: "PDF file not available for this extraction" });
+        }
+
+        if (!fs.existsSync(extraction.pdfStoragePath)) {
+          return reply.status(404).send({ error: "PDF file not found on disk" });
+        }
+
+        const stream = fs.createReadStream(extraction.pdfStoragePath);
+        return reply
+          .type("application/pdf")
+          .header("Content-Disposition", `inline; filename="${extraction.fileName}"`)
+          .send(stream);
       }
     );
   }

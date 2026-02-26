@@ -102,11 +102,34 @@ export interface ExtractedData {
 export interface PdfExtraction {
   id: string;
   fileName: string;
+  companyName: string | null;
+  hasPdf: boolean;
   createdAt: string;
   updatedAt: string;
   success: boolean;
   error: string | null;
   extractedData: ExtractedData;
+}
+
+export interface PatchExtractionBody {
+  companyName?: string;
+  fileName?: string;
+  extractedData?: {
+    matrix?: Partial<MatrixExtractionResult>;
+    analyses?: Analyses[];
+  };
+}
+
+export interface RecheckBody {
+  analyses?: Analyses[];
+  matrix?: MatrixExtractionResult;
+}
+
+export interface RecheckResponse {
+  id: string;
+  results: ComplianceResult[];
+  analyses: Analyses[];
+  matrix: MatrixExtractionResult;
 }
 
 export interface PdfExtractionsResponse {
@@ -224,6 +247,43 @@ export const conformityApi = {
     );
 
     return response.data;
+  },
+
+  /**
+   * Update extraction metadata (company name, file name, extracted data).
+   */
+  updateExtraction: async (
+    id: string,
+    data: PatchExtractionBody
+  ): Promise<PdfExtraction> => {
+    const response = await axios.patch<PdfExtraction>(
+      `${API_BASE_URL}/conformity-pdf/extractions/${id}`,
+      data,
+      { withCredentials: true }
+    );
+    return response.data;
+  },
+
+  /**
+   * Re-run compliance checks on stored or edited analyses data.
+   */
+  recheckExtraction: async (
+    id: string,
+    data: RecheckBody
+  ): Promise<RecheckResponse> => {
+    const response = await axios.post<RecheckResponse>(
+      `${API_BASE_URL}/conformity-pdf/extractions/${id}/recheck`,
+      data,
+      { withCredentials: true }
+    );
+    return response.data;
+  },
+
+  /**
+   * Get the URL to view/download the stored PDF for an extraction.
+   */
+  getPdfUrl: (id: string): string => {
+    return `${API_BASE_URL}/conformity-pdf/extractions/${id}/pdf`;
   },
 };
 

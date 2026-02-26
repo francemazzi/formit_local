@@ -16,10 +16,14 @@ import {
   RotateCw,
   Upload,
   Table,
+  Pencil,
+  Eye,
 } from "lucide-react";
 import { conformityApi, type PdfExtraction } from "../api/conformityPdf";
 import { ResultsDisplay } from "./ResultsDisplay";
 import { ExtractionsTableView } from "./ExtractionsTableView";
+import { ExtractionEditDrawer } from "./ExtractionEditDrawer";
+import { AnalysisView } from "./AnalysisView";
 import type { ConformityPdfResponse } from "../api/conformityPdf";
 
 type ExtractionsViewMode = "folder" | "table";
@@ -102,7 +106,7 @@ function groupExtractions(extractions: PdfExtraction[]): FolderStructure {
 
   extractions.forEach((extraction) => {
     const dateKey = formatDateKey(extraction.createdAt);
-    const companyName = extractCompanyName(extraction.fileName);
+    const companyName = extraction.companyName || extractCompanyName(extraction.fileName);
 
     if (!structure[dateKey]) {
       structure[dateKey] = {};
@@ -151,6 +155,8 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
     null,
   );
   const [viewMode, setViewMode] = useState<ExtractionsViewMode>("folder");
+  const [editingExtraction, setEditingExtraction] = useState<PdfExtraction | null>(null);
+  const [analyzingExtraction, setAnalyzingExtraction] = useState<PdfExtraction | null>(null);
 
   const loadExtractions = async () => {
     try {
@@ -561,6 +567,8 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
         <ExtractionsTableView
           extractions={extractions}
           onSelectExtraction={handleSelectExtraction}
+          onEditExtraction={setEditingExtraction}
+          onAnalyzeExtraction={setAnalyzingExtraction}
         />
       ) : (
         <div className="folder-tree">
@@ -849,6 +857,30 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
                                                 Visualizza Dettagli Completi
                                               </button>
                                               <button
+                                                className="btn-secondary"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setEditingExtraction(extraction);
+                                                }}
+                                                title="Modifica dati estrazione"
+                                              >
+                                                <Pencil size={14} />
+                                                Modifica
+                                              </button>
+                                              {extraction.hasPdf && (
+                                                <button
+                                                  className="btn-secondary"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setAnalyzingExtraction(extraction);
+                                                  }}
+                                                  title="Analizza con vista PDF"
+                                                >
+                                                  <Eye size={14} />
+                                                  Analizza
+                                                </button>
+                                              )}
+                                              <button
                                                 className="btn-secondary btn-ocr"
                                                 onClick={() =>
                                                   handleReprocessClick(
@@ -934,6 +966,34 @@ export function ExtractionsList({ onSelectExtraction }: ExtractionsListProps) {
             );
           })}
         </div>
+      )}
+
+      {/* Edit Drawer */}
+      {editingExtraction && (
+        <ExtractionEditDrawer
+          extraction={editingExtraction}
+          onClose={() => setEditingExtraction(null)}
+          onSaved={(updated) => {
+            setExtractions((prev) =>
+              prev.map((e) => (e.id === updated.id ? updated : e))
+            );
+            setEditingExtraction(null);
+          }}
+        />
+      )}
+
+      {/* Analysis View */}
+      {analyzingExtraction && (
+        <AnalysisView
+          extraction={analyzingExtraction}
+          onClose={() => setAnalyzingExtraction(null)}
+          onExtractionUpdated={(updated: PdfExtraction) => {
+            setExtractions((prev) =>
+              prev.map((e) => (e.id === updated.id ? updated : e))
+            );
+            setAnalyzingExtraction(updated);
+          }}
+        />
       )}
     </div>
   );

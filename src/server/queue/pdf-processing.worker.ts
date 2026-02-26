@@ -1,9 +1,12 @@
 import { Worker, Job, ConnectionOptions } from "bullmq";
 import * as fs from "node:fs";
+import * as path from "node:path";
 import { PdfProcessingJobData, PdfProcessingJobResult } from "./pdf-processing.queue";
 import { checksWithOptions, ComplianceResult } from "../modules/checks";
 import { extractTextFromPdf } from "../modules/extract_text_from_pdf";
 import { getDatabaseClient } from "../prisma.client";
+
+const PDF_STORAGE_DIR = path.resolve(process.cwd(), "uploads", "pdfs");
 
 interface ExtractionData {
   fileName: string;
@@ -66,6 +69,29 @@ const updateExtractionInDatabase = async (
   } catch (error) {
     console.error("[Worker] Failed to update extraction in database:", error);
     return false;
+  }
+};
+
+const persistPdfFile = async (tempFilePath: string, extractionId: string): Promise<string | null> => {
+  try {
+    if (!fs.existsSync(PDF_STORAGE_DIR)) {
+      await fs.promises.mkdir(PDF_STORAGE_DIR, { recursive: true });
+    }
+    const storagePath = path.join(PDF_STORAGE_DIR, `${extractionId}.pdf`);
+    await fs.promises.copyFile(tempFilePath, storagePath);
+
+    // Update the extraction record with the storage path
+    const client = getDatabaseClient();
+    await client.pdfExtraction.update({
+      where: { id: extractionId },
+      data: { pdfStoragePath: storagePath },
+    });
+
+    console.log(`[Worker] PDF persisted at: ${storagePath}`);
+    return storagePath;
+  } catch (error) {
+    console.error("[Worker] Failed to persist PDF file:", error);
+    return null;
   }
 };
 
@@ -152,6 +178,10 @@ export class PdfProcessingWorker {
               ...(userId && { userId }),
               ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
             });
+          }
+          // Persist the PDF file for later viewing
+          if (extractionId) {
+            await persistPdfFile(filePath, extractionId);
           }
           await job.updateProgress(100);
 

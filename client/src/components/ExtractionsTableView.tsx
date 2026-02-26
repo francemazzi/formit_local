@@ -9,12 +9,15 @@ import {
   CheckCircle2,
   XCircle,
   Search,
+  Pencil,
 } from "lucide-react";
 import type { PdfExtraction } from "../api/conformityPdf";
 
 interface ExtractionsTableViewProps {
   extractions: PdfExtraction[];
   onSelectExtraction: (extraction: PdfExtraction) => void;
+  onEditExtraction?: (extraction: PdfExtraction) => void;
+  onAnalyzeExtraction?: (extraction: PdfExtraction) => void;
 }
 
 interface ColumnDefinition {
@@ -33,6 +36,7 @@ interface ColumnFilter {
 interface FlattenedRow {
   id: string;
   _original: PdfExtraction;
+  companyName: string;
   fileName: string;
   createdAt: string;
   updatedAt: string;
@@ -65,10 +69,16 @@ const GROUP_LABELS: Record<string, string> = {
 
 const BASE_COLUMNS: ColumnDefinition[] = [
   {
+    key: "companyName",
+    label: "Azienda",
+    group: "base",
+    sticky: true,
+    width: 180,
+  },
+  {
     key: "fileName",
     label: "Nome File",
     group: "base",
-    sticky: true,
     width: 250,
   },
   { key: "createdAt", label: "Data Estrazione", group: "base", width: 150 },
@@ -167,6 +177,24 @@ function shortenFileName(fileName: string): string {
   return base.slice(0, 5) + "..." + base.slice(-5) + ext;
 }
 
+function extractCompanyName(fileName: string): string {
+  const nameWithoutExt = fileName.replace(/\.pdf$/i, "");
+  const parts = nameWithoutExt.split("_");
+  if (parts.length >= 4) {
+    for (let i = parts.length - 2; i >= 2; i--) {
+      if (/\b(srl|s\.r\.l|spa|s\.p\.a|snc|sas|di|srls)\b/i.test(parts[i])) {
+        return parts[i].trim();
+      }
+    }
+    for (let i = parts.length - 1; i >= 2; i--) {
+      if (/^\d{6,8}$/.test(parts[i])) {
+        if (i > 0 && parts[i - 1]) return parts[i - 1].trim();
+      }
+    }
+  }
+  return "Azienda non specificata";
+}
+
 function flattenExtractions(extractions: PdfExtraction[]): FlattenedRow[] {
   const rows: FlattenedRow[] = [];
 
@@ -180,6 +208,7 @@ function flattenExtractions(extractions: PdfExtraction[]): FlattenedRow[] {
       rows.push({
         id: extraction.id,
         _original: extraction,
+        companyName: extraction.companyName || extractCompanyName(extraction.fileName),
         fileName: shortenFileName(extraction.fileName),
         createdAt: formatDateTime(extraction.createdAt),
         updatedAt: formatDateTime(extraction.updatedAt),
@@ -213,6 +242,7 @@ function flattenExtractions(extractions: PdfExtraction[]): FlattenedRow[] {
       rows.push({
         id: `${extraction.id}_${i}`,
         _original: extraction,
+        companyName: extraction.companyName || extractCompanyName(extraction.fileName),
         fileName: shortenFileName(extraction.fileName),
         createdAt: formatDateTime(extraction.createdAt),
         updatedAt: formatDateTime(extraction.updatedAt),
@@ -507,6 +537,8 @@ function ColumnVisibilityPanel({
 export function ExtractionsTableView({
   extractions,
   onSelectExtraction,
+  onEditExtraction,
+  onAnalyzeExtraction,
 }: ExtractionsTableViewProps) {
   // Flatten data: one row per analysis
   const rows = useMemo(
@@ -731,6 +763,11 @@ export function ExtractionsTableView({
         <table className="extractions-table">
           <thead>
             <tr>
+              <th className="table-header sticky" style={{ minWidth: 90 }}>
+                <div className="header-content">
+                  <span className="header-label">Azioni</span>
+                </div>
+              </th>
               {visibleColumnsList.map((column) => (
                 <th
                   key={column.key}
@@ -792,6 +829,34 @@ export function ExtractionsTableView({
                 className="table-row"
                 onClick={() => onSelectExtraction(row._original)}
               >
+                <td className="table-cell sticky table-actions-cell">
+                  <div className="table-row-actions">
+                    {onEditExtraction && (
+                      <button
+                        className="btn-icon-sm"
+                        title="Modifica"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditExtraction(row._original);
+                        }}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                    {onAnalyzeExtraction && row._original.hasPdf && (
+                      <button
+                        className="btn-icon-sm"
+                        title="Analizza con PDF"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAnalyzeExtraction(row._original);
+                        }}
+                      >
+                        <Eye size={14} />
+                      </button>
+                    )}
+                  </div>
+                </td>
                 {visibleColumnsList.map((column) => (
                   <td
                     key={column.key}

@@ -156,7 +156,13 @@ model PdfExtraction {
   
   // Nome del file PDF originale
   fileName    String
-  
+
+  // Nome azienda editabile (fallback a regex da filename se null)
+  companyName String?
+
+  // Percorso al file PDF persistito per visualizzazione
+  pdfStoragePath String?
+
   // Dati estratti dal PDF salvati come JSON
   // Include: textObjects, matrix, analyses, results, metadata
   extractedData Json
