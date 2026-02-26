@@ -5,6 +5,9 @@ echo "[deploy.sh] Starting deployment at $(date)"
 
 git config --global --add safe.directory /repo
 
+# Use same project name as host to manage existing containers
+export COMPOSE_PROJECT_NAME=formit_local
+
 echo "[deploy.sh] Pulling latest code from origin/main..."
 git fetch origin main
 git reset --hard origin/main
