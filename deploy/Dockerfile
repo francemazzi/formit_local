@@ -10,4 +10,4 @@ RUN chmod +x deploy.sh
 
 EXPOSE 9000
 
-CMD ["python3", "webhook_server.py"]
+CMD ["python3", "/app/webhook_server.py"]
