@@ -27,10 +27,16 @@ interface LoginBody {
 
 export class AuthController {
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
-    // POST /auth/register
+    // POST /auth/register (rate limited: 5 per 15 min)
     fastify.post<{ Body: RegisterBody }>(
       "/auth/register",
       {
+        config: {
+          rateLimit: {
+            max: 5,
+            timeWindow: "15 minutes",
+          },
+        },
         schema: {
           description: "Register a new user account",
           tags: ["Auth"],
@@ -39,7 +45,7 @@ export class AuthController {
             required: ["email", "password"],
             properties: {
               email: { type: "string", format: "email" },
-              password: { type: "string", minLength: 8 },
+              password: { type: "string", minLength: 10 },
             },
           },
         },
@@ -53,10 +59,25 @@ export class AuthController {
           return reply.status(400).send({ error: "Formato email non valido" });
         }
 
-        if (password.length < 8) {
+        if (password.length < 10) {
           return reply
             .status(400)
-            .send({ error: "La password deve avere almeno 8 caratteri" });
+            .send({ error: "La password deve avere almeno 10 caratteri" });
+        }
+        if (!/[A-Z]/.test(password)) {
+          return reply
+            .status(400)
+            .send({ error: "La password deve contenere almeno una lettera maiuscola" });
+        }
+        if (!/[0-9]/.test(password)) {
+          return reply
+            .status(400)
+            .send({ error: "La password deve contenere almeno un numero" });
+        }
+        if (!/[^A-Za-z0-9]/.test(password)) {
+          return reply
+            .status(400)
+            .send({ error: "La password deve contenere almeno un carattere speciale" });
         }
 
         const existingUser = await client.user.findUnique({
@@ -91,10 +112,16 @@ export class AuthController {
       }
     );
 
-    // POST /auth/login
+    // POST /auth/login (rate limited: 10 per 15 min)
     fastify.post<{ Body: LoginBody }>(
       "/auth/login",
       {
+        config: {
+          rateLimit: {
+            max: 10,
+            timeWindow: "15 minutes",
+          },
+        },
         schema: {
           description: "Login with email and password",
           tags: ["Auth"],
@@ -116,6 +143,7 @@ export class AuthController {
           where: { email: email.toLowerCase() },
         });
         if (!user) {
+          request.log.warn({ action: "login_failed", email: email.toLowerCase(), reason: "user_not_found" }, "Failed login attempt");
           return reply
             .status(401)
             .send({ error: "Email o password non validi" });
@@ -123,10 +151,13 @@ export class AuthController {
 
         const valid = await verifyPassword(password, user.passwordHash);
         if (!valid) {
+          request.log.warn({ action: "login_failed", email: email.toLowerCase(), reason: "invalid_password" }, "Failed login attempt");
           return reply
             .status(401)
             .send({ error: "Email o password non validi" });
         }
+
+        request.log.info({ action: "login_success", userId: user.id }, "Successful login");
 
         await this.setAuthCookies(reply, user);
 

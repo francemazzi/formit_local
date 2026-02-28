@@ -2,7 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { getDatabaseClient } from "../prisma.client";
 import { isProviderConfigured } from "../utils/api-keys.utils";
 import type { AiProvider } from "@prisma/client";
-import { requireAuth } from "../auth/auth.middleware";
+import { requireAuth, requireAdmin } from "../auth/auth.middleware";
+import { encryptOrNull, decryptOrNull } from "../utils/crypto.utils";
 
 // ========================================
 // Request Body Types
@@ -26,6 +27,37 @@ interface UpdateClaudeApiKeyBody {
 
 interface SetActiveProviderBody {
   provider: AiProvider;
+}
+
+// ========================================
+// API Key Format Validation
+// ========================================
+
+function validateApiKeyFormat(key: string | undefined, type: "openai" | "claude" | "tavily" | "aws-key" | "aws-secret"): string | null {
+  if (!key) return null;
+  const trimmed = key.trim();
+  if (!trimmed) return null;
+
+  switch (type) {
+    case "openai":
+      if (!trimmed.startsWith("sk-")) return "OpenAI API key must start with 'sk-'";
+      if (trimmed.length < 20) return "OpenAI API key is too short";
+      break;
+    case "claude":
+      if (!trimmed.startsWith("sk-ant-")) return "Claude API key must start with 'sk-ant-'";
+      if (trimmed.length < 20) return "Claude API key is too short";
+      break;
+    case "tavily":
+      if (!trimmed.startsWith("tvly-")) return "Tavily API key must start with 'tvly-'";
+      break;
+    case "aws-key":
+      if (!/^[A-Z0-9]{16,128}$/.test(trimmed)) return "AWS Access Key ID format is invalid";
+      break;
+    case "aws-secret":
+      if (trimmed.length < 16) return "AWS Secret Access Key is too short";
+      break;
+  }
+  return null;
 }
 
 // ========================================
@@ -62,7 +94,9 @@ export class ApiKeysController {
                 awsAccessKeyId: { type: "string", nullable: true },
                 awsSecretAccessKey: { type: "string", nullable: true },
                 awsRegion: { type: "string", nullable: true },
-                activeProvider: { type: "string", enum: ["OPENAI", "ANTHROPIC_CLAUDE", "BEDROCK_CLAUDE"] },
+                ollamaBaseUrl: { type: "string", nullable: true },
+                ollamaModel: { type: "string", nullable: true },
+                activeProvider: { type: "string", enum: ["OPENAI", "ANTHROPIC_CLAUDE", "BEDROCK_CLAUDE", "OLLAMA"] },
               },
             },
           },
@@ -89,12 +123,14 @@ export class ApiKeysController {
           }
 
           return reply.send({
-            tavilyApiKey: maskKey(apiKeys.tavilyApiKey),
-            openaiApiKey: maskKey(apiKeys.openaiApiKey),
-            claudeApiKey: maskKey(apiKeys.claudeApiKey),
-            awsAccessKeyId: maskKey(apiKeys.awsAccessKeyId),
-            awsSecretAccessKey: maskKey(apiKeys.awsSecretAccessKey),
+            tavilyApiKey: maskKey(decryptOrNull(apiKeys.tavilyApiKey)),
+            openaiApiKey: maskKey(decryptOrNull(apiKeys.openaiApiKey)),
+            claudeApiKey: maskKey(decryptOrNull(apiKeys.claudeApiKey)),
+            awsAccessKeyId: maskKey(decryptOrNull(apiKeys.awsAccessKeyId)),
+            awsSecretAccessKey: maskKey(decryptOrNull(apiKeys.awsSecretAccessKey)),
             awsRegion: apiKeys.awsRegion ?? "us-east-1",
+            ollamaBaseUrl: apiKeys.ollamaBaseUrl ?? "http://host.docker.internal:11434",
+            ollamaModel: apiKeys.ollamaModel ?? "qwen2.5:3b",
             activeProvider: apiKeys.activeProvider,
           });
         } catch (error) {
@@ -104,12 +140,13 @@ export class ApiKeysController {
       }
     );
 
-    // PUT /api/api-keys - Update API keys
+    // PUT /api/api-keys - Update API keys (admin only)
     fastify.put<{ Body: UpdateApiKeysBody }>(
       "/api-keys",
       {
+        preHandler: [requireAdmin],
         schema: {
-          description: "Update API keys configuration",
+          description: "Update API keys configuration (admin only)",
           tags: ["Settings"],
           summary: "Update API keys",
           body: {
@@ -135,6 +172,16 @@ export class ApiKeysController {
         const prisma = getDatabaseClient();
         const { tavilyApiKey, openaiApiKey } = request.body;
 
+        // Validate API key formats
+        if (tavilyApiKey) {
+          const err = validateApiKeyFormat(tavilyApiKey, "tavily");
+          if (err) return reply.status(400).send({ error: err });
+        }
+        if (openaiApiKey) {
+          const err = validateApiKeyFormat(openaiApiKey, "openai");
+          if (err) return reply.status(400).send({ error: err });
+        }
+
         try {
           // Check if record exists in database
           let apiKeys = await prisma.apiKey.findUnique({
@@ -143,12 +190,12 @@ export class ApiKeysController {
 
           const updateData: { tavilyApiKey?: string | null; openaiApiKey?: string | null } = {};
 
-          // Only update fields that are provided
+          // Only update fields that are provided - encrypt before storing
           if (tavilyApiKey !== undefined) {
-            updateData.tavilyApiKey = tavilyApiKey || null;
+            updateData.tavilyApiKey = encryptOrNull(tavilyApiKey || null);
           }
           if (openaiApiKey !== undefined) {
-            updateData.openaiApiKey = openaiApiKey || null;
+            updateData.openaiApiKey = encryptOrNull(openaiApiKey || null);
           }
 
           if (apiKeys) {
@@ -162,21 +209,18 @@ export class ApiKeysController {
             apiKeys = await prisma.apiKey.create({
               data: {
                 id: "singleton",
-                tavilyApiKey: tavilyApiKey || null,
-                openaiApiKey: openaiApiKey || null,
+                tavilyApiKey: encryptOrNull(tavilyApiKey || null),
+                openaiApiKey: encryptOrNull(openaiApiKey || null),
               },
             });
           }
 
-          // Mask the keys in response
-          const maskKey = (key: string | null): string | null => {
-            if (!key || key.length <= 4) return key;
-            return `****${key.slice(-4)}`;
-          };
+          const updatedFields = [tavilyApiKey !== undefined && "tavilyApiKey", openaiApiKey !== undefined && "openaiApiKey"].filter(Boolean);
+          request.log.info({ userId: request.user?.userId, action: "update_api_keys", fields: updatedFields }, "API keys updated");
 
           return reply.send({
-            tavilyApiKey: maskKey(apiKeys.tavilyApiKey),
-            openaiApiKey: maskKey(apiKeys.openaiApiKey),
+            tavilyApiKey: maskKey(decryptOrNull(apiKeys.tavilyApiKey)),
+            openaiApiKey: maskKey(decryptOrNull(apiKeys.openaiApiKey)),
           });
         } catch (error) {
           request.log.error(error);
@@ -230,12 +274,18 @@ export class ApiKeysController {
             });
           }
 
-          const openaiConfigured = !!apiKeys.openaiApiKey;
-          const anthropicConfigured = !!apiKeys.claudeApiKey;
-          const bedrockConfigured = !!(apiKeys.awsAccessKeyId && apiKeys.awsSecretAccessKey);
+          const openaiConfigured = !!decryptOrNull(apiKeys.openaiApiKey);
+          const anthropicConfigured = !!decryptOrNull(apiKeys.claudeApiKey);
+          const bedrockConfigured = !!(decryptOrNull(apiKeys.awsAccessKeyId) && decryptOrNull(apiKeys.awsSecretAccessKey));
 
           return reply.send({
             providers: [
+              {
+                id: "OLLAMA",
+                name: `Ollama (Locale - ${apiKeys.ollamaModel ?? "qwen2.5:3b"})`,
+                configured: true, // Ollama doesn't need API keys
+                active: apiKeys.activeProvider === "OLLAMA",
+              },
               {
                 id: "OPENAI",
                 name: "OpenAI",
@@ -264,19 +314,20 @@ export class ApiKeysController {
       }
     );
 
-    // PUT /api-keys/provider - Set active AI provider
+    // PUT /api-keys/provider - Set active AI provider (admin only)
     fastify.put<{ Body: SetActiveProviderBody }>(
       "/api-keys/provider",
       {
+        preHandler: [requireAdmin],
         schema: {
-          description: "Set the active AI provider",
+          description: "Set the active AI provider (admin only)",
           tags: ["Settings"],
           summary: "Set active provider",
           body: {
             type: "object",
             required: ["provider"],
             properties: {
-              provider: { type: "string", enum: ["OPENAI", "ANTHROPIC_CLAUDE", "BEDROCK_CLAUDE"] },
+              provider: { type: "string", enum: ["OPENAI", "ANTHROPIC_CLAUDE", "BEDROCK_CLAUDE", "OLLAMA"] },
             },
           },
           response: {
@@ -297,10 +348,11 @@ export class ApiKeysController {
 
         try {
           // Validate provider is configured before switching
-          const providerTypeMap: Record<string, "openai" | "anthropic" | "bedrock"> = {
+          const providerTypeMap: Record<string, "openai" | "anthropic" | "bedrock" | "ollama"> = {
             OPENAI: "openai",
             ANTHROPIC_CLAUDE: "anthropic",
             BEDROCK_CLAUDE: "bedrock",
+            OLLAMA: "ollama",
           };
           const providerType = providerTypeMap[provider];
           if (!providerType) {
@@ -323,6 +375,8 @@ export class ApiKeysController {
             create: { id: "singleton", activeProvider: provider },
           });
 
+          request.log.info({ userId: request.user?.userId, action: "set_active_provider", provider }, "Active provider changed");
+
           return reply.send({
             success: true,
             activeProvider: provider,
@@ -334,12 +388,13 @@ export class ApiKeysController {
       }
     );
 
-    // PUT /api-keys/aws - Update AWS Bedrock credentials
+    // PUT /api-keys/aws - Update AWS Bedrock credentials (admin only)
     fastify.put<{ Body: UpdateAwsCredentialsBody }>(
       "/api-keys/aws",
       {
+        preHandler: [requireAdmin],
         schema: {
-          description: "Update AWS Bedrock credentials",
+          description: "Update AWS Bedrock credentials (admin only)",
           tags: ["Settings"],
           summary: "Update AWS credentials",
           body: {
@@ -367,6 +422,16 @@ export class ApiKeysController {
         const prisma = getDatabaseClient();
         const { awsAccessKeyId, awsSecretAccessKey, awsRegion } = request.body;
 
+        // Validate AWS credential formats
+        if (awsAccessKeyId) {
+          const err = validateApiKeyFormat(awsAccessKeyId, "aws-key");
+          if (err) return reply.status(400).send({ error: err });
+        }
+        if (awsSecretAccessKey) {
+          const err = validateApiKeyFormat(awsSecretAccessKey, "aws-secret");
+          if (err) return reply.status(400).send({ error: err });
+        }
+
         try {
           const updateData: {
             awsAccessKeyId?: string | null;
@@ -375,10 +440,10 @@ export class ApiKeysController {
           } = {};
 
           if (awsAccessKeyId !== undefined) {
-            updateData.awsAccessKeyId = awsAccessKeyId || null;
+            updateData.awsAccessKeyId = encryptOrNull(awsAccessKeyId || null);
           }
           if (awsSecretAccessKey !== undefined) {
-            updateData.awsSecretAccessKey = awsSecretAccessKey || null;
+            updateData.awsSecretAccessKey = encryptOrNull(awsSecretAccessKey || null);
           }
           if (awsRegion !== undefined) {
             updateData.awsRegion = awsRegion || null;
@@ -389,15 +454,17 @@ export class ApiKeysController {
             update: updateData,
             create: {
               id: "singleton",
-              awsAccessKeyId: awsAccessKeyId || null,
-              awsSecretAccessKey: awsSecretAccessKey || null,
+              awsAccessKeyId: encryptOrNull(awsAccessKeyId || null),
+              awsSecretAccessKey: encryptOrNull(awsSecretAccessKey || null),
               awsRegion: awsRegion ?? "us-east-1",
             },
           });
 
+          request.log.info({ userId: request.user?.userId, action: "update_aws_credentials" }, "AWS credentials updated");
+
           return reply.send({
             success: true,
-            awsAccessKeyId: maskKey(apiKeys.awsAccessKeyId),
+            awsAccessKeyId: maskKey(decryptOrNull(apiKeys.awsAccessKeyId)),
             awsRegion: apiKeys.awsRegion ?? "us-east-1",
           });
         } catch (error) {
@@ -407,12 +474,13 @@ export class ApiKeysController {
       }
     );
 
-    // PUT /api-keys/claude - Update Claude API key (Anthropic direct)
+    // PUT /api-keys/claude - Update Claude API key (admin only)
     fastify.put<{ Body: UpdateClaudeApiKeyBody }>(
       "/api-keys/claude",
       {
+        preHandler: [requireAdmin],
         schema: {
-          description: "Update Claude API key (Anthropic direct)",
+          description: "Update Claude API key (admin only)",
           tags: ["Settings"],
           summary: "Update Claude API key",
           body: {
@@ -437,23 +505,97 @@ export class ApiKeysController {
         const prisma = getDatabaseClient();
         const { claudeApiKey } = request.body;
 
+        // Validate API key format
+        if (claudeApiKey) {
+          const err = validateApiKeyFormat(claudeApiKey, "claude");
+          if (err) return reply.status(400).send({ error: err });
+        }
+
         try {
           const apiKeys = await prisma.apiKey.upsert({
             where: { id: "singleton" },
-            update: { claudeApiKey: claudeApiKey || null },
+            update: { claudeApiKey: encryptOrNull(claudeApiKey || null) },
             create: {
               id: "singleton",
-              claudeApiKey: claudeApiKey || null,
+              claudeApiKey: encryptOrNull(claudeApiKey || null),
             },
           });
 
+          request.log.info({ userId: request.user?.userId, action: "update_claude_api_key" }, "Claude API key updated");
+
           return reply.send({
             success: true,
-            claudeApiKey: maskKey(apiKeys.claudeApiKey),
+            claudeApiKey: maskKey(decryptOrNull(apiKeys.claudeApiKey)),
           });
         } catch (error) {
           request.log.error(error);
           return reply.status(500).send({ error: "Failed to update Claude API key" });
+        }
+      }
+    );
+
+    // PUT /api-keys/ollama - Update Ollama configuration (admin only)
+    fastify.put<{ Body: { ollamaBaseUrl?: string; ollamaModel?: string } }>(
+      "/api-keys/ollama",
+      {
+        preHandler: [requireAdmin],
+        schema: {
+          description: "Update Ollama local LLM configuration (admin only)",
+          tags: ["Settings"],
+          summary: "Update Ollama config",
+          body: {
+            type: "object",
+            properties: {
+              ollamaBaseUrl: { type: "string", nullable: true },
+              ollamaModel: { type: "string", nullable: true },
+            },
+          },
+          response: {
+            200: {
+              description: "Ollama configuration updated successfully",
+              type: "object",
+              properties: {
+                success: { type: "boolean" },
+                ollamaBaseUrl: { type: "string" },
+                ollamaModel: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest<{ Body: { ollamaBaseUrl?: string; ollamaModel?: string } }>, reply: FastifyReply) => {
+        const prisma = getDatabaseClient();
+        const { ollamaBaseUrl, ollamaModel } = request.body;
+
+        try {
+          const updateData: { ollamaBaseUrl?: string | null; ollamaModel?: string | null } = {};
+          if (ollamaBaseUrl !== undefined) {
+            updateData.ollamaBaseUrl = ollamaBaseUrl?.trim() || null;
+          }
+          if (ollamaModel !== undefined) {
+            updateData.ollamaModel = ollamaModel?.trim() || null;
+          }
+
+          const apiKeys = await prisma.apiKey.upsert({
+            where: { id: "singleton" },
+            update: updateData,
+            create: {
+              id: "singleton",
+              ollamaBaseUrl: ollamaBaseUrl?.trim() || null,
+              ollamaModel: ollamaModel?.trim() || null,
+            },
+          });
+
+          request.log.info({ userId: request.user?.userId, action: "update_ollama_config" }, "Ollama configuration updated");
+
+          return reply.send({
+            success: true,
+            ollamaBaseUrl: apiKeys.ollamaBaseUrl ?? "http://host.docker.internal:11434",
+            ollamaModel: apiKeys.ollamaModel ?? "qwen2.5:3b",
+          });
+        } catch (error) {
+          request.log.error(error);
+          return reply.status(500).send({ error: "Failed to update Ollama configuration" });
         }
       }
     );

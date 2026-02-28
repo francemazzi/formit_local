@@ -15,7 +15,7 @@ const api = axios.create({
 // API Keys Types
 // ========================================
 
-export type AiProvider = "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE";
+export type AiProvider = "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE" | "OLLAMA";
 
 export interface ApiKeysConfig {
   tavilyApiKey: string | null;
@@ -24,6 +24,8 @@ export interface ApiKeysConfig {
   awsAccessKeyId: string | null;
   awsSecretAccessKey: string | null;
   awsRegion: string | null;
+  ollamaBaseUrl: string | null;
+  ollamaModel: string | null;
   activeProvider: AiProvider;
 }
 
@@ -40,6 +42,11 @@ export interface UpdateAwsCredentialsInput {
   awsAccessKeyId?: string | null;
   awsSecretAccessKey?: string | null;
   awsRegion?: string | null;
+}
+
+export interface UpdateOllamaConfigInput {
+  ollamaBaseUrl?: string | null;
+  ollamaModel?: string | null;
 }
 
 export interface ProviderInfo {
@@ -102,6 +109,17 @@ export const apiKeysApi = {
       success: boolean;
       claudeApiKey: string | null;
     }>("/api-keys/claude", data);
+    return response.data;
+  },
+
+  updateOllamaConfig: async (
+    data: UpdateOllamaConfigInput
+  ): Promise<{ success: boolean; ollamaBaseUrl: string; ollamaModel: string }> => {
+    const response = await api.put<{
+      success: boolean;
+      ollamaBaseUrl: string;
+      ollamaModel: string;
+    }>("/api-keys/ollama", data);
     return response.data;
   },
 };

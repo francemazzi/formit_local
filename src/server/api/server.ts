@@ -4,6 +4,8 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
+import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyHelmet from "@fastify/helmet";
 
 import { conformityPdfController } from "./conformity-pdf.controller";
 import { customChecksController } from "./custom-checks.controller";
@@ -40,12 +42,24 @@ const createFastifyInstance = (): FastifyInstance => {
 };
 
 const registerPlugins = async (fastify: FastifyInstance): Promise<void> => {
+  // Security headers
+  await fastify.register(fastifyHelmet, {
+    contentSecurityPolicy: false, // Disabled to allow Swagger UI
+  });
+
+  // Global rate limiting
+  await fastify.register(fastifyRateLimit, {
+    max: 100,
+    timeWindow: "1 minute",
+  });
+
   // Cookie support (must be registered before CORS)
   await fastify.register(fastifyCookie);
 
-  // CORS
+  // CORS - restrict to allowed origins
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map(s => s.trim()) || ["http://localhost:5173"];
   await fastify.register(fastifyCors, {
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

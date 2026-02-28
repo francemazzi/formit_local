@@ -2,6 +2,7 @@ import type { BaseChatModel } from "@langchain/core/language_models/chat_models"
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatBedrockConverse } from "@langchain/aws";
+import { ChatOllama } from "@langchain/ollama";
 import { getApiKeys, type ApiKeyConfig } from "./api-keys.utils.js";
 
 export type LLMCapability = "text" | "vision" | "search";
@@ -14,7 +15,7 @@ export interface LLMConfig {
 
 export interface LLMFactoryResult {
   model: BaseChatModel;
-  provider: "openai" | "anthropic" | "bedrock";
+  provider: "openai" | "anthropic" | "bedrock" | "ollama";
   modelName: string;
 }
 
@@ -40,6 +41,10 @@ const MODEL_MAPPING = {
 // Default AWS region
 const DEFAULT_AWS_REGION = "us-east-1";
 
+// Default Ollama configuration
+const DEFAULT_OLLAMA_BASE_URL = "http://host.docker.internal:11434";
+const DEFAULT_OLLAMA_MODEL = "qwen2.5:3b";
+
 /**
  * Creates an LLM instance based on the configured provider.
  * Reads configuration from database and creates the appropriate model.
@@ -54,6 +59,10 @@ export async function createLLM(config: LLMConfig): Promise<LLMFactoryResult> {
 
   if (provider === "BEDROCK_CLAUDE") {
     return createBedrockLLM(config, apiKeys);
+  }
+
+  if (provider === "OLLAMA") {
+    return createOllamaLLM(config, apiKeys);
   }
 
   return createOpenAILLM(config, apiKeys);
@@ -139,6 +148,33 @@ async function createBedrockLLM(
 }
 
 /**
+ * Creates an Ollama LLM instance (local model, no API key needed)
+ */
+async function createOllamaLLM(
+  config: LLMConfig,
+  apiKeys: ApiKeyConfig
+): Promise<LLMFactoryResult> {
+  const baseUrl = apiKeys.ollamaBaseUrl || DEFAULT_OLLAMA_BASE_URL;
+  const modelName = apiKeys.ollamaModel || DEFAULT_OLLAMA_MODEL;
+
+  if (config.capability === "vision") {
+    console.warn(
+      "[llm-factory] Ollama does not support vision on Raspberry Pi. " +
+        "Falling back to text-only mode."
+    );
+  }
+
+  const model = new ChatOllama({
+    baseUrl,
+    model: modelName,
+    temperature: config.temperature ?? 0,
+    ...(config.maxTokens !== undefined && { numPredict: config.maxTokens }),
+  });
+
+  return { model, provider: "ollama", modelName };
+}
+
+/**
  * Gets the vision provider configuration.
  * Used for direct SDK access (e.g., OpenAI file API, Anthropic images, or Bedrock images)
  */
@@ -147,6 +183,13 @@ export async function getVisionProvider(): Promise<{
   config: OpenAIVisionConfig | AnthropicVisionConfig | BedrockVisionConfig;
 }> {
   const apiKeys = await getApiKeys();
+
+  if (apiKeys.activeProvider === "OLLAMA") {
+    throw new Error(
+      "Ollama provider does not support vision/OCR. " +
+        "Text-only extraction will be used."
+    );
+  }
 
   if (apiKeys.activeProvider === "ANTHROPIC_CLAUDE") {
     if (!apiKeys.claudeApiKey) {
@@ -222,8 +265,12 @@ export interface BedrockVisionConfig {
  * Checks if a specific provider is properly configured
  */
 export async function isProviderConfigured(
-  provider: "openai" | "anthropic" | "bedrock"
+  provider: "openai" | "anthropic" | "bedrock" | "ollama"
 ): Promise<boolean> {
+  if (provider === "ollama") {
+    return true; // Ollama doesn't need API keys
+  }
+
   const apiKeys = await getApiKeys();
 
   if (provider === "openai") {
@@ -241,7 +288,7 @@ export async function isProviderConfigured(
  * Gets the current active provider
  */
 export async function getActiveProvider(): Promise<
-  "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE"
+  "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE" | "OLLAMA"
 > {
   const apiKeys = await getApiKeys();
   return apiKeys.activeProvider;

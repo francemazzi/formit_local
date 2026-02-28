@@ -196,6 +196,7 @@ enum AiProvider {
   OPENAI
   ANTHROPIC_CLAUDE   // Direct Anthropic API (console.anthropic.com)
   BEDROCK_CLAUDE     // AWS Bedrock
+  OLLAMA             // Local LLM via Ollama (no API key needed)
 }
 
 // Singleton model for storing API keys
@@ -217,6 +218,10 @@ model ApiKey {
   awsSecretAccessKey String?
   awsRegion          String?
 
-  // Provider selection (default to OpenAI for backward compatibility)
-  activeProvider     AiProvider @default(OPENAI)
+  // Ollama (local LLM) configuration
+  ollamaBaseUrl      String?
+  ollamaModel        String?
+
+  // Provider selection (default to Ollama for zero-config local usage)
+  activeProvider     AiProvider @default(OLLAMA)
 }

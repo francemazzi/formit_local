@@ -103,7 +103,7 @@ class UpdateController {
           fastify.log.error("Error checking for updates:", error);
           throw {
             statusCode: 500,
-            message: "Errore nel controllo aggiornamenti: " + error.message,
+            message: "Errore nel controllo aggiornamenti",
           };
         }
       }
@@ -193,7 +193,7 @@ class UpdateController {
           fastify.log.error("Error updating application:", error);
           throw {
             statusCode: 500,
-            message: "Errore durante l'aggiornamento: " + error.message,
+            message: "Errore durante l'aggiornamento",
           };
         }
       }
@@ -253,7 +253,7 @@ class UpdateController {
           fastify.log.error("Error during maintenance cleanup:", error);
           throw {
             statusCode: 500,
-            message: "Errore durante la pulizia: " + error.message,
+            message: "Errore durante la pulizia",
           };
         }
       }

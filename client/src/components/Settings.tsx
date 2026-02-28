@@ -40,6 +40,8 @@ export function Settings({ onClose }: SettingsProps) {
   const [awsSecretAccessKey, setAwsSecretAccessKey] = useState("");
   const [awsRegion, setAwsRegion] = useState("us-east-1");
   const [awsConfigured, setAwsConfigured] = useState(false);
+  const [ollamaBaseUrl, setOllamaBaseUrl] = useState("http://host.docker.internal:11434");
+  const [ollamaModel, setOllamaModel] = useState("qwen2.5:3b");
   const [isSavingProvider, setIsSavingProvider] = useState(false);
   const [providerSuccess, setProviderSuccess] = useState(false);
 
@@ -80,6 +82,12 @@ export function Settings({ onClose }: SettingsProps) {
       }
       if (config.awsRegion) {
         setAwsRegion(config.awsRegion);
+      }
+      if (config.ollamaBaseUrl) {
+        setOllamaBaseUrl(config.ollamaBaseUrl);
+      }
+      if (config.ollamaModel) {
+        setOllamaModel(config.ollamaModel);
       }
     } catch (err: any) {
       setError(
@@ -134,6 +142,27 @@ export function Settings({ onClose }: SettingsProps) {
       setError(
         err.response?.data?.error ||
           "Errore nel salvataggio della chiave Claude",
+      );
+    } finally {
+      setIsSavingProvider(false);
+    }
+  };
+
+  const handleSaveOllamaConfig = async () => {
+    setIsSavingProvider(true);
+    setError(null);
+    try {
+      await apiKeysApi.updateOllamaConfig({
+        ollamaBaseUrl: ollamaBaseUrl.trim() || null,
+        ollamaModel: ollamaModel.trim() || null,
+      });
+      await loadProviders();
+      setProviderSuccess(true);
+      setTimeout(() => setProviderSuccess(false), 2000);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.error ||
+          "Errore nel salvataggio della configurazione Ollama",
       );
     } finally {
       setIsSavingProvider(false);
@@ -633,6 +662,60 @@ export function Settings({ onClose }: SettingsProps) {
             </div>
             <p className="settings-credentials-hint">
               Richiede accesso a Claude su AWS Bedrock nella regione specificata
+            </p>
+          </div>
+
+          {/* Ollama (Local) Configuration */}
+          <div className="settings-credentials-section">
+            <div className="settings-credentials-header">
+              <h4>Ollama (Locale)</h4>
+              <span className="badge-configured" style={{ color: "var(--color-satisfactory)" }}>
+                Sempre disponibile
+              </span>
+            </div>
+            <div className="settings-field-group">
+              <label className="settings-field-label" htmlFor="ollama-base-url">
+                URL Base
+              </label>
+              <input
+                id="ollama-base-url"
+                type="text"
+                className="settings-credential-input"
+                value={ollamaBaseUrl}
+                onChange={(e) => setOllamaBaseUrl(e.target.value)}
+                placeholder="http://host.docker.internal:11434"
+                disabled={isSavingProvider}
+              />
+            </div>
+            <div className="settings-field-group">
+              <label className="settings-field-label" htmlFor="ollama-model">
+                Modello
+              </label>
+              <div className="settings-input-row">
+                <input
+                  id="ollama-model"
+                  type="text"
+                  className="settings-credential-input"
+                  value={ollamaModel}
+                  onChange={(e) => setOllamaModel(e.target.value)}
+                  placeholder="qwen2.5:3b"
+                  disabled={isSavingProvider}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary btn-save-credential"
+                  onClick={handleSaveOllamaConfig}
+                  disabled={isSavingProvider}
+                  title="Salva configurazione Ollama"
+                >
+                  <Save size={16} />
+                </button>
+              </div>
+            </div>
+            <p className="settings-credentials-hint">
+              Modello AI locale, non richiede chiavi API. Consigliati per RPi
+              8GB: qwen2.5:3b, phi3:mini, gemma2:2b. OCR/visione non
+              disponibile.
             </p>
           </div>
         </div>
