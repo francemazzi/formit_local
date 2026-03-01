@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { X, Key, ExternalLink, Loader2 } from "lucide-react";
+import { X, Key, ExternalLink, Loader2, AlertTriangle } from "lucide-react";
 import { envSetupApi, apiKeysApi, type AiProvider } from "../api/apiKeys";
 
 interface ApiKeySetupModalProps {
   onClose: () => void;
   onSuccess: () => void;
+  ollamaAvailable?: boolean;
 }
 
-type ProviderOption = "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE";
+type ProviderOption = "OLLAMA" | "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE";
 
-export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) {
-  const [selectedProvider, setSelectedProvider] = useState<ProviderOption>("OPENAI");
+export function ApiKeySetupModal({ onClose, onSuccess, ollamaAvailable = true }: ApiKeySetupModalProps) {
+  const [selectedProvider, setSelectedProvider] = useState<ProviderOption>(ollamaAvailable ? "OLLAMA" : "OPENAI");
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [claudeApiKey, setClaudeApiKey] = useState("");
   const [awsAccessKeyId, setAwsAccessKeyId] = useState("");
@@ -26,8 +27,11 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
     setError(null);
 
     try {
-      // First, setup Tavily key using env setup (for backward compatibility)
-      if (selectedProvider === "OPENAI") {
+      if (selectedProvider === "OLLAMA") {
+        // Just set active provider to Ollama, no keys needed
+        await apiKeysApi.setActiveProvider("OLLAMA");
+      } else if (selectedProvider === "OPENAI") {
+        // First, setup Tavily key using env setup (for backward compatibility)
         await envSetupApi.setup({
           openaiApiKey: openaiApiKey.trim(),
           tavilyApiKey: tavilyApiKey.trim(),
@@ -59,7 +63,9 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
   };
 
   const isFormValid = () => {
-    // Tavily API key is optional - only validate the AI provider credentials
+    if (selectedProvider === "OLLAMA") {
+      return true; // No keys needed
+    }
     if (selectedProvider === "OPENAI") {
       return openaiApiKey.trim().length > 0;
     }
@@ -71,6 +77,17 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
     }
     return false;
   };
+
+  const providerStyle = (id: ProviderOption) => ({
+    display: "flex" as const,
+    alignItems: "center" as const,
+    gap: "0.5rem",
+    padding: "0.75rem",
+    border: `1px solid ${selectedProvider === id ? "var(--accent-primary)" : "var(--border-primary)"}`,
+    borderRadius: "var(--border-radius-sm)",
+    cursor: "pointer" as const,
+    background: selectedProvider === id ? "rgba(59, 130, 246, 0.1)" : "transparent",
+  });
 
   return (
     <div className="modal-overlay">
@@ -90,8 +107,9 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
           marginBottom: "1.5rem",
           lineHeight: "1.5"
         }}>
-          Per utilizzare l'applicazione è necessario configurare le chiavi API.
-          Inserisci le tue chiavi per procedere.
+          {ollamaAvailable
+            ? "Seleziona un provider AI. Puoi procedere senza API key usando il modello locale, oppure configura un provider cloud per risultati migliori."
+            : "Il server Ollama locale non è raggiungibile. Configura una API key cloud per procedere."}
         </p>
 
         {error && (
@@ -106,18 +124,31 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
           <div className="form-group">
             <label>Seleziona Provider AI</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.5rem" }}>
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.75rem",
-                  border: `1px solid ${selectedProvider === "OPENAI" ? "var(--accent-primary)" : "var(--border-primary)"}`,
-                  borderRadius: "var(--border-radius-sm)",
-                  cursor: "pointer",
-                  background: selectedProvider === "OPENAI" ? "rgba(59, 130, 246, 0.1)" : "transparent",
-                }}
-              >
+              {/* Ollama - first, default when available */}
+              <label style={{
+                ...providerStyle("OLLAMA"),
+                opacity: ollamaAvailable ? 1 : 0.5,
+                cursor: ollamaAvailable ? "pointer" : "not-allowed",
+              }}>
+                <input
+                  type="radio"
+                  name="provider"
+                  value="OLLAMA"
+                  checked={selectedProvider === "OLLAMA"}
+                  onChange={() => setSelectedProvider("OLLAMA")}
+                  disabled={isSaving || !ollamaAvailable}
+                />
+                <div>
+                  <strong>Modello locale (Ollama)</strong>
+                  <small style={{ display: "block", color: "var(--text-secondary)" }}>
+                    {ollamaAvailable
+                      ? "Nessuna API key richiesta - qualità ridotta, no OCR"
+                      : "Server Ollama non raggiungibile - configura una API key cloud"}
+                  </small>
+                </div>
+              </label>
+
+              <label style={providerStyle("OPENAI")}>
                 <input
                   type="radio"
                   name="provider"
@@ -132,18 +163,7 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
                 </div>
               </label>
 
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.75rem",
-                  border: `1px solid ${selectedProvider === "ANTHROPIC_CLAUDE" ? "var(--accent-primary)" : "var(--border-primary)"}`,
-                  borderRadius: "var(--border-radius-sm)",
-                  cursor: "pointer",
-                  background: selectedProvider === "ANTHROPIC_CLAUDE" ? "rgba(59, 130, 246, 0.1)" : "transparent",
-                }}
-              >
+              <label style={providerStyle("ANTHROPIC_CLAUDE")}>
                 <input
                   type="radio"
                   name="provider"
@@ -158,18 +178,7 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
                 </div>
               </label>
 
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.75rem",
-                  border: `1px solid ${selectedProvider === "BEDROCK_CLAUDE" ? "var(--accent-primary)" : "var(--border-primary)"}`,
-                  borderRadius: "var(--border-radius-sm)",
-                  cursor: "pointer",
-                  background: selectedProvider === "BEDROCK_CLAUDE" ? "rgba(59, 130, 246, 0.1)" : "transparent",
-                }}
-              >
+              <label style={providerStyle("BEDROCK_CLAUDE")}>
                 <input
                   type="radio"
                   name="provider"
@@ -185,6 +194,31 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
               </label>
             </div>
           </div>
+
+          {/* Ollama warning */}
+          {selectedProvider === "OLLAMA" && (
+            <div
+              style={{
+                background: "rgba(251, 191, 36, 0.1)",
+                border: "1px solid rgba(251, 191, 36, 0.3)",
+                borderRadius: "var(--border-radius-sm)",
+                padding: "0.75rem 1rem",
+                marginBottom: "1rem",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.5rem",
+                fontSize: "0.85rem",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <AlertTriangle size={16} style={{ color: "#fbbf24", flexShrink: 0, marginTop: "2px" }} />
+              <span>
+                Il modello locale offre qualità ridotta rispetto ai provider cloud.
+                OCR e visione non sono disponibili. Puoi configurare una API key
+                in qualsiasi momento dalle Impostazioni.
+              </span>
+            </div>
+          )}
 
           {/* OpenAI API Key */}
           {selectedProvider === "OPENAI" && (
@@ -318,37 +352,39 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
             </>
           )}
 
-          {/* Tavily API Key (optional) */}
-          <div className="form-group">
-            <label htmlFor="tavilyApiKey">
-              Tavily API Key (opzionale - per ricerca normative online)
-              <a
-                href="https://tavily.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  marginLeft: "0.5rem",
-                  color: "var(--accent-primary)",
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.25rem",
-                  fontSize: "0.85rem",
-                }}
-              >
-                Ottieni chiave
-                <ExternalLink size={14} />
-              </a>
-            </label>
-            <input
-              id="tavilyApiKey"
-              type="password"
-              value={tavilyApiKey}
-              onChange={(e) => setTavilyApiKey(e.target.value)}
-              placeholder="tvly-..."
-              disabled={isSaving}
-            />
-          </div>
+          {/* Tavily API Key (optional, only for cloud providers) */}
+          {selectedProvider !== "OLLAMA" && (
+            <div className="form-group">
+              <label htmlFor="tavilyApiKey">
+                Tavily API Key (opzionale - per ricerca normative online)
+                <a
+                  href="https://tavily.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    marginLeft: "0.5rem",
+                    color: "var(--accent-primary)",
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Ottieni chiave
+                  <ExternalLink size={14} />
+                </a>
+              </label>
+              <input
+                id="tavilyApiKey"
+                type="password"
+                value={tavilyApiKey}
+                onChange={(e) => setTavilyApiKey(e.target.value)}
+                placeholder="tvly-..."
+                disabled={isSaving}
+              />
+            </div>
+          )}
 
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose} disabled={isSaving}>
@@ -364,6 +400,8 @@ export function ApiKeySetupModal({ onClose, onSuccess }: ApiKeySetupModalProps) 
                   <Loader2 size={16} className="spin" />
                   Configurazione...
                 </>
+              ) : selectedProvider === "OLLAMA" ? (
+                "Continua senza API key"
               ) : (
                 "Configura e Procedi"
               )}

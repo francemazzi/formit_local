@@ -134,6 +134,8 @@ export interface EnvStatus {
   hasTavilyKey: boolean;
   hasDatabaseUrl: boolean;
   isConfigured: boolean;
+  activeProvider: AiProvider;
+  ollamaAvailable: boolean;
 }
 
 export interface EnvSetupInput {

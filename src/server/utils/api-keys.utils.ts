@@ -149,13 +149,35 @@ export async function getClaudeApiKey(): Promise<string | null> {
 }
 
 /**
+ * Checks if the Ollama server is reachable
+ */
+export async function isOllamaReachable(): Promise<boolean> {
+  try {
+    const keys = await getApiKeys();
+    const baseUrl = keys.ollamaBaseUrl || process.env.OLLAMA_BASE_URL || "http://host.docker.internal:11434";
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+
+    const response = await fetch(`${baseUrl}/api/tags`, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Checks if a provider is properly configured
  */
 export async function isProviderConfigured(
   provider: "openai" | "anthropic" | "bedrock" | "ollama"
 ): Promise<boolean> {
   if (provider === "ollama") {
-    return true; // Ollama doesn't need API keys
+    return isOllamaReachable();
   }
 
   const keys = await getApiKeys();

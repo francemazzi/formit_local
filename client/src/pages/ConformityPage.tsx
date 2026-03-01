@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Info, X, Database, Upload, Loader2 } from "lucide-react";
+import { Info, X, Database, Upload, Loader2, AlertTriangle } from "lucide-react";
 import { PdfDropZone } from "../components/PdfDropZone";
 import { ResultsDisplay } from "../components/ResultsDisplay";
 import { ExtractionsList } from "../components/ExtractionsList";
@@ -11,7 +11,7 @@ import {
   type JobStatusResponse,
   type PdfCheckResult,
 } from "../api/conformityPdf";
-import { envSetupApi } from "../api/apiKeys";
+import { envSetupApi, type AiProvider } from "../api/apiKeys";
 import { useAuth } from "../context/AuthContext";
 
 interface ConformityPageProps {
@@ -36,7 +36,17 @@ export function ConformityPage({
   const [viewMode, setViewMode] = useState<ViewMode>("upload");
   const [showApiKeySetup, setShowApiKeySetup] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [activeProvider, setActiveProvider] = useState<AiProvider | null>(null);
+  const [ollamaAvailable, setOllamaAvailable] = useState(true);
   const pollingIntervalRef = useRef<number | null>(null);
+
+  // Load active provider and Ollama status on mount
+  useEffect(() => {
+    envSetupApi.getStatus().then((status) => {
+      setActiveProvider(status.activeProvider);
+      setOllamaAvailable(status.ollamaAvailable);
+    }).catch(() => {});
+  }, []);
 
   const pollJobStatus = async (jobId: string) => {
     try {
@@ -159,6 +169,8 @@ export function ConformityPage({
     try {
       // Check if API keys are configured
       const envStatus = await envSetupApi.getStatus();
+      setOllamaAvailable(envStatus.ollamaAvailable);
+      setActiveProvider(envStatus.activeProvider);
 
       if (!envStatus.isConfigured) {
         // Store files for later and show setup modal
@@ -237,6 +249,30 @@ export function ConformityPage({
         <div className="error-banner">
           <span>{error}</span>
           <button onClick={() => setError(null)}>×</button>
+        </div>
+      )}
+
+      {activeProvider === "OLLAMA" && (
+        <div
+          style={{
+            background: "rgba(251, 191, 36, 0.1)",
+            border: "1px solid rgba(251, 191, 36, 0.3)",
+            borderRadius: "var(--border-radius-sm)",
+            padding: "0.75rem 1rem",
+            margin: "0 1rem 1rem",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.5rem",
+            fontSize: "0.85rem",
+            color: "var(--text-secondary)",
+          }}
+        >
+          <AlertTriangle size={16} style={{ color: "#fbbf24", flexShrink: 0, marginTop: "2px" }} />
+          <span>
+            Stai usando il modello locale (Ollama). La qualità dell'estrazione è ridotta rispetto ai provider cloud.
+            OCR/visione non disponibile.{" "}
+            <strong>Per risultati migliori, configura una API key nelle Impostazioni.</strong>
+          </span>
         </div>
       )}
 
@@ -354,6 +390,7 @@ export function ConformityPage({
         <ApiKeySetupModal
           onClose={handleApiKeySetupClose}
           onSuccess={handleApiKeySetupSuccess}
+          ollamaAvailable={ollamaAvailable}
         />
       )}
 
