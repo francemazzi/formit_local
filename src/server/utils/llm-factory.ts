@@ -84,7 +84,7 @@ async function createOpenAILLM(
   }
 
   const model = new ChatOpenAI({
-    openAIApiKey: apiKeys.openaiApiKey,
+    apiKey: apiKeys.openaiApiKey,
     modelName,
     temperature: config.temperature ?? 0,
     ...(config.maxTokens !== undefined && { maxTokens: config.maxTokens }),
@@ -109,7 +109,7 @@ async function createAnthropicLLM(
   }
 
   const model = new ChatAnthropic({
-    anthropicApiKey: apiKeys.claudeApiKey,
+    apiKey: apiKeys.claudeApiKey,
     modelName,
     temperature: config.temperature ?? 0,
     ...(config.maxTokens !== undefined && { maxTokens: config.maxTokens }),
