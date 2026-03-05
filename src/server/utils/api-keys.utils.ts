@@ -1,5 +1,6 @@
 import { getDatabaseClient } from "../prisma.client";
 import { decryptOrNull } from "./crypto.utils";
+import { getCurrentUserId } from "./processing-context";
 
 export type AiProviderType = "OPENAI" | "ANTHROPIC_CLAUDE" | "BEDROCK_CLAUDE" | "OLLAMA";
 
@@ -20,15 +21,64 @@ const DEFAULT_AWS_REGION = "us-east-1";
 const isProduction = () => process.env.NODE_ENV === "production";
 
 /**
- * Retrieves API keys and provider configuration from the database.
- * In development, falls back to environment variables if not found in database.
- * In production, requires database to be available (no env fallback).
+ * Retrieves per-user API keys from the database.
+ * Returns null if the user has no keys configured.
+ */
+async function getUserApiKeys(userId: string): Promise<ApiKeyConfig | null> {
+  const prisma = getDatabaseClient();
+
+  try {
+    const userKeys = await prisma.userApiKey.findUnique({
+      where: { userId },
+    });
+
+    if (!userKeys) return null;
+
+    // Check if the user has any actual keys configured
+    const hasAnyKey = !!(
+      decryptOrNull(userKeys.openaiApiKey) ||
+      decryptOrNull(userKeys.claudeApiKey) ||
+      decryptOrNull(userKeys.awsAccessKeyId) ||
+      decryptOrNull(userKeys.tavilyApiKey)
+    );
+
+    if (!hasAnyKey && !userKeys.activeProvider) return null;
+
+    return {
+      tavilyApiKey: decryptOrNull(userKeys.tavilyApiKey),
+      openaiApiKey: decryptOrNull(userKeys.openaiApiKey),
+      claudeApiKey: decryptOrNull(userKeys.claudeApiKey),
+      awsAccessKeyId: decryptOrNull(userKeys.awsAccessKeyId),
+      awsSecretAccessKey: decryptOrNull(userKeys.awsSecretAccessKey),
+      awsRegion: userKeys.awsRegion ?? DEFAULT_AWS_REGION,
+      ollamaBaseUrl: null,
+      ollamaModel: null,
+      activeProvider: (userKeys.activeProvider as AiProviderType) ?? "OLLAMA",
+    };
+  } catch (error) {
+    console.warn("[api-keys] Failed to retrieve user API keys:", error);
+    return null;
+  }
+}
+
+/**
+ * Retrieves API keys and provider configuration.
+ * Priority: per-user keys (from AsyncLocalStorage context) > global keys > env vars (dev only).
  */
 export async function getApiKeys(): Promise<ApiKeyConfig> {
   const prisma = getDatabaseClient();
 
+  // Check for per-user keys via processing context
+  const userId = getCurrentUserId();
+  if (userId) {
+    const userKeys = await getUserApiKeys(userId);
+    if (userKeys) {
+      return userKeys;
+    }
+  }
+
   try {
-    // Try to get API keys from database
+    // Try to get global API keys from database
     const apiKeys = await prisma.apiKey.findUnique({
       where: { id: "singleton" },
     });
@@ -99,6 +149,11 @@ export async function getApiKeys(): Promise<ApiKeyConfig> {
     };
   }
 }
+
+/**
+ * Retrieves per-user API keys for a specific user (used by endpoints).
+ */
+export { getUserApiKeys };
 
 /**
  * Gets Tavily API key from database (or environment variable as fallback)

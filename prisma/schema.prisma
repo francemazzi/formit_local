@@ -37,6 +37,7 @@ model User {
 
   refreshTokens RefreshToken[]
   extractions   PdfExtraction[]
+  apiKeys       UserApiKey?
 
   @@index([email])
 }
@@ -224,4 +225,31 @@ model ApiKey {
 
   // Provider selection (default to Ollama for zero-config local usage)
   activeProvider     AiProvider @default(OLLAMA)
+}
+
+// Per-user API keys (users can store their own keys)
+model UserApiKey {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // API keys for external services
+  tavilyApiKey  String?
+  openaiApiKey  String?
+
+  // Anthropic API (direct) configuration
+  claudeApiKey       String?
+
+  // AWS Bedrock configuration
+  awsAccessKeyId     String?
+  awsSecretAccessKey String?
+  awsRegion          String?
+
+  // Provider selection (null = use global default)
+  activeProvider     AiProvider?
+
+  @@index([userId])
 }

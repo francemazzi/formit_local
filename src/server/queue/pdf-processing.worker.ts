@@ -5,6 +5,7 @@ import { PdfProcessingJobData, PdfProcessingJobResult } from "./pdf-processing.q
 import { checksWithOptions, ComplianceResult } from "../modules/checks";
 import { extractTextFromPdf } from "../modules/extract_text_from_pdf";
 import { getDatabaseClient } from "../prisma.client";
+import { runWithUserId } from "../utils/processing-context";
 
 const PDF_STORAGE_DIR = path.resolve(process.cwd(), "uploads", "pdfs");
 
@@ -120,105 +121,114 @@ export class PdfProcessingWorker {
       async (job: Job<PdfProcessingJobData, PdfProcessingJobResult>) => {
         const { fileName, filePath, forceOcr, existingExtractionId, userId } = job.data;
 
-        console.log(`[Worker] Processing PDF: ${fileName} (Job ID: ${job.id})${forceOcr ? " [FORCE OCR]" : ""}`);
+        // Wrap processing in user context so getApiKeys() resolves per-user keys
+        const processJob = async (): Promise<PdfProcessingJobResult> => {
+          console.log(`[Worker] Processing PDF: ${fileName} (Job ID: ${job.id})${forceOcr ? " [FORCE OCR]" : ""}`);
 
-        try {
-          // Update progress
-          await job.updateProgress(10);
+          try {
+            // Update progress
+            await job.updateProgress(10);
 
-          // Extract text from PDF
-          const textObjects = await extractTextFromPdf(filePath);
-          await job.updateProgress(30);
+            // Extract text from PDF
+            const textObjects = await extractTextFromPdf(filePath);
+            await job.updateProgress(30);
 
-          // Matrix and analyses extraction is handled by checksWithOptions
-          await job.updateProgress(50);
+            // Matrix and analyses extraction is handled by checksWithOptions
+            await job.updateProgress(50);
 
-          // Run compliance checks - this may use OCR fallback for corrupted PDFs or when forceOcr is true
-          const checkResult = await checksWithOptions(textObjects, {
-            fallbackToCustom: true,
-            pdfPath: filePath,
-            forceOcr: forceOcr ?? false,
-          });
-          await job.updateProgress(80);
-
-          // Use effective data from checksWithOptions (OCR data if fallback was triggered)
-          const effectiveTextObjects = checkResult.effectiveTextObjects;
-          const effectiveMatrix = checkResult.effectiveMatrix;
-          const effectiveAnalyses = checkResult.effectiveAnalyses;
-
-          if (checkResult.usedOcrFallback) {
-            console.log(`[Worker] OCR fallback was used for ${fileName} - saving OCR-extracted data`);
-          }
-
-          // Save or update extraction in database
-          let extractionId: string | null = null;
-          if (existingExtractionId) {
-            // Update existing extraction (reprocessing)
-            const updated = await updateExtractionInDatabase(existingExtractionId, {
-              textObjects: effectiveTextObjects,
-              matrix: effectiveMatrix,
-              analyses: effectiveAnalyses,
-              results: checkResult.results,
-              success: true,
-              ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
+            // Run compliance checks - this may use OCR fallback for corrupted PDFs or when forceOcr is true
+            const checkResult = await checksWithOptions(textObjects, {
+              fallbackToCustom: true,
+              pdfPath: filePath,
+              forceOcr: forceOcr ?? false,
             });
-            if (updated) {
-              extractionId = existingExtractionId;
-              console.log(`[Worker] Updated existing extraction: ${existingExtractionId}`);
+            await job.updateProgress(80);
+
+            // Use effective data from checksWithOptions (OCR data if fallback was triggered)
+            const effectiveTextObjects = checkResult.effectiveTextObjects;
+            const effectiveMatrix = checkResult.effectiveMatrix;
+            const effectiveAnalyses = checkResult.effectiveAnalyses;
+
+            if (checkResult.usedOcrFallback) {
+              console.log(`[Worker] OCR fallback was used for ${fileName} - saving OCR-extracted data`);
             }
-          } else {
-            // Create new extraction
-            extractionId = await saveExtractionToDatabase({
+
+            // Save or update extraction in database
+            let extractionId: string | null = null;
+            if (existingExtractionId) {
+              // Update existing extraction (reprocessing)
+              const updated = await updateExtractionInDatabase(existingExtractionId, {
+                textObjects: effectiveTextObjects,
+                matrix: effectiveMatrix,
+                analyses: effectiveAnalyses,
+                results: checkResult.results,
+                success: true,
+                ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
+              });
+              if (updated) {
+                extractionId = existingExtractionId;
+                console.log(`[Worker] Updated existing extraction: ${existingExtractionId}`);
+              }
+            } else {
+              // Create new extraction
+              extractionId = await saveExtractionToDatabase({
+                fileName,
+                textObjects: effectiveTextObjects,
+                matrix: effectiveMatrix,
+                analyses: effectiveAnalyses,
+                results: checkResult.results,
+                success: true,
+                ...(userId && { userId }),
+                ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
+              });
+            }
+            // Persist the PDF file for later viewing
+            if (extractionId) {
+              await persistPdfFile(filePath, extractionId);
+            }
+            await job.updateProgress(100);
+
+            // Cleanup temp file
+            await cleanupTempFile(filePath);
+
+            const result: PdfProcessingJobResult = {
               fileName,
-              textObjects: effectiveTextObjects,
-              matrix: effectiveMatrix,
-              analyses: effectiveAnalyses,
-              results: checkResult.results,
               success: true,
-              ...(userId && { userId }),
+              ...(extractionId && { extractionId }),
+              results: checkResult.results,
               ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
+            };
+
+            console.log(`[Worker] Successfully processed: ${fileName}`);
+            return result;
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+            // Save failed extraction to database
+            await saveExtractionToDatabase({
+              fileName,
+              textObjects: [],
+              matrix: null,
+              analyses: [],
+              results: [],
+              success: false,
+              error: errorMessage,
+              ...(userId && { userId }),
             });
+
+            // Cleanup temp file
+            await cleanupTempFile(filePath);
+
+            console.error(`[Worker] Failed to process ${fileName}:`, errorMessage);
+            throw error;
           }
-          // Persist the PDF file for later viewing
-          if (extractionId) {
-            await persistPdfFile(filePath, extractionId);
-          }
-          await job.updateProgress(100);
+        };
 
-          // Cleanup temp file
-          await cleanupTempFile(filePath);
-
-          const result: PdfProcessingJobResult = {
-            fileName,
-            success: true,
-            ...(extractionId && { extractionId }),
-            results: checkResult.results,
-            ...(checkResult.diagnostics && { diagnostics: checkResult.diagnostics }),
-          };
-
-          console.log(`[Worker] Successfully processed: ${fileName}`);
-          return result;
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-          // Save failed extraction to database
-          await saveExtractionToDatabase({
-            fileName,
-            textObjects: [],
-            matrix: null,
-            analyses: [],
-            results: [],
-            success: false,
-            error: errorMessage,
-            ...(userId && { userId }),
-          });
-
-          // Cleanup temp file
-          await cleanupTempFile(filePath);
-
-          console.error(`[Worker] Failed to process ${fileName}:`, errorMessage);
-          throw error;
+        // Run with user context if userId is available
+        if (userId) {
+          return runWithUserId(userId, processJob) as Promise<PdfProcessingJobResult>;
         }
+        return processJob();
       },
       {
         connection,

@@ -125,6 +125,27 @@ export const apiKeysApi = {
 };
 
 // ========================================
+// User API Keys API (per-user, no admin required)
+// ========================================
+
+export const userApiKeysApi = {
+  get: async (): Promise<UserApiKeysConfig> => {
+    const response = await api.get<UserApiKeysConfig>("/api-keys/user");
+    return response.data;
+  },
+
+  update: async (data: UpdateUserApiKeysInput): Promise<{ success: boolean }> => {
+    const response = await api.put<{ success: boolean }>("/api-keys/user", data);
+    return response.data;
+  },
+
+  remove: async (): Promise<{ success: boolean }> => {
+    const response = await api.delete<{ success: boolean }>("/api-keys/user");
+    return response.data;
+  },
+};
+
+// ========================================
 // Env Setup Types
 // ========================================
 
@@ -136,6 +157,32 @@ export interface EnvStatus {
   isConfigured: boolean;
   activeProvider: AiProvider;
   ollamaAvailable: boolean;
+  userHasKeys: boolean;
+}
+
+// ========================================
+// User API Keys Types
+// ========================================
+
+export interface UserApiKeysConfig {
+  hasKeys: boolean;
+  tavilyApiKey: string | null;
+  openaiApiKey: string | null;
+  claudeApiKey: string | null;
+  awsAccessKeyId: string | null;
+  awsSecretAccessKey: string | null;
+  awsRegion: string | null;
+  activeProvider: AiProvider | null;
+}
+
+export interface UpdateUserApiKeysInput {
+  tavilyApiKey?: string | null;
+  openaiApiKey?: string | null;
+  claudeApiKey?: string | null;
+  awsAccessKeyId?: string | null;
+  awsSecretAccessKey?: string | null;
+  awsRegion?: string | null;
+  activeProvider?: AiProvider | null;
 }
 
 export interface EnvSetupInput {

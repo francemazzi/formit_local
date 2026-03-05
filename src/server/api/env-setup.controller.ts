@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { existsSync, writeFileSync, readFileSync } from "fs";
 import { join } from "path";
 import { requireAuth } from "../auth/auth.middleware";
-import { isProviderConfigured, getActiveProvider, isOllamaReachable } from "../utils/api-keys.utils";
+import { isProviderConfigured, getActiveProvider, isOllamaReachable, getUserApiKeys } from "../utils/api-keys.utils";
 
 interface EnvSetupBody {
   openaiApiKey: string;
@@ -17,6 +17,7 @@ interface EnvStatus {
   isConfigured: boolean;
   activeProvider: string;
   ollamaAvailable: boolean;
+  userHasKeys: boolean;
 }
 
 export class EnvSetupController {
@@ -82,6 +83,7 @@ OPENAI_API_KEY=${openaiApiKey}
                 isConfigured: { type: "boolean" },
                 activeProvider: { type: "string" },
                 ollamaAvailable: { type: "boolean" },
+                userHasKeys: { type: "boolean" },
               },
             },
           },
@@ -117,15 +119,24 @@ OPENAI_API_KEY=${openaiApiKey}
           const providerType = providerTypeMap[activeProvider] || "ollama";
           const providerReady = await isProviderConfigured(providerType);
 
+          // Check if user has their own API keys
+          const userId = request.user?.userId;
+          let userHasKeys = false;
+          if (userId) {
+            const userKeys = await getUserApiKeys(userId);
+            userHasKeys = userKeys !== null;
+          }
+
           const status: EnvStatus = {
             exists,
             hasOpenaiKey,
             hasTavilyKey,
             hasDatabaseUrl,
-            // Configured if the active provider is ready (Ollama must be reachable)
-            isConfigured: providerReady,
+            // Always configured: Ollama is the default fallback, or user/global keys exist
+            isConfigured: providerReady || userHasKeys || ollamaAvailable,
             activeProvider,
             ollamaAvailable,
+            userHasKeys,
           };
 
           return reply.send(status);

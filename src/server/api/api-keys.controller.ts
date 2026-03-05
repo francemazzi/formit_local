@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { getDatabaseClient } from "../prisma.client";
-import { isProviderConfigured } from "../utils/api-keys.utils";
+import { isProviderConfigured, getUserApiKeys } from "../utils/api-keys.utils";
 import type { AiProvider } from "@prisma/client";
 import { requireAuth, requireAdmin } from "../auth/auth.middleware";
 import { encryptOrNull, decryptOrNull } from "../utils/crypto.utils";
@@ -596,6 +596,247 @@ export class ApiKeysController {
         } catch (error) {
           request.log.error(error);
           return reply.status(500).send({ error: "Failed to update Ollama configuration" });
+        }
+      }
+    );
+
+    // ========================================
+    // Per-User API Key Endpoints (no admin required)
+    // ========================================
+
+    // GET /api-keys/user - Get current user's own API keys (masked)
+    fastify.get(
+      "/api-keys/user",
+      {
+        schema: {
+          description: "Retrieve current user's own API keys configuration (keys are masked for security)",
+          tags: ["Settings"],
+          summary: "Get user API keys",
+          response: {
+            200: {
+              description: "User API keys configuration",
+              type: "object",
+              properties: {
+                hasKeys: { type: "boolean" },
+                tavilyApiKey: { type: "string", nullable: true },
+                openaiApiKey: { type: "string", nullable: true },
+                claudeApiKey: { type: "string", nullable: true },
+                awsAccessKeyId: { type: "string", nullable: true },
+                awsSecretAccessKey: { type: "string", nullable: true },
+                awsRegion: { type: "string", nullable: true },
+                activeProvider: { type: "string", nullable: true },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const prisma = getDatabaseClient();
+        const userId = request.user!.userId;
+
+        try {
+          const userKeys = await prisma.userApiKey.findUnique({
+            where: { userId },
+          });
+
+          if (!userKeys) {
+            return reply.send({
+              hasKeys: false,
+              tavilyApiKey: null,
+              openaiApiKey: null,
+              claudeApiKey: null,
+              awsAccessKeyId: null,
+              awsSecretAccessKey: null,
+              awsRegion: null,
+              activeProvider: null,
+            });
+          }
+
+          return reply.send({
+            hasKeys: true,
+            tavilyApiKey: maskKey(decryptOrNull(userKeys.tavilyApiKey)),
+            openaiApiKey: maskKey(decryptOrNull(userKeys.openaiApiKey)),
+            claudeApiKey: maskKey(decryptOrNull(userKeys.claudeApiKey)),
+            awsAccessKeyId: maskKey(decryptOrNull(userKeys.awsAccessKeyId)),
+            awsSecretAccessKey: maskKey(decryptOrNull(userKeys.awsSecretAccessKey)),
+            awsRegion: userKeys.awsRegion ?? null,
+            activeProvider: userKeys.activeProvider ?? null,
+          });
+        } catch (error) {
+          request.log.error(error);
+          return reply.status(500).send({ error: "Failed to retrieve user API keys" });
+        }
+      }
+    );
+
+    // PUT /api-keys/user - Update current user's own API keys
+    fastify.put<{
+      Body: {
+        tavilyApiKey?: string;
+        openaiApiKey?: string;
+        claudeApiKey?: string;
+        awsAccessKeyId?: string;
+        awsSecretAccessKey?: string;
+        awsRegion?: string;
+        activeProvider?: string;
+      };
+    }>(
+      "/api-keys/user",
+      {
+        schema: {
+          description: "Update current user's own API keys",
+          tags: ["Settings"],
+          summary: "Update user API keys",
+          body: {
+            type: "object",
+            properties: {
+              tavilyApiKey: { type: "string", nullable: true },
+              openaiApiKey: { type: "string", nullable: true },
+              claudeApiKey: { type: "string", nullable: true },
+              awsAccessKeyId: { type: "string", nullable: true },
+              awsSecretAccessKey: { type: "string", nullable: true },
+              awsRegion: { type: "string", nullable: true },
+              activeProvider: { type: "string", enum: ["OPENAI", "ANTHROPIC_CLAUDE", "BEDROCK_CLAUDE", "OLLAMA"], nullable: true },
+            },
+          },
+          response: {
+            200: {
+              description: "User API keys updated successfully",
+              type: "object",
+              properties: {
+                success: { type: "boolean" },
+                tavilyApiKey: { type: "string", nullable: true },
+                openaiApiKey: { type: "string", nullable: true },
+                claudeApiKey: { type: "string", nullable: true },
+                awsAccessKeyId: { type: "string", nullable: true },
+                activeProvider: { type: "string", nullable: true },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest<{
+        Body: {
+          tavilyApiKey?: string;
+          openaiApiKey?: string;
+          claudeApiKey?: string;
+          awsAccessKeyId?: string;
+          awsSecretAccessKey?: string;
+          awsRegion?: string;
+          activeProvider?: string;
+        };
+      }>, reply: FastifyReply) => {
+        const prisma = getDatabaseClient();
+        const userId = request.user!.userId;
+        const { tavilyApiKey, openaiApiKey, claudeApiKey, awsAccessKeyId, awsSecretAccessKey, awsRegion, activeProvider } = request.body;
+
+        // Validate API key formats
+        if (tavilyApiKey) {
+          const err = validateApiKeyFormat(tavilyApiKey, "tavily");
+          if (err) return reply.status(400).send({ error: err });
+        }
+        if (openaiApiKey) {
+          const err = validateApiKeyFormat(openaiApiKey, "openai");
+          if (err) return reply.status(400).send({ error: err });
+        }
+        if (claudeApiKey) {
+          const err = validateApiKeyFormat(claudeApiKey, "claude");
+          if (err) return reply.status(400).send({ error: err });
+        }
+        if (awsAccessKeyId) {
+          const err = validateApiKeyFormat(awsAccessKeyId, "aws-key");
+          if (err) return reply.status(400).send({ error: err });
+        }
+        if (awsSecretAccessKey) {
+          const err = validateApiKeyFormat(awsSecretAccessKey, "aws-secret");
+          if (err) return reply.status(400).send({ error: err });
+        }
+
+        try {
+          const updateData: Record<string, any> = {};
+
+          if (tavilyApiKey !== undefined) {
+            updateData.tavilyApiKey = encryptOrNull(tavilyApiKey || null);
+          }
+          if (openaiApiKey !== undefined) {
+            updateData.openaiApiKey = encryptOrNull(openaiApiKey || null);
+          }
+          if (claudeApiKey !== undefined) {
+            updateData.claudeApiKey = encryptOrNull(claudeApiKey || null);
+          }
+          if (awsAccessKeyId !== undefined) {
+            updateData.awsAccessKeyId = encryptOrNull(awsAccessKeyId || null);
+          }
+          if (awsSecretAccessKey !== undefined) {
+            updateData.awsSecretAccessKey = encryptOrNull(awsSecretAccessKey || null);
+          }
+          if (awsRegion !== undefined) {
+            updateData.awsRegion = awsRegion || null;
+          }
+          if (activeProvider !== undefined) {
+            updateData.activeProvider = (activeProvider as AiProvider) || null;
+          }
+
+          const userKeys = await prisma.userApiKey.upsert({
+            where: { userId },
+            update: updateData,
+            create: {
+              userId,
+              ...updateData,
+            },
+          });
+
+          request.log.info({ userId, action: "update_user_api_keys" }, "User API keys updated");
+
+          return reply.send({
+            success: true,
+            tavilyApiKey: maskKey(decryptOrNull(userKeys.tavilyApiKey)),
+            openaiApiKey: maskKey(decryptOrNull(userKeys.openaiApiKey)),
+            claudeApiKey: maskKey(decryptOrNull(userKeys.claudeApiKey)),
+            awsAccessKeyId: maskKey(decryptOrNull(userKeys.awsAccessKeyId)),
+            activeProvider: userKeys.activeProvider ?? null,
+          });
+        } catch (error) {
+          request.log.error(error);
+          return reply.status(500).send({ error: "Failed to update user API keys" });
+        }
+      }
+    );
+
+    // DELETE /api-keys/user - Remove current user's own API keys (revert to global)
+    fastify.delete(
+      "/api-keys/user",
+      {
+        schema: {
+          description: "Remove current user's own API keys (revert to using global keys)",
+          tags: ["Settings"],
+          summary: "Delete user API keys",
+          response: {
+            200: {
+              description: "User API keys removed",
+              type: "object",
+              properties: {
+                success: { type: "boolean" },
+              },
+            },
+          },
+        },
+      },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const prisma = getDatabaseClient();
+        const userId = request.user!.userId;
+
+        try {
+          await prisma.userApiKey.deleteMany({
+            where: { userId },
+          });
+
+          request.log.info({ userId, action: "delete_user_api_keys" }, "User API keys removed");
+
+          return reply.send({ success: true });
+        } catch (error) {
+          request.log.error(error);
+          return reply.status(500).send({ error: "Failed to remove user API keys" });
         }
       }
     );

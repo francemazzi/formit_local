@@ -8,20 +8,37 @@ import {
   AlertTriangle,
   Cpu,
   Check,
+  Key,
 } from "lucide-react";
 import {
   apiKeysApi,
+  userApiKeysApi,
   updateApi,
   type UpdateCheckResponse,
   type AiProvider,
   type ProviderInfo,
 } from "../api/apiKeys";
+import { useAuth } from "../context/AuthContext";
 
 interface SettingsProps {
   onClose: () => void;
 }
 
 export function Settings({ onClose }: SettingsProps) {
+  const { isAdmin } = useAuth();
+
+  // User API keys state
+  const [userOpenaiApiKey, setUserOpenaiApiKey] = useState("");
+  const [userClaudeApiKey, setUserClaudeApiKey] = useState("");
+  const [userTavilyApiKey, setUserTavilyApiKey] = useState("");
+  const [userOpenaiConfigured, setUserOpenaiConfigured] = useState(false);
+  const [userClaudeConfigured, setUserClaudeConfigured] = useState(false);
+  const [userTavilyConfigured, setUserTavilyConfigured] = useState(false);
+  const [, setUserActiveProvider] = useState<AiProvider | null>(null);
+  const [isSavingUserKeys, setIsSavingUserKeys] = useState(false);
+  const [userKeysSuccess, setUserKeysSuccess] = useState(false);
+  const [userKeysError, setUserKeysError] = useState<string | null>(null);
+
   const [tavilyApiKey, setTavilyApiKey] = useState("");
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [tavilyConfigured, setTavilyConfigured] = useState(false);
@@ -59,7 +76,54 @@ export function Settings({ onClose }: SettingsProps) {
   useEffect(() => {
     loadApiKeys();
     loadProviders();
+    loadUserApiKeys();
   }, []);
+
+  const loadUserApiKeys = async () => {
+    try {
+      const config = await userApiKeysApi.get();
+      setUserOpenaiConfigured(!!config.openaiApiKey);
+      setUserClaudeConfigured(!!config.claudeApiKey);
+      setUserTavilyConfigured(!!config.tavilyApiKey);
+      setUserActiveProvider(config.activeProvider);
+    } catch (err: any) {
+      console.error("Failed to load user API keys:", err);
+    }
+  };
+
+  const handleSaveUserKeys = async () => {
+    setIsSavingUserKeys(true);
+    setUserKeysError(null);
+    setUserKeysSuccess(false);
+
+    try {
+      const data: Record<string, string | null> = {};
+      if (userOpenaiApiKey.trim()) data.openaiApiKey = userOpenaiApiKey.trim();
+      if (userClaudeApiKey.trim()) data.claudeApiKey = userClaudeApiKey.trim();
+      if (userTavilyApiKey.trim()) data.tavilyApiKey = userTavilyApiKey.trim();
+
+      // Set active provider based on which key is provided
+      if (userOpenaiApiKey.trim()) {
+        data.activeProvider = "OPENAI";
+      } else if (userClaudeApiKey.trim()) {
+        data.activeProvider = "ANTHROPIC_CLAUDE";
+      }
+
+      await userApiKeysApi.update(data);
+      setUserKeysSuccess(true);
+      setUserOpenaiApiKey("");
+      setUserClaudeApiKey("");
+      setUserTavilyApiKey("");
+      await loadUserApiKeys();
+      setTimeout(() => setUserKeysSuccess(false), 2000);
+    } catch (err: any) {
+      setUserKeysError(
+        err.response?.data?.error || "Errore nel salvataggio delle chiavi API"
+      );
+    } finally {
+      setIsSavingUserKeys(false);
+    }
+  };
 
   const loadApiKeys = async () => {
     setIsLoading(true);
@@ -314,7 +378,182 @@ export function Settings({ onClose }: SettingsProps) {
           </div>
         )}
 
+        {/* ========================================
+            User API Keys Section (available to all users)
+            ======================================== */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <h3 style={{ marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Key size={18} />
+            Le Mie Chiavi API
+          </h3>
+          <small style={{ color: "var(--text-secondary)", display: "block", marginBottom: "1rem" }}>
+            Configura le tue chiavi API personali. Hanno priorità sulle chiavi globali.
+          </small>
+
+          {userKeysError && (
+            <div className="error-banner" style={{ margin: "0 0 1rem 0" }}>
+              <span>{userKeysError}</span>
+              <button onClick={() => setUserKeysError(null)}>×</button>
+            </div>
+          )}
+
+          {userKeysSuccess && (
+            <div
+              style={{
+                background: "rgba(34, 197, 94, 0.1)",
+                border: "1px solid #22c55e",
+                borderRadius: "var(--border-radius-sm)",
+                padding: "0.75rem 1rem",
+                marginBottom: "1rem",
+                color: "#22c55e",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <Check size={16} />
+              Chiavi API personali salvate con successo!
+            </div>
+          )}
+
+          {/* OpenAI */}
+          <div className="settings-credentials-section">
+            <div className="settings-credentials-header">
+              <h4>OpenAI</h4>
+              {userOpenaiConfigured && (
+                <span className="badge-configured">✓ Configurata</span>
+              )}
+              <a
+                href="https://platform.openai.com/api-keys"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ottieni chiave
+                <ExternalLink size={12} />
+              </a>
+            </div>
+            <div className="settings-input-row">
+              <input
+                type="password"
+                className="settings-credential-input"
+                value={userOpenaiApiKey}
+                onChange={(e) => setUserOpenaiApiKey(e.target.value)}
+                placeholder={
+                  userOpenaiConfigured
+                    ? "Inserisci nuova chiave per sovrascrivere"
+                    : "sk-..."
+                }
+                disabled={isSavingUserKeys}
+              />
+            </div>
+          </div>
+
+          {/* Claude (Anthropic) */}
+          <div className="settings-credentials-section">
+            <div className="settings-credentials-header">
+              <h4>Claude (Anthropic API)</h4>
+              {userClaudeConfigured && (
+                <span className="badge-configured">✓ Configurata</span>
+              )}
+              <a
+                href="https://console.anthropic.com/settings/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ottieni chiave
+                <ExternalLink size={12} />
+              </a>
+            </div>
+            <div className="settings-input-row">
+              <input
+                type="password"
+                className="settings-credential-input"
+                value={userClaudeApiKey}
+                onChange={(e) => setUserClaudeApiKey(e.target.value)}
+                placeholder={
+                  userClaudeConfigured
+                    ? "Inserisci nuova chiave per sovrascrivere"
+                    : "sk-ant-..."
+                }
+                disabled={isSavingUserKeys}
+              />
+            </div>
+          </div>
+
+          {/* Tavily (optional) */}
+          <div className="settings-credentials-section">
+            <div className="settings-credentials-header">
+              <h4>Tavily (opzionale)</h4>
+              {userTavilyConfigured && (
+                <span className="badge-configured">✓ Configurata</span>
+              )}
+              <a
+                href="https://tavily.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ottieni chiave
+                <ExternalLink size={12} />
+              </a>
+            </div>
+            <div className="settings-input-row">
+              <input
+                type="password"
+                className="settings-credential-input"
+                value={userTavilyApiKey}
+                onChange={(e) => setUserTavilyApiKey(e.target.value)}
+                placeholder={
+                  userTavilyConfigured
+                    ? "Inserisci nuova chiave per sovrascrivere"
+                    : "tvly-..."
+                }
+                disabled={isSavingUserKeys}
+              />
+            </div>
+            <p className="settings-credentials-hint">
+              Per ricerca normative online (opzionale)
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleSaveUserKeys}
+            disabled={isSavingUserKeys || (!userOpenaiApiKey.trim() && !userClaudeApiKey.trim() && !userTavilyApiKey.trim())}
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            <Save size={16} />
+            {isSavingUserKeys ? "Salvataggio..." : "Salva Le Mie Chiavi"}
+          </button>
+        </div>
+
+        {/* ========================================
+            Admin-only Global API Keys Section
+            ======================================== */}
+        {isAdmin && (<>
         <form onSubmit={handleSubmit}>
+          <div style={{ paddingTop: "1.5rem", borderTop: "1px solid var(--border-primary)", marginBottom: "1rem" }}>
+            <h3 style={{ marginBottom: "0.5rem" }}>Chiavi API Globali (Admin)</h3>
+            <small style={{ color: "var(--text-secondary)", display: "block", marginBottom: "1rem" }}>
+              Chiavi condivise tra tutti gli utenti che non hanno configurato le proprie.
+            </small>
+          </div>
+
+          {success && (
+            <div
+              style={{
+                background: "rgba(34, 197, 94, 0.1)",
+                border: "1px solid #22c55e",
+                borderRadius: "var(--border-radius-sm)",
+                padding: "0.75rem 1rem",
+                margin: "0 0 1rem 0",
+                color: "#22c55e",
+              }}
+            >
+              Chiavi API globali salvate con successo!
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="tavilyApiKey">
               Tavily API Key
@@ -926,6 +1165,7 @@ export function Settings({ onClose }: SettingsProps) {
             cache in-memory dei controlli.
           </small>
         </div>
+        </>)}
       </div>
     </div>
   );

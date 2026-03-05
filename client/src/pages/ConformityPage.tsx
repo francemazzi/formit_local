@@ -38,6 +38,8 @@ export function ConformityPage({
   const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
   const [activeProvider, setActiveProvider] = useState<AiProvider | null>(null);
   const [ollamaAvailable, setOllamaAvailable] = useState(true);
+  const [userHasKeys, setUserHasKeys] = useState(false);
+  const [showNoKeysWarning, setShowNoKeysWarning] = useState(false);
   const pollingIntervalRef = useRef<number | null>(null);
 
   // Load active provider and Ollama status on mount
@@ -45,6 +47,7 @@ export function ConformityPage({
     envSetupApi.getStatus().then((status) => {
       setActiveProvider(status.activeProvider);
       setOllamaAvailable(status.ollamaAvailable);
+      setUserHasKeys(status.userHasKeys);
     }).catch(() => {});
   }, []);
 
@@ -171,15 +174,14 @@ export function ConformityPage({
       const envStatus = await envSetupApi.getStatus();
       setOllamaAvailable(envStatus.ollamaAvailable);
       setActiveProvider(envStatus.activeProvider);
+      setUserHasKeys(envStatus.userHasKeys);
 
-      if (!envStatus.isConfigured) {
-        // Store files for later and show setup modal
-        setPendingFiles(files);
-        setShowApiKeySetup(true);
-        return;
+      // Show warning if no keys configured (neither user nor global cloud keys)
+      if (!envStatus.userHasKeys && envStatus.activeProvider === "OLLAMA") {
+        setShowNoKeysWarning(true);
       }
 
-      // API keys are configured, proceed with analysis
+      // Always proceed with processing - don't block
       await processFiles(files);
     } catch (err: unknown) {
       console.error("Error checking env status:", err);
@@ -252,7 +254,7 @@ export function ConformityPage({
         </div>
       )}
 
-      {activeProvider === "OLLAMA" && (
+      {activeProvider === "OLLAMA" && !userHasKeys && (
         <div
           style={{
             background: "rgba(251, 191, 36, 0.1)",
@@ -269,10 +271,46 @@ export function ConformityPage({
         >
           <AlertTriangle size={16} style={{ color: "#fbbf24", flexShrink: 0, marginTop: "2px" }} />
           <span>
-            Stai usando il modello locale (Ollama). La qualità dell'estrazione è ridotta rispetto ai provider cloud.
-            OCR/visione non disponibile.{" "}
-            <strong>Per risultati migliori, configura una API key nelle Impostazioni.</strong>
+            Non hai chiavi API configurate, accuratezza bassa.
+            Stai usando il modello locale (Ollama). OCR/visione non disponibile.{" "}
+            <strong>Per risultati migliori, configura le tue API key nelle Impostazioni.</strong>
           </span>
+        </div>
+      )}
+
+      {showNoKeysWarning && (
+        <div
+          style={{
+            background: "rgba(251, 146, 36, 0.15)",
+            border: "1px solid rgba(251, 146, 36, 0.4)",
+            borderRadius: "var(--border-radius-sm)",
+            padding: "0.75rem 1rem",
+            margin: "0 1rem 1rem",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.5rem",
+            fontSize: "0.85rem",
+            color: "var(--text-secondary)",
+          }}
+        >
+          <AlertTriangle size={16} style={{ color: "#fb9224", flexShrink: 0, marginTop: "2px" }} />
+          <span style={{ flex: 1 }}>
+            Non hai chiavi API configurate, accuratezza bassa. L'elaborazione procede con il modello locale.
+          </span>
+          <button
+            onClick={() => setShowNoKeysWarning(false)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--text-secondary)",
+              cursor: "pointer",
+              padding: "0",
+              fontSize: "1.1rem",
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
 

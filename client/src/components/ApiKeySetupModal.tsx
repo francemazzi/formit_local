@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Key, ExternalLink, Loader2, AlertTriangle } from "lucide-react";
-import { envSetupApi, apiKeysApi, type AiProvider } from "../api/apiKeys";
+import { userApiKeysApi, type AiProvider } from "../api/apiKeys";
 
 interface ApiKeySetupModalProps {
   onClose: () => void;
@@ -28,31 +28,31 @@ export function ApiKeySetupModal({ onClose, onSuccess, ollamaAvailable = true }:
 
     try {
       if (selectedProvider === "OLLAMA") {
-        // Just set active provider to Ollama, no keys needed
-        await apiKeysApi.setActiveProvider("OLLAMA");
-      } else if (selectedProvider === "OPENAI") {
-        // First, setup Tavily key using env setup (for backward compatibility)
-        await envSetupApi.setup({
-          openaiApiKey: openaiApiKey.trim(),
-          tavilyApiKey: tavilyApiKey.trim(),
-        });
-      } else {
-        // For Claude providers, we need to set up Tavily via the API
-        await apiKeysApi.update({ tavilyApiKey: tavilyApiKey.trim() });
-
-        if (selectedProvider === "ANTHROPIC_CLAUDE") {
-          await apiKeysApi.updateClaudeApiKey({ claudeApiKey: claudeApiKey.trim() });
-        } else if (selectedProvider === "BEDROCK_CLAUDE") {
-          await apiKeysApi.updateAwsCredentials({
-            awsAccessKeyId: awsAccessKeyId.trim(),
-            awsSecretAccessKey: awsSecretAccessKey.trim(),
-            awsRegion: awsRegion.trim() || "us-east-1",
-          });
-        }
-
-        // Set active provider
-        await apiKeysApi.setActiveProvider(selectedProvider as AiProvider);
+        // No keys needed for Ollama
+        onSuccess();
+        return;
       }
+
+      // Save user's own API keys via per-user endpoint (no admin required)
+      const data: Record<string, string | null> = {
+        activeProvider: selectedProvider as AiProvider,
+      };
+
+      if (selectedProvider === "OPENAI") {
+        data.openaiApiKey = openaiApiKey.trim();
+      } else if (selectedProvider === "ANTHROPIC_CLAUDE") {
+        data.claudeApiKey = claudeApiKey.trim();
+      } else if (selectedProvider === "BEDROCK_CLAUDE") {
+        data.awsAccessKeyId = awsAccessKeyId.trim();
+        data.awsSecretAccessKey = awsSecretAccessKey.trim();
+        data.awsRegion = awsRegion.trim() || "us-east-1";
+      }
+
+      if (tavilyApiKey.trim()) {
+        data.tavilyApiKey = tavilyApiKey.trim();
+      }
+
+      await userApiKeysApi.update(data);
 
       onSuccess();
     } catch (err: any) {
