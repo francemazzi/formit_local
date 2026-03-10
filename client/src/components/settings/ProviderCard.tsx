@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ChevronDown, ChevronUp, ExternalLink, Save } from "lucide-react";
 import type { AiProvider } from "../../api/apiKeys";
 import type { MergedProvider } from "./useSettingsData";
