@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Settings as SettingsIcon, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Settings as SettingsIcon, Menu, X, Cpu } from "lucide-react";
+import { envSetupApi, type AiProvider } from "./api/apiKeys";
 import { CustomChecksPage } from "./pages/CustomChecksPage";
 import { ConformityPage } from "./pages/ConformityPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -16,6 +17,17 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>("conformity");
   const [showSettings, setShowSettings] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeProvider, setActiveProvider] = useState<AiProvider | null>(null);
+  const [userHasKeys, setUserHasKeys] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      envSetupApi.getStatus().then((status) => {
+        setActiveProvider(status.activeProvider);
+        setUserHasKeys(status.userHasKeys);
+      }).catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -33,6 +45,17 @@ function App() {
   if (!isAuthenticated) {
     return <LoginPage />;
   }
+
+  const providerLabel = (() => {
+    if (!activeProvider) return null;
+    if (activeProvider === "OLLAMA") return "Modello locale";
+    if (activeProvider === "OPENAI") return "OpenAI";
+    if (activeProvider === "ANTHROPIC_CLAUDE") return "Claude";
+    if (activeProvider === "BEDROCK_CLAUDE") return "AWS Bedrock";
+    return activeProvider;
+  })();
+
+  const isLocalProvider = activeProvider === "OLLAMA" && !userHasKeys;
 
   return (
     <div className="app">
@@ -68,6 +91,16 @@ function App() {
                 </button>
               )}
             </div>
+            {providerLabel && (
+              <span
+                className={`provider-badge ${isLocalProvider ? "provider-badge--local" : "provider-badge--cloud"}`}
+                onClick={() => setShowSettings(true)}
+                title={isLocalProvider ? "Stai usando il modello locale. Clicca per configurare API key." : `Provider attivo: ${providerLabel}`}
+              >
+                <Cpu size={12} />
+                {providerLabel}
+              </span>
+            )}
             <button
               className="btn-icon"
               onClick={() => setShowSettings(true)}
@@ -118,6 +151,15 @@ function App() {
               </button>
             )}
             <div className="nav-mobile-actions">
+              {providerLabel && (
+                <span
+                  className={`provider-badge ${isLocalProvider ? "provider-badge--local" : "provider-badge--cloud"}`}
+                  onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}
+                >
+                  <Cpu size={12} />
+                  {providerLabel}
+                </span>
+              )}
               <button
                 className="btn-icon"
                 onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}

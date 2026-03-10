@@ -239,7 +239,17 @@ export function ConformityPage({
         )}
 
         <main className="page-content">
-          <ResultsDisplay response={results} onReset={handleReset} />
+          <ResultsDisplay
+            response={results}
+            onReset={handleReset}
+            providerLabel={
+              activeProvider === "OLLAMA" ? "Modello locale (Ollama)" :
+              activeProvider === "OPENAI" ? "OpenAI GPT-4o" :
+              activeProvider === "ANTHROPIC_CLAUDE" ? "Claude (Anthropic)" :
+              activeProvider === "BEDROCK_CLAUDE" ? "Claude (AWS Bedrock)" :
+              undefined
+            }
+          />
         </main>
       </div>
     );

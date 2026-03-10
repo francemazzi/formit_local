@@ -9,6 +9,7 @@ import {
   FileText,
   ExternalLink,
   Info,
+  Cpu,
 } from "lucide-react";
 import type {
   ConformityPdfResponse,
@@ -21,6 +22,8 @@ interface ResultsDisplayProps {
   onReset: () => void;
   /** When viewing a saved extraction, use e.g. "Torna alla lista" instead of "Nuova Analisi" */
   resetButtonLabel?: string;
+  /** Label of the AI provider used for this analysis */
+  providerLabel?: string;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -204,6 +207,7 @@ export function ResultsDisplay({
   response,
   onReset,
   resetButtonLabel = "Nuova Analisi",
+  providerLabel,
 }: ResultsDisplayProps) {
   const results = response.results || [];
 
@@ -262,6 +266,14 @@ export function ResultsDisplay({
           {resetButtonLabel}
         </button>
       </div>
+
+      {/* Provider info */}
+      {providerLabel && (
+        <div className="results-provider-info">
+          <Cpu size={14} />
+          <span>Analizzato con: <strong>{providerLabel}</strong></span>
+        </div>
+      )}
 
       {/* Results List */}
       <div className="results-list">
