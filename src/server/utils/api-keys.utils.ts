@@ -44,6 +44,35 @@ async function getUserApiKeys(userId: string): Promise<ApiKeyConfig | null> {
 
     if (!hasAnyKey && !userKeys.activeProvider) return null;
 
+    // If user has no explicit activeProvider, resolve from global settings
+    let resolvedProvider: AiProviderType;
+    if (userKeys.activeProvider) {
+      resolvedProvider = userKeys.activeProvider as AiProviderType;
+    } else {
+      // Infer provider from user's configured keys, or fall back to global provider
+      const userOpenAI = decryptOrNull(userKeys.openaiApiKey);
+      const userClaude = decryptOrNull(userKeys.claudeApiKey);
+      const userAws = decryptOrNull(userKeys.awsAccessKeyId);
+
+      if (userOpenAI) {
+        resolvedProvider = "OPENAI";
+      } else if (userClaude) {
+        resolvedProvider = "ANTHROPIC_CLAUDE";
+      } else if (userAws) {
+        resolvedProvider = "BEDROCK_CLAUDE";
+      } else {
+        // Fall back to global provider setting
+        try {
+          const globalKeys = await prisma.apiKey.findUnique({
+            where: { id: "singleton" },
+          });
+          resolvedProvider = (globalKeys?.activeProvider as AiProviderType) ?? "OLLAMA";
+        } catch {
+          resolvedProvider = "OLLAMA";
+        }
+      }
+    }
+
     return {
       tavilyApiKey: decryptOrNull(userKeys.tavilyApiKey),
       openaiApiKey: decryptOrNull(userKeys.openaiApiKey),
@@ -53,7 +82,7 @@ async function getUserApiKeys(userId: string): Promise<ApiKeyConfig | null> {
       awsRegion: userKeys.awsRegion ?? DEFAULT_AWS_REGION,
       ollamaBaseUrl: null,
       ollamaModel: null,
-      activeProvider: (userKeys.activeProvider as AiProviderType) ?? "OLLAMA",
+      activeProvider: resolvedProvider,
     };
   } catch (error) {
     console.warn("[api-keys] Failed to retrieve user API keys:", error);
