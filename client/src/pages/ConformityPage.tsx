@@ -123,6 +123,7 @@ export function ConformityPage({
               success: status.result.success,
               results: status.result.results || [],
               error: status.result.error,
+              diagnostics: status.result.diagnostics,
             };
           }
           return {

@@ -458,6 +458,10 @@ export class ConformityPdfController {
                     extractionId: { type: "string" },
                     results: { type: "array" },
                     error: { type: "string" },
+                    diagnostics: {
+                      type: "object",
+                      additionalProperties: true,
+                    },
                   },
                 },
                 error: { type: "string" },
@@ -491,6 +495,7 @@ export class ConformityPdfController {
             result: {
               fileName: jobState.result.fileName,
               success: jobState.result.success,
+              ...(jobState.result.extractionId && { extractionId: jobState.result.extractionId }),
               results: jobState.result.results || [],
               ...(jobState.result.error && { error: jobState.result.error }),
               ...(jobState.result.diagnostics && { diagnostics: jobState.result.diagnostics }),

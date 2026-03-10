@@ -191,6 +191,40 @@ function FileResultCard({ fileResult }: { fileResult: PdfCheckResult }) {
                 Nessuna verifica applicabile. Il documento potrebbe non
                 rientrare nelle categorie CEIRSA o bevande supportate.
               </p>
+              {fileResult.diagnostics && (
+                <div className="diagnostics-info" style={{ marginTop: '12px', padding: '12px', background: 'var(--bg-secondary, #1a1a2e)', borderRadius: '8px', fontSize: '0.85em', textAlign: 'left' }}>
+                  <p style={{ fontWeight: 600, marginBottom: '8px' }}>Diagnostica:</p>
+                  {fileResult.diagnostics.summary && (
+                    <p style={{ marginBottom: '6px' }}>{fileResult.diagnostics.summary}</p>
+                  )}
+                  {fileResult.diagnostics.matrixDetected && (
+                    <p style={{ marginBottom: '4px' }}>
+                      Matrice: <strong>{fileResult.diagnostics.matrixDetected.matrix}</strong> |
+                      Categoria: <strong>{fileResult.diagnostics.matrixDetected.category}</strong> |
+                      Tipo: <strong>{fileResult.diagnostics.matrixDetected.sampleType}</strong>
+                      {fileResult.diagnostics.matrixDetected.product && (
+                        <> | Prodotto: <strong>{fileResult.diagnostics.matrixDetected.product}</strong></>
+                      )}
+                    </p>
+                  )}
+                  {fileResult.diagnostics.analysesCount !== undefined && (
+                    <p style={{ marginBottom: '4px' }}>
+                      Analisi estratte: <strong>{fileResult.diagnostics.analysesCount}</strong>
+                      {fileResult.diagnostics.analysesParameters && fileResult.diagnostics.analysesParameters.length > 0 && (
+                        <> ({fileResult.diagnostics.analysesParameters.join(', ')})</>
+                      )}
+                    </p>
+                  )}
+                  {fileResult.diagnostics.checkPathsAttempted && fileResult.diagnostics.checkPathsAttempted.length > 0 && (
+                    <p style={{ marginBottom: '4px' }}>
+                      Controlli tentati: {fileResult.diagnostics.checkPathsAttempted.join(' → ')}
+                    </p>
+                  )}
+                  {fileResult.diagnostics.usedOcrFallback && (
+                    <p>OCR Vision utilizzato come fallback</p>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             fileResult.results.map((result, idx) => (

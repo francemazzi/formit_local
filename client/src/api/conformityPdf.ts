@@ -31,11 +31,26 @@ export interface ComplianceResult {
   matrix: ComplianceResultMatrix;
 }
 
+export interface ChecksDiagnostics {
+  matrixDetected?: {
+    matrix: string;
+    category: string;
+    sampleType: string;
+    product: string | null;
+  };
+  analysesCount?: number;
+  analysesParameters?: string[];
+  checkPathsAttempted?: string[];
+  usedOcrFallback?: boolean;
+  summary?: string;
+}
+
 export interface PdfCheckResult {
   fileName: string;
   success: boolean;
   results: ComplianceResult[];
   error?: string;
+  diagnostics?: ChecksDiagnostics;
 }
 
 export interface ConformityPdfResponse {
